@@ -1,8 +1,8 @@
-# TITLE OF PROJECT
+# CART 253 Course Repository
 
-AUTHOR NAME
+PHILIPPE HEBERT
 
-[View this project online](URL_FOR_THE_RUNNING_PROJECT)
+[View this project online](philippefutureboy.github.io)
 
 ## Description
 
