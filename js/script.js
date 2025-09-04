@@ -1,15 +1,15 @@
 /**
- * Title of Project
- * Author Name
+ * Some Project Name
  * 
- * HOW EMBARRASSING! I HAVE NO DESCRIPTION OF MY PROJECT!
- * PLEASE REMOVE A GRADE FROM MY WORK IF IT'S GRADED!
+ * 
+ * SOME DOCUMENTATION
+ * 
  */
 
 "use strict";
 
 /**
- * OH LOOK I DIDN'T DESCRIBE SETUP!!
+ * setup is a function that is a noop
 */
 function setup() {
 
@@ -17,7 +17,7 @@ function setup() {
 
 
 /**
- * OOPS I DIDN'T DESCRIBE WHAT MY DRAW DOES!
+ * draw is a function that is a noop
 */
 function draw() {
 
