@@ -11,7 +11,7 @@
 "use strict";
 
 let img; // variable to store the image
-let opacity = 50;
+let opacity = 100;
 
 // preload was written using ChatGPT 5 because we do not know the API by heart
 function preload() {
@@ -59,7 +59,7 @@ function drawSky() {
  */
 function drawForest() {
   push();
-  fill(color(87, 105, 73, 255));
+  fill(color(87, 105, 73, opacity));
   noStroke();
   rect(0, 0, 600, 800);
   pop();
@@ -72,6 +72,16 @@ function drawRoad() {
   push();
   fill(color(129, 148, 145, opacity));
   noStroke();
-  rect(0, 430, 600, 400);
+  beginShape();
+  // vertex declarations in counter-clockwise order
+  // to start from the 0,0 towards n,n
+  vertex(0, 800);
+  vertex(0, 660);
+  vertex(210, 430);
+  vertex(280, 430);
+  vertex(600, 800);
+
+  // vertex(600, 0);
+  endShape(CLOSE);
   pop();
 }
