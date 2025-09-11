@@ -27,6 +27,7 @@ function draw() {
   background(0);
   // Draw the image at position (0,0) with resizing 600,800 to match canvas
   image(img, 0, 0, 600, 800);
+  drawForest();
   drawSky();
   drawRoad();
 }
@@ -36,9 +37,31 @@ function draw() {
  */
 function drawSky() {
   push();
-  fill(color(118, 180, 219, opacity));
+  fill(color(118, 180, 219, 255));
   noStroke();
-  rect(0, 0, 600, 430);
+  beginShape();
+  // vertex declarations in counter-clockwise order
+  // to start from the 0,0 towards n,n
+  vertex(0, 0);
+  vertex(0, 140);
+  vertex(230, 360);
+  vertex(300, 360);
+  vertex(600, 0);
+
+  // vertex(600, 0);
+  endShape(CLOSE);
+  // rect(0, 0, 600, 430);
+  pop();
+}
+
+/**
+ * Function to draw the forest
+ */
+function drawForest() {
+  push();
+  fill(color(87, 105, 73, 255));
+  noStroke();
+  rect(0, 0, 600, 800);
   pop();
 }
 
