@@ -27,6 +27,8 @@ function draw() {
   background(0);
   // Draw the image at position (0,0) with resizing 600,800 to match canvas
   image(img, 0, 0, 600, 800);
+  opacity = 255;
+  opacity = Math.round(255 * (mouseX / 600));
   drawForest();
   drawSky();
   drawRoad();
@@ -73,6 +75,11 @@ function drawForest() {
  * Function to draw road in the lower half of the canvas
  */
 function drawRoad() {
+  drawAsphalt();
+  drawRoadLine();
+}
+
+function drawAsphalt() {
   push();
   fill(color(129, 148, 145, opacity));
   noStroke();
@@ -87,5 +94,15 @@ function drawRoad() {
 
   // vertex(600, 0);
   endShape(CLOSE);
+  pop();
+}
+
+function drawRoadLine() {
+  push();
+  stroke(color(236, 190, 105, opacity));
+  strokeWeight(9);
+  strokeCap(SQUARE);
+  line(242, 432, 210, 800);
+  line(257, 432, 265, 800);
   pop();
 }
