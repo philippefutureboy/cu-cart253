@@ -11,7 +11,7 @@
 "use strict";
 
 let img; // variable to store the image
-let opacity = 100;
+let opacity = 255;
 
 // preload was written using ChatGPT 5 because we do not know the API by heart
 function preload() {
@@ -37,7 +37,7 @@ function draw() {
  */
 function drawSky() {
   push();
-  fill(color(118, 180, 219, 255));
+  fill(color(118, 180, 219, opacity));
   noStroke();
   beginShape();
   // vertex declarations in counter-clockwise order
@@ -46,6 +46,10 @@ function drawSky() {
   vertex(0, 140);
   vertex(230, 360);
   vertex(300, 360);
+  vertex(330, 310);
+  vertex(450, 280);
+  vertex(500, 200);
+  vertex(600, 180);
   vertex(600, 0);
 
   // vertex(600, 0);
