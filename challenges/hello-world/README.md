@@ -1,6 +1,6 @@
-# CART 253 Course Repository
+# CART 253 – Hello World Challenge
 
-PHILIPPE HEBERT
+Author: PHILIPPE HEBERT
 
 [View this project online](https://philippefutureboy.github.io/cu-cart253/)
 
