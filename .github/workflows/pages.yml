@@ -61,8 +61,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: |
-            **/package-lock.json
 
       # --- CREATE PAGES ROOT (./site) -------------------------------------------------------------
 
