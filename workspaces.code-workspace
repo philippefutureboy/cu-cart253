@@ -13,6 +13,10 @@
         "path": "challenges/instructions"
     },
     {
+        "name": "/challenges/variables",
+        "path": "challenges/variables"
+    },
+    {
         "name": "/projects/art-jam-i",
         "path": "projects/art-jam-i"
     },
