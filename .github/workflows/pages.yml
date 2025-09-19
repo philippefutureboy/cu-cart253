@@ -115,12 +115,10 @@ jobs:
           fi
 
       # Plain static sites (no build step)
-      - name: Collect static site projects/notes -> site/projects/notes
+      - name: Collect static challenges/** -> site/challenges/**
         run: |
           set -eux
-          mkdir -p site/projects/notes
-          # If the source doesn't exist, don't fail the whole pipeline.
-          [ -d projects/notes ] && cp -r projects/notes/* site/projects/notes/ || true
+          [ -d challenges ] && cp -r challenges site
 
       # --- UPLOAD ARTIFACT FOR PAGES --------------------------------------------------------------
 
