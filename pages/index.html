@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Philippe Hebert | CART 253 </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #333;
+      background: #f9f9f9;
+      width: 100vw;  /* ALL OF THE WIDTH  🤠👋🧑‍🚀 */
+      height: 100vh; /* ALL OF THE HEIGHT 🤠👋🧑‍🚀 */
+      margin: 0; /* body has a margin by default, which makes the gradient not take the whole height */
+    }
+    h1 {
+      font-size: 2rem;
+    }
+    p {
+      margin: 0.5rem 0 1rem;
+    }
+    a {
+      color: #0366d6;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    main {
+        display: grid;
+        width: 100vw;
+        height: 100vh;
+        grid-template-columns: 1fr 2fr;
+    }
+
+    .toc {
+      /* some sweet padding to breathe; in increments of 8px to follow web design conventions */
+      padding-top: 32px;
+      padding-left: 32px;
+    }
+    
+    .multicolor-gradient {
+      /* Linear gradient to get a nice rainbow */
+      /* https://developer.mozilla.org/en-US/docs/Web/CSS/gradient/linear-gradient */
+      background: linear-gradient(
+        135deg,
+        #ff6b6b,  /* red/pink */
+        #f7d794,  /* light orange */
+        #1dd1a1,  /* teal */
+        #54a0ff,  /* blue */
+        #5f27cd   /* purple */
+      );
+      /* Zoom in to soften those janky lines and get that sweet sweet gradient */
+      background-size: 400% 400%;
+      /* Shift the gradient to create that smooth wave like effect */
+      animation: gradientShift 15s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="toc">
+        <h1>Philippe Hebert | CART 253</h1>
+        <h2>Links</h2>
+        <h3>Challenges</h3>
+        <ul>
+            <li><a href="challenges/hello-world">W1 – "Hello World!" Challenge</a></li>
+            <li><a href="challenges/instructions">W2 – Instructions Challenge</a></li>
+            <li><a href="challenges/variables">W3 – Variables Challenge</a></li>
+        </ul>
+        <h3>Projects</h3>
+        <ul>
+            <li><a href="projects/art-jam-i">Art Jam I – Self-portrait</a></li>
+        </ul>
+    </div>
+    <div class="multicolor-gradient"></div>
+  </main>
+</body>
+</html>
