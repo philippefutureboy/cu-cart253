@@ -52,7 +52,7 @@ It enables you to use `p5` sketches directly inside React applications in a way 
       </P5.Canvas>
     );
   }
-````
+  ```
 
 ---
 
@@ -149,7 +149,7 @@ Returns all registered canvas IDs.
 * **Primary Architect**: Philippe Hébert
 * **Primary Implementer**: ChatGPT (OpenAI)
 * Original design rationale and conversation logs are available in:
-  `src/lib/p5/ATTRIBUTION/*.html`
+  `src/lib/p5/ATTRIBUTION/*.html`, transcribed to HTML format using the Firefox Addon [ChatGPT Export](https://addons.mozilla.org/en-US/firefox/addon/chatgpt-export/)
 
 ---
 
