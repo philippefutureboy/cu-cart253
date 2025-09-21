@@ -91,6 +91,29 @@ jobs:
 
 
       # Vite/React static sites (with build step)
+      - name: Build tempaltes/vite-react-p5 (Vite)
+        if: ${{ hashFiles('templates/vite-react-p5/package.json') != '' }}
+        working-directory: templates/vite-react-p5
+        env:
+          # We'll derive the correct base path dynamically from the repo name.
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          set -eux
+          npm ci
+          npm run build -- --base "/${REPO}/templates/vite-react-p5/"
+
+      - name: Collect templates/vite-react-p5 -> site/templates/vite-react-p5
+        run: |
+          set -eux
+          mkdir -p site/templates/vite-react-p5
+          if [ -d templates/vite-react-p5/dist ]; then
+            cp -r templates/vite-react-p5/dist/* site/templates/vite-react-p5
+            # Copy the root 404 as SPA fallback 404 into the subfolder too
+            cp pages/404.html site/templates/vite-react-p5/404.html || true
+          else
+            echo "No dist/ found for templates/vite-react-p5 — skipping copy."
+          fi
+
       - name: Build projects/art-jam-i (Vite)
         if: ${{ hashFiles('projects/art-jam-i/package.json') != '' }}
         working-directory: projects/art-jam-i

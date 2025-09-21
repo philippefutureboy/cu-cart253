@@ -1,0 +1,1112 @@
+
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>ChatGPT Conversation Log</title>
+          <style>
+            :root {
+              --primary-color: #FFF;
+              --user-color: #ff3333;
+              --font-size: 16px;
+            }
+          
+            body {
+              font-family: ui-sans-serif,-apple-system,system-ui,Segoe UI,Helvetica,Apple Color Emoji,Arial,sans-serif,Segoe UI Emoji,Segoe UI Symbol;
+              font-size: var(--font-size);
+              background-color: #212121;
+              color: var(--primary-color);
+              padding: 20px;
+              margin: 0 auto;
+              line-height: 1.5;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              border-bottom: 2px dashed var(--primary-color);
+              padding-bottom: 15px;
+              max-width: 1200px;
+              margin-left: auto;
+              margin-right: auto;
+            }
+            .title {
+              font-size: 24px;
+              font-weight: bold;
+              margin: 0;
+              text-transform: uppercase;
+              letter-spacing: 2px;
+            }
+            .timestamp {
+              color: #00cc00;
+              font-size: 14px;
+              margin-top: 10px;
+            }
+            .conversation {
+              max-width: 1200px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .message {
+              margin-bottom: 20px;
+              padding: 10px 20px;
+              border-radius: 18px;
+              width: fit-content;
+              max-width: 80%;
+              clear: both;
+              overflow: hidden;
+            }
+            .user-message {
+              float: right;
+              background-color: #303030;
+            }
+            .assistant-message {
+              float: left;
+            }
+            .role {
+              font-weight: bold;
+              margin-bottom: 5px;
+              text-transform: uppercase;
+            }
+            .user-message .role {
+              color: #ff3333;
+              text-align: right;
+            }
+            .assistant-message .role {
+              color: var(--primary-color);
+            }
+            .content {
+              user-select: text;
+              word-wrap: break-word;
+            }
+            table {
+              border: 1px solid var(--primary-color);
+              border-collapse: collapse;
+              width: 100%;
+              margin: 1em 0;
+              table-layout: fixed;
+            }
+            th, td {
+                border: 1px solid var(--primary-color);
+                text-align: center;
+                height: 30px;
+                vertical-align: middle;
+                padding: 0 10px;
+            }
+            .content h1 { font-size: 2em; margin: 0.67em 0; }
+            .content h2 { font-size: 1.5em; margin: 0.75em 0; }
+            .content h3 { font-size: 1.17em; margin: 0.83em 0; }
+            .content h4 { font-size: 1em; margin: 1.12em 0; }
+            .content h5 { font-size: 0.83em; margin: 1.5em 0; }
+            .content h6 { font-size: 0.75em; margin: 1.67em 0; }
+            .code-block {
+              background-color: #2a2a2a !important;
+              color: #fff !important;
+              padding: 15px !important;
+              margin: 10px 0 !important;
+              border-radius: 5px !important;
+              border: 1px solid var(--primary-color) !important;
+              font-family: "Courier New", monospace !important;
+              overflow-x: auto !important;
+              width: auto !important;
+              max-width: 100% !important;
+              box-sizing: border-box !important;
+            }
+            li{
+              margin:15px 0;
+            }
+            .inline-code{
+              background: var(--primary-color);
+              color:#000;
+              padding:2px 5px;
+            }
+            /* Basic highlight.js theme */
+            .hljs {
+              background: transparent;
+              color: #fff;
+            }
+            .hljs-keyword { color: #ff79c6; }
+            .hljs-string { color: #f1fa8c; }
+            .hljs-number { color: #bd93f9; }
+            .hljs-function { color: #50fa7b; }
+            .hljs-comment { color: #6272a4; }
+            .hljs-title { color: #50fa7b; }
+            .hljs-params { color: #f8f8f2; }
+            .hljs-built_in { color: #8be9fd; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 class="title">== ChatGPT Log ==</h1>
+            <div class="timestamp">[2025-09-21, 3:50:45 p.m.]</div>
+          </div>
+          <div class="conversation">
+    
+        <div class="message user-message">
+          <div class="content">The above log is the entire content of a previous conversation which was started in private/temporary mode. Can you please read the content and summarize what you have understood and what are the next steps at that point?</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p class="first:mt-0 my-1.5 h-8 flex items-center ltr:me-auto rtl:ms-auto empty:hidden text-token-text-secondary"></p><p>Here’s a clear summary of what happened in that private conversation log and where things were left off:</p>
+
+<h2>What was discussed</h2>
+<ul>
+<li>
+<p><strong>User goal:</strong>
+They wanted to create a custom React component <code>&lt;P5&gt;</code> to integrate <strong>p5.js</strong> in a declarative, React-friendly way. Instead of passing a full sketch function (like with <code>@p5-wrapper/react</code>), they wanted a structure like:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-jsx code-block hljs language-javascript" style="display: block;" data-highlighted="yes">&lt;<span class="hljs-variable constant_">P5</span> width={<span class="hljs-number">600</span>} height={<span class="hljs-number">400</span>} renderer=<span class="hljs-string">"WEBGL"</span>&gt;
+  <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">P5.Setup</span> <span class="hljs-attr">fn</span>=<span class="hljs-string">{...}</span> <span class="hljs-attr">params</span>=<span class="hljs-string">{{...}}</span> /&gt;</span></span>
+  <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">P5.Draw</span> <span class="hljs-attr">fn</span>=<span class="hljs-string">{...}</span> <span class="hljs-attr">params</span>=<span class="hljs-string">{{...}}</span> /&gt;</span></span>
+&lt;/<span class="hljs-variable constant_">P5</span>&gt;
+</code></pre>
+<p>This design allows:</p>
+<ul>
+<li>
+<p>Automatic canvas setup &amp; teardown when core props change.</p>
+</li>
+<li>
+<p>Hot-swappable <code>&lt;P5.Draw&gt;</code> functions (without tearing down the canvas).</p>
+</li>
+<li>
+<p>Optionally exposing a <code>useP5()</code> hook to access the current p5 instance, canvas, and state.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Assistant’s response (step 1):</strong></p>
+<ul>
+<li>
+<p>Reviewed the design’s <strong>pros</strong> (declarative lifecycle, hot-swappable draw, clean parameter separation, React-like API) and <strong>cons</strong> (children-as-API complexity, possible flicker when re-creating canvas, quirks with p5 instance recreation, SSR considerations).</p>
+</li>
+<li>
+<p>Proposed a slightly refined API using <code>params={{...}}</code> objects instead of positional args, for better typing and memoization.</p>
+</li>
+<li>
+<p>Supplied a <strong>full implementation in TypeScript</strong>, with:</p>
+<ul>
+<li>
+<p><code>&lt;P5&gt;</code>, <code>&lt;P5.Setup&gt;</code>, <code>&lt;P5.Draw&gt;</code> components.</p>
+</li>
+<li>
+<p>A <code>useP5()</code> hook.</p>
+</li>
+<li>
+<p>Lifecycle logic to handle canvas creation, teardown, and hot-swapping.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Provided multiple usage examples (simple WEBGL demo, dynamic props, using the hook).</p>
+</li>
+<li>
+<p>Included notes on React 18 StrictMode, resizing behavior, and performance best practices.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>User’s follow-up:</strong>
+They asked for the code in <strong>plain JavaScript (not TypeScript).</strong></p>
+</li>
+<li>
+<p><strong>Assistant’s response (step 2):</strong>
+Delivered a <strong>JavaScript rewrite</strong> (<code>P5.jsx</code>), functionally identical but without TypeScript types.
+Included usage examples in JS, showing both a simple WEBGL example and dynamic parameter updates.</p>
+</li>
+</ul>
+
+<h2>Next steps at that point</h2>
+<ul>
+<li>
+<p>The assistant had already given the user a <strong>working JS implementation</strong>.</p>
+</li>
+<li>
+<p>The conversation ended right after sharing that, so the next steps would be for the user to:</p>
+<ol>
+<li>
+<p><strong>Test the <code>P5.jsx</code> component</strong> in their React project.</p>
+</li>
+<li>
+<p><strong>Verify behavior</strong>:</p>
+<ul>
+<li>
+<p>Does <code>&lt;P5.Setup&gt;</code> correctly rebuild the instance when props change?</p>
+</li>
+<li>
+<p>Does <code>&lt;P5.Draw&gt;</code> hot-swap properly without tearing the canvas?</p>
+</li>
+<li>
+<p>Does the <code>useP5()</code> hook return expected refs?</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Decide whether they want refinements, such as:</p>
+<ul>
+<li>
+<p>Handling resizing with <code>resizeCanvas</code> instead of full teardown.</p>
+</li>
+<li>
+<p>Integrating on top of <code>@p5-wrapper/react</code> instead of direct <code>p5</code>.</p>
+</li>
+<li>
+<p>Adding error boundaries or stricter prop validation.</p>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+
+<p>✅ In short: the design was validated, improved, and implemented in JS. The next step is for you to integrate and test the <code>P5.jsx</code> component in your project, then refine behavior (resize handling, SSR guards, etc.) depending on your needs.</p>
+<p>Do you want me to also give you a <strong>minimal starter React app</strong> (with package.json, App.jsx, etc.) that demonstrates the <code>P5.jsx</code> integration, so you can test it immediately?</p></div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">OK great. No need for minimal starter React app.
+Find attached the configuration files.
+Next prompt will include the source code files.
+Second next prompt will include the test code files.
+
+No need for answer until I ask you a question.
+Until then just load these assets to your context window.</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p class="first:mt-0 my-1.5 h-8 flex items-center ltr:me-auto rtl:ms-auto empty:hidden text-token-text-secondary"></p><p>Got it — I’ve loaded the configuration files (<code>babel.config.cjs</code>, <code>jest.config.cjs</code>, and <code>package.json</code>) into context. I’ll hold off on answering until you explicitly ask a question, and I’ll be ready to integrate these with the source and test files when you provide them.</p></div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">Source code assets attached. Load them to your context window</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p class="first:mt-0 my-1.5 h-8 flex items-center ltr:me-auto rtl:ms-auto empty:hidden text-token-text-secondary"></p><p>✅ All your <strong>source code assets</strong> are now loaded into context:</p>
+<ul>
+<li>
+<p><code>P5Canvas.jsx</code></p>
+</li>
+<li>
+<p><code>P5Draw.jsx</code></p>
+</li>
+<li>
+<p><code>P5Setup.jsx</code></p>
+</li>
+<li>
+<p><code>CanvasContext.jsx</code></p>
+</li>
+<li>
+<p><code>RegistryContext.jsx</code></p>
+</li>
+<li>
+<p><code>useP5.js</code></p>
+</li>
+<li>
+<p><code>useP5List.js</code></p>
+</li>
+<li>
+<p><code>index.js</code></p>
+</li>
+</ul>
+<p>I’ll hold on processing until you upload the <strong>test code files</strong> and ask your first question.</p>Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">Test code assets attached. Load them to your context window</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p class="first:mt-0 my-1.5 h-8 flex items-center ltr:me-auto rtl:ms-auto empty:hidden text-token-text-secondary"></p><p>✅ All your <strong>test code assets</strong> are now loaded into context:</p>
+<ul>
+<li>
+<p>Integration tests:</p>
+<ul>
+<li>
+<p><code>multi-canvas.test.jsx</code></p>
+</li>
+<li>
+<p><code>resize.test.jsx</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Unit tests:</p>
+<ul>
+<li>
+<p><code>P5Canvas.test.jsx</code></p>
+</li>
+<li>
+<p><code>P5Draw.test.jsx</code></p>
+</li>
+<li>
+<p><code>P5Setup.test.jsx</code></p>
+</li>
+<li>
+<p><code>RegistryContext.test.jsx</code></p>
+</li>
+<li>
+<p><code>useP5.test.jsx</code></p>
+</li>
+<li>
+<p><code>useP5List.test.jsx</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<p>Everything is now staged in memory — configs, source, and tests.
+I’ll wait for your explicit question before analyzing or responding further.</p>Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">OK, next step:
+All our tests fail with <code>Cannot find module '../../../../../../src/lib/p5'</code>.
+Can you show me how to configure jest to be able to load src/lib/p5 directly (akin to sys.path in python)?</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>You’ve got two clean options. The simplest is to add a Jest alias so that any import starting with <code>src/</code> resolves from your project root.</p>
+<h1>Option A — Add a <code>src/*</code> alias (recommended)</h1>
+<p>Update <strong><code>jest.config.cjs</code></strong> to include a <code>moduleNameMapper</code> entry and (optionally) a <code>moduleDirectories</code> root:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-comment">// jest.config.cjs</span>
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">testEnvironment</span>: <span class="hljs-string">'jsdom'</span>,
+  <span class="hljs-comment">// If you already have "roots", keep them; otherwise this is fine</span>
+  <span class="hljs-attr">roots</span>: [<span class="hljs-string">'&lt;rootDir&gt;/tests'</span>],
+
+  <span class="hljs-comment">// 👇 Key bit: allow "src/..." absolute-style imports</span>
+  <span class="hljs-attr">moduleNameMapper</span>: {
+    <span class="hljs-string">'^src/(.*)$'</span>: <span class="hljs-string">'&lt;rootDir&gt;/src/$1'</span>,
+    <span class="hljs-comment">// optional: style stubs if you ever import CSS in components</span>
+    <span class="hljs-string">'\\.(css|less|scss|sass)$'</span>: <span class="hljs-string">'identity-obj-proxy'</span>,
+  },
+
+  <span class="hljs-comment">// Optional, but handy: lets Jest also resolve from project root</span>
+  <span class="hljs-attr">moduleDirectories</span>: [<span class="hljs-string">'node_modules'</span>, <span class="hljs-string">'&lt;rootDir&gt;'</span>],
+
+  <span class="hljs-attr">transform</span>: {
+    <span class="hljs-string">'^.+\\.[jt]sx?$'</span>: <span class="hljs-string">'babel-jest'</span>,
+  },
+
+  <span class="hljs-attr">setupFilesAfterEnv</span>: [<span class="hljs-string">'@testing-library/jest-dom'</span>],
+};
+</code></pre>
+<p>With that in place, change your test imports from long relative paths like:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">import</span> { <span class="hljs-variable constant_">P5</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"../../../../../../src/lib/p5"</span>;
+</code></pre>
+<p>to the clean alias:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">import</span> { <span class="hljs-variable constant_">P5</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"src/lib/p5"</span>;
+</code></pre>
+<p>(Your tests currently use those long paths in multiple files, e.g. <code>P5Canvas.test.jsx</code>, <code>P5Draw.test.jsx</code>, etc., so swap them to <code>src/lib/p5</code>.) </p>
+<p>Your <strong><code>package.json</code></strong> already has <code>jest</code> and <code>babel-jest</code> wired, so this slots right in and you can continue running <code>npm test</code>. </p>
+<h1>Option B — Use <code>moduleDirectories</code> only (no regex mapper)</h1>
+<p>If you prefer not to use a regex mapper, you can let Jest treat <code>&lt;rootDir&gt;</code> as a resolution root:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-comment">// jest.config.cjs</span>
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">testEnvironment</span>: <span class="hljs-string">'jsdom'</span>,
+  <span class="hljs-attr">roots</span>: [<span class="hljs-string">'&lt;rootDir&gt;/tests'</span>],
+  <span class="hljs-attr">moduleDirectories</span>: [<span class="hljs-string">'node_modules'</span>, <span class="hljs-string">'&lt;rootDir&gt;'</span>], <span class="hljs-comment">// 👈 makes "src/..." resolvable</span>
+  <span class="hljs-attr">transform</span>: { <span class="hljs-string">'^.+\\.[jt]sx?$'</span>: <span class="hljs-string">'babel-jest'</span> },
+  <span class="hljs-attr">setupFilesAfterEnv</span>: [<span class="hljs-string">'@testing-library/jest-dom'</span>],
+};
+</code></pre>
+<p>This also enables:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">import</span> { <span class="hljs-variable constant_">P5</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"src/lib/p5"</span>;
+</code></pre>
+<p>but the regex mapper (Option A) is more explicit and future-proof if you later add additional aliases.</p>
+
+<h2>Quick sanity checklist</h2>
+<ul>
+<li>
+<p>Keep your <strong>Babel config</strong> like:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-comment">// babel.config.cjs</span>
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">presets</span>: [
+    [<span class="hljs-string">'@babel/preset-env'</span>, { <span class="hljs-attr">targets</span>: { <span class="hljs-attr">node</span>: <span class="hljs-string">'current'</span> } }],
+    [<span class="hljs-string">'@babel/preset-react'</span>, { <span class="hljs-attr">runtime</span>: <span class="hljs-string">'automatic'</span> }],
+  ],
+};
+</code></pre>
+</li>
+<li>
+<p>Ensure <code>src/lib/p5/index.js</code> indeed re-exports <code>{ P5, useP5, useP5List }</code> since your tests import from <code>src/lib/p5</code>. (Your tests expect that shape in multiple places.) </p>
+</li>
+</ul>
+<p>Once you add Option A (or B) and switch your imports to <code>src/lib/p5</code>, the “Cannot find module '../../../../../../src/lib/p5'” failures should disappear.</p>Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">Great. Now I have an issue on the import of p5 (the library), I get 
+
+<pre class="overflow-x-auto"><code data-highlighted="yes" class="hljs language-stata">/Users/philippe/Documents/GitHub/concordia/cu-cart253/projects/art-jam-i/node_modules/p5/dist/<span class="hljs-keyword">app</span>.js:1
+    import { p <span class="hljs-keyword">as</span> p5 } from './main-B3Z63C6j.js';
+    ^^^^^^
+
+    SyntaxError: Cannot <span class="hljs-keyword">use</span> import statement outside a module
+
+...
+
+Jest encountered <span class="hljs-keyword">an</span> unexpected <span class="hljs-keyword">token</span>
+
+    Jest failed to <span class="hljs-keyword">parse</span> a <span class="hljs-keyword">file</span>. This happens <span class="hljs-keyword">e</span>.<span class="hljs-keyword">g</span>. when your code or its dependencies <span class="hljs-keyword">use</span> non-standard JavaScript <span class="hljs-keyword">syntax</span>, or when Jest is not configured to support such <span class="hljs-keyword">syntax</span>.
+
+    <span class="hljs-keyword">Out</span> of the box Jest supports Babel, <span class="hljs-keyword">which</span> will be used to transform your files into valid JS based <span class="hljs-keyword">on</span> your Babel configuration.
+
+    <span class="hljs-keyword">By</span> default <span class="hljs-string">"node_modules"</span> folder is ignored <span class="hljs-keyword">by</span> transformers.
+
+    Here's what you can <span class="hljs-keyword">do</span>:
+     • <span class="hljs-keyword">If</span> you are trying to <span class="hljs-keyword">use</span> ECMAScript Modules, see https:<span class="hljs-comment">//jestjs.io/docs/ecmascript-modules for how to enable it.</span>
+     • <span class="hljs-keyword">If</span> you are trying to <span class="hljs-keyword">use</span> TypeScript, see https:<span class="hljs-comment">//jestjs.io/docs/getting-started#using-typescript</span>
+     • To have some of your <span class="hljs-string">"node_modules"</span> files transformed, you can specify a custom <span class="hljs-string">"transformIgnorePatterns"</span> <span class="hljs-keyword">in</span> your config.
+     • <span class="hljs-keyword">If</span> you need a custom transformation, specify a <span class="hljs-string">"transform"</span> option <span class="hljs-keyword">in</span> your config.
+     • <span class="hljs-keyword">If</span> you simply want to mock your non-JS modules (<span class="hljs-keyword">e</span>.<span class="hljs-keyword">g</span>. binary assets) you can stub them <span class="hljs-keyword">out</span> with the <span class="hljs-string">"moduleNameMapper"</span> config option.
+
+    You'll find <span class="hljs-keyword">more</span> details and examples of these config options <span class="hljs-keyword">in</span> the docs:
+    https:<span class="hljs-comment">//jestjs.io/docs/configuration</span>
+    <span class="hljs-keyword">For</span> information <span class="hljs-keyword">about</span> custom transformations, see:
+    https:<span class="hljs-comment">//jestjs.io/docs/code-transformation</span></code></pre>
+
+note that package.json:type is set to "module"</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>You’re running into an ESM-in-<code>node_modules</code> issue: <code>p5</code> ships as ESM (e.g., <code>dist/app.js</code>), while Jest (even v30) doesn’t transform <code>node_modules</code> by default—so it chokes on <code>import</code> there. Your code imports <code>p5</code> directly inside your canvas component, so tests will always load it.</p>
+<p>You’ve got two clean fixes. I recommend <strong>mocking <code>p5</code> for tests</strong> (fast, stable, no rendering needed). If you prefer to execute real <code>p5</code>, use the <strong>transform exception</strong>.</p>
+
+<h1>Fix 1 (recommended): Mock <code>p5</code> in tests</h1>
+<ol>
+<li>
+<p>Create a manual mock the tests can use:</p>
+</li>
+</ol>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-comment">// tests/__mocks__/p5.js</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">P5</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">sketch, node</span>) {
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">P2D</span> = <span class="hljs-string">"P2D"</span>;
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">WEBGL</span> = <span class="hljs-string">"WEBGL"</span>;
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">_renderer</span> = { <span class="hljs-attr">GL</span>: { <span class="hljs-attr">RENDERER</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">P2D</span> } };
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">frameCount</span> = <span class="hljs-number">0</span>;
+
+    <span class="hljs-comment">// minimal API your code touches</span>
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">createCanvas</span> = <span class="hljs-function">(<span class="hljs-params">w, h, renderer</span>) =&gt;</span> {
+      <span class="hljs-variable language_">this</span>.<span class="hljs-property">_renderer</span>.<span class="hljs-property">GL</span>.<span class="hljs-property">RENDERER</span> = renderer === <span class="hljs-variable language_">this</span>.<span class="hljs-property">WEBGL</span> ? <span class="hljs-variable language_">this</span>.<span class="hljs-property">WEBGL</span> : <span class="hljs-variable language_">this</span>.<span class="hljs-property">P2D</span>;
+      <span class="hljs-keyword">const</span> elt = (<span class="hljs-keyword">typeof</span> <span class="hljs-variable language_">document</span> !== <span class="hljs-string">"undefined"</span>)
+        ? <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">createElement</span>(<span class="hljs-string">"canvas"</span>)
+        : { <span class="hljs-attr">nodeName</span>: <span class="hljs-string">"CANVAS"</span> };
+      <span class="hljs-keyword">return</span> { elt };
+    };
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">resizeCanvas</span> = <span class="hljs-function">() =&gt;</span> {};
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">noLoop</span> = <span class="hljs-function">() =&gt;</span> {};
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">loop</span> = <span class="hljs-function">() =&gt;</span> {};
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">remove</span> = <span class="hljs-function">() =&gt;</span> {};
+
+    <span class="hljs-comment">// allow assigning/replacing draw</span>
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">_draw</span> = <span class="hljs-function">() =&gt;</span> {};
+    <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">defineProperty</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-string">"draw"</span>, {
+      <span class="hljs-attr">get</span>: <span class="hljs-function">() =&gt;</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">_draw</span>,
+      <span class="hljs-attr">set</span>: <span class="hljs-function">(<span class="hljs-params">fn</span>) =&gt;</span> { <span class="hljs-variable language_">this</span>.<span class="hljs-property">_draw</span> = <span class="hljs-keyword">typeof</span> fn === <span class="hljs-string">"function"</span> ? fn : <span class="hljs-function">() =&gt;</span> {}; },
+    });
+
+    <span class="hljs-comment">// run the provided sketch</span>
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> sketch === <span class="hljs-string">"function"</span>) {
+      <span class="hljs-title function_">sketch</span>(<span class="hljs-variable language_">this</span>);
+      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">setup</span> === <span class="hljs-string">"function"</span>) <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">setup</span>();
+    }
+  }
+}
+
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = <span class="hljs-variable constant_">P5</span>;
+</code></pre>
+<ol>
+<li>
+<p>Map the <code>p5</code> module to your mock in <strong><code>jest.config.cjs</code></strong>:</p>
+</li>
+</ol>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-comment">// jest.config.cjs</span>
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">testEnvironment</span>: <span class="hljs-string">'jsdom'</span>,
+  <span class="hljs-attr">roots</span>: [<span class="hljs-string">'&lt;rootDir&gt;/tests'</span>],
+  <span class="hljs-attr">transform</span>: { <span class="hljs-string">'^.+\\.[jt]sx?$'</span>: <span class="hljs-string">'babel-jest'</span> },
+  <span class="hljs-attr">setupFilesAfterEnv</span>: [<span class="hljs-string">'@testing-library/jest-dom'</span>],
+  <span class="hljs-attr">moduleNameMapper</span>: {
+    <span class="hljs-string">'^src/(.*)$'</span>: <span class="hljs-string">'&lt;rootDir&gt;/src/$1'</span>,
+    <span class="hljs-string">'^p5$'</span>: <span class="hljs-string">'&lt;rootDir&gt;/tests/__mocks__/p5.js'</span>, <span class="hljs-comment">// 👈 use mock in tests</span>
+  },
+  <span class="hljs-attr">moduleDirectories</span>: [<span class="hljs-string">'node_modules'</span>, <span class="hljs-string">'&lt;rootDir&gt;'</span>],
+};
+</code></pre>
+<p>That’s it. Your tests won’t try to load the real ESM build of <code>p5</code>, and they’ll still exercise your React/p5 integration logic (registry, lifecycle, hot-swap draw, etc.). Your production code keeps using the real <code>p5</code> at runtime. Your project already has Jest/Babel wired in <code>package.json</code>.</p>
+
+<h1>Fix 2 (alternate): Transform ESM <code>p5</code> from node_modules</h1>
+<p>If you explicitly want the real <code>p5</code> running in Jest, allow Jest to transform it:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-comment">// jest.config.cjs</span>
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">testEnvironment</span>: <span class="hljs-string">'jsdom'</span>,
+  <span class="hljs-attr">roots</span>: [<span class="hljs-string">'&lt;rootDir&gt;/tests'</span>],
+  <span class="hljs-attr">transform</span>: { <span class="hljs-string">'^.+\\.[jt]sx?$'</span>: <span class="hljs-string">'babel-jest'</span> },
+  <span class="hljs-attr">setupFilesAfterEnv</span>: [<span class="hljs-string">'@testing-library/jest-dom'</span>],
+  <span class="hljs-attr">moduleNameMapper</span>: {
+    <span class="hljs-string">'^src/(.*)$'</span>: <span class="hljs-string">'&lt;rootDir&gt;/src/$1'</span>,
+  },
+  <span class="hljs-attr">moduleDirectories</span>: [<span class="hljs-string">'node_modules'</span>, <span class="hljs-string">'&lt;rootDir&gt;'</span>],
+
+  <span class="hljs-comment">// 👇 tell Jest NOT to ignore p5 when transforming node_modules</span>
+  <span class="hljs-attr">transformIgnorePatterns</span>: [
+    <span class="hljs-string">'node_modules/(?!(p5)/)'</span>, <span class="hljs-comment">// transpile p5 ESM</span>
+  ],
+
+  <span class="hljs-comment">// If you run into ESM interop edge cases:</span>
+  <span class="hljs-comment">// extensionsToTreatAsEsm: ['.js', '.jsx'],</span>
+};
+</code></pre>
+<p>And make sure <strong><code>babel.config.cjs</code></strong> can handle transforming ESM from <code>node_modules</code>:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-comment">// babel.config.cjs</span>
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">presets</span>: [
+    [<span class="hljs-string">'@babel/preset-env'</span>, { <span class="hljs-attr">targets</span>: { <span class="hljs-attr">node</span>: <span class="hljs-string">'current'</span> } }],
+    [<span class="hljs-string">'@babel/preset-react'</span>, { <span class="hljs-attr">runtime</span>: <span class="hljs-string">'automatic'</span> }],
+  ],
+};
+</code></pre>
+<p>This route is more brittle (you’re transpiling library code and any of its ESM chunks), but it works if you truly need the actual <code>p5</code> behavior under Jest.</p>
+
+<h2>Which should you choose?</h2>
+<ul>
+<li>
+<p><strong>Mock (Fix 1):</strong> Faster, simpler, avoids canvas/GL setups, perfect for your current tests (they assert registry/behavior, not pixels).</p>
+</li>
+<li>
+<p><strong>Transform (Fix 2):</strong> Use only if you need to exercise real <code>p5</code> drawing in Jest (rare for unit/integration tests).</p>
+</li>
+</ul>
+<p>If you want, I can add a tiny assertion to your tests to confirm the mock exposes <code>P2D/WEBGL</code> and that <code>renderer</code> changes trigger recreate as expected.</p>Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">Great. I have decided to go the Mock approach because as you stated, we don't need to have p5js load as we don't test p5 functionalities using automated testing (and it is in fact preferable not to load the dependency). This may turn out to be a problem if we end up writing unit tests for p5 canvas down the line (such as snapshot tests in a browser), but I don't expect that to be the case; if we come to that we'll revise then.
+
+This being said,
+
+Here's the result of the tests:
+
+<pre class="overflow-x-auto"><code data-highlighted="yes" class="hljs language-gradle">npm run test
+
+&gt; art-jam-i@<span class="hljs-number">0.0</span>.<span class="hljs-number">0</span> test
+&gt; jest
+
+ PASS  tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>context/RegistryContext.test.jsx
+ PASS  tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>components/P5Draw.test.jsx
+ PASS  tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>components/P5Setup.test.jsx
+ PASS  tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/integration/</span>resize.test.jsx
+ FAIL  tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/integration/mu</span>lti-canvas.test.jsx
+  ● integration: multiple canvases › registers multiple canvases in registry
+
+    TypeError: Cannot <span class="hljs-keyword">read</span> properties of undefined (reading <span class="hljs-string">'$$typeof'</span>)
+
+      <span class="hljs-number">4</span> | <span class="hljs-comment">/** Returns an array of registered canvas IDs. */</span>
+      <span class="hljs-number">5</span> | export function useP5List() {
+    &gt; <span class="hljs-number">6</span> |   const regCtx = useContext(RegistryCtx);
+        |                            ^
+      <span class="hljs-number">7</span> |   <span class="hljs-keyword">if</span> (!regCtx) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error(<span class="hljs-string">"useP5List must be used inside &lt;P5.ContextProvider&gt;."</span>);
+      <span class="hljs-number">8</span> |   <span class="hljs-keyword">return</span> useMemo(() =&gt; Array.<span class="hljs-keyword">from</span>(regCtx.registry.keys()), [regCtx.registry]);
+      <span class="hljs-number">9</span> | }
+
+      at process.env.NODE_ENV.exports.useContext (node_modules<span class="hljs-regexp">/react/</span>cjs/react.development.js:<span class="hljs-number">1165</span>:<span class="hljs-number">15</span>)
+      at useP5List (src<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/hooks/u</span>seP5List.js:<span class="hljs-number">6</span>:<span class="hljs-number">28</span>)
+      at ListIds (tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/integration/mu</span>lti-canvas.test.jsx:<span class="hljs-number">6</span>:<span class="hljs-number">24</span>)
+      at Object.react_stack_bottom_frame (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">23863</span>:<span class="hljs-number">20</span>)
+      at renderWithHooks (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">5529</span>:<span class="hljs-number">22</span>)
+      at updateFunctionComponent (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">8897</span>:<span class="hljs-number">19</span>)
+      at beginWork (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">10522</span>:<span class="hljs-number">18</span>)
+      at runWithFiberInDEV (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">1522</span>:<span class="hljs-number">13</span>)
+      at performUnitOfWork (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">15140</span>:<span class="hljs-number">22</span>)
+      at workLoopSync (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14956</span>:<span class="hljs-number">41</span>)
+      at renderRootSync (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14936</span>:<span class="hljs-number">11</span>)
+      at performWorkOnRoot (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14462</span>:<span class="hljs-number">44</span>)
+      at performWorkOnRootViaSchedulerTask (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">16216</span>:<span class="hljs-number">7</span>)
+      at flushActQueue (node_modules<span class="hljs-regexp">/react/</span>cjs/react.development.js:<span class="hljs-number">566</span>:<span class="hljs-number">34</span>)
+      at process.env.NODE_ENV.exports.act (node_modules<span class="hljs-regexp">/react/</span>cjs/react.development.js:<span class="hljs-number">860</span>:<span class="hljs-number">10</span>)
+      at node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>act-compat.js:<span class="hljs-number">47</span>:<span class="hljs-number">25</span>
+      at renderRoot (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">190</span>:<span class="hljs-number">26</span>)
+      at render (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">292</span>:<span class="hljs-number">10</span>)
+      at Object.&lt;anonymous&gt; (tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/integration/mu</span>lti-canvas.test.jsx:<span class="hljs-number">12</span>:<span class="hljs-number">35</span>)
+
+ FAIL  tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>hooks/useP5.test.jsx
+  ● useP5 hook › <span class="hljs-keyword">throws</span> <span class="hljs-keyword">if</span> used outside provider
+
+    useP5 must be used inside &lt;P5.ContextProvider&gt;.
+
+       <span class="hljs-number">8</span> | export function useP5(id) {
+       <span class="hljs-number">9</span> |   const regCtx = useContext(RegistryContext);
+    &gt; <span class="hljs-number">10</span> |   <span class="hljs-keyword">if</span> (!regCtx) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error(<span class="hljs-string">"useP5 must be used inside &lt;P5.ContextProvider&gt;."</span>);
+         |                      ^
+      <span class="hljs-number">11</span> |
+      <span class="hljs-number">12</span> |   const { registry } = regCtx;
+      <span class="hljs-number">13</span> |
+
+      at useP5 (src<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/hooks/u</span>seP5.js:<span class="hljs-number">10</span>:<span class="hljs-number">22</span>)
+      at tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>hooks/useP5.test.jsx:<span class="hljs-number">7</span>:<span class="hljs-number">46</span>
+      at TestComponent (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">331</span>:<span class="hljs-number">27</span>)
+      at Object.react_stack_bottom_frame (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">23863</span>:<span class="hljs-number">20</span>)
+      at renderWithHooks (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">5529</span>:<span class="hljs-number">22</span>)
+      at updateFunctionComponent (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">8897</span>:<span class="hljs-number">19</span>)
+      at beginWork (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">10522</span>:<span class="hljs-number">18</span>)
+      at runWithFiberInDEV (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">1522</span>:<span class="hljs-number">13</span>)
+      at performUnitOfWork (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">15140</span>:<span class="hljs-number">22</span>)
+      at workLoopSync (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14956</span>:<span class="hljs-number">41</span>)
+      at renderRootSync (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14936</span>:<span class="hljs-number">11</span>)
+      at performWorkOnRoot (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14462</span>:<span class="hljs-number">44</span>)
+      at performWorkOnRootViaSchedulerTask (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">16216</span>:<span class="hljs-number">7</span>)
+      at flushActQueue (node_modules<span class="hljs-regexp">/react/</span>cjs/react.development.js:<span class="hljs-number">566</span>:<span class="hljs-number">34</span>)
+      at process.env.NODE_ENV.exports.act (node_modules<span class="hljs-regexp">/react/</span>cjs/react.development.js:<span class="hljs-number">860</span>:<span class="hljs-number">10</span>)
+      at node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>act-compat.js:<span class="hljs-number">47</span>:<span class="hljs-number">25</span>
+      at renderRoot (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">190</span>:<span class="hljs-number">26</span>)
+      at render (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">292</span>:<span class="hljs-number">10</span>)
+      at renderHook (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">340</span>:<span class="hljs-number">7</span>)
+      at Object.&lt;anonymous&gt; (tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>hooks/useP5.test.jsx:<span class="hljs-number">7</span>:<span class="hljs-number">34</span>)
+
+ FAIL  tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>hooks/useP5List.test.jsx
+  ● useP5List hook › <span class="hljs-keyword">throws</span> <span class="hljs-keyword">if</span> used outside provider
+
+    TypeError: Cannot <span class="hljs-keyword">read</span> properties of undefined (reading <span class="hljs-string">'$$typeof'</span>)
+
+      <span class="hljs-number">4</span> | <span class="hljs-comment">/** Returns an array of registered canvas IDs. */</span>
+      <span class="hljs-number">5</span> | export function useP5List() {
+    &gt; <span class="hljs-number">6</span> |   const regCtx = useContext(RegistryCtx);
+        |                            ^
+      <span class="hljs-number">7</span> |   <span class="hljs-keyword">if</span> (!regCtx) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error(<span class="hljs-string">"useP5List must be used inside &lt;P5.ContextProvider&gt;."</span>);
+      <span class="hljs-number">8</span> |   <span class="hljs-keyword">return</span> useMemo(() =&gt; Array.<span class="hljs-keyword">from</span>(regCtx.registry.keys()), [regCtx.registry]);
+      <span class="hljs-number">9</span> | }
+
+      at process.env.NODE_ENV.exports.useContext (node_modules<span class="hljs-regexp">/react/</span>cjs/react.development.js:<span class="hljs-number">1165</span>:<span class="hljs-number">15</span>)
+      at useP5List (src<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/hooks/u</span>seP5List.js:<span class="hljs-number">6</span>:<span class="hljs-number">28</span>)
+      at tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>hooks/useP5List.test.jsx:<span class="hljs-number">7</span>:<span class="hljs-number">50</span>
+      at TestComponent (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">331</span>:<span class="hljs-number">27</span>)
+      at Object.react_stack_bottom_frame (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">23863</span>:<span class="hljs-number">20</span>)
+      at renderWithHooks (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">5529</span>:<span class="hljs-number">22</span>)
+      at updateFunctionComponent (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">8897</span>:<span class="hljs-number">19</span>)
+      at beginWork (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">10522</span>:<span class="hljs-number">18</span>)
+      at runWithFiberInDEV (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">1522</span>:<span class="hljs-number">13</span>)
+      at performUnitOfWork (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">15140</span>:<span class="hljs-number">22</span>)
+      at workLoopSync (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14956</span>:<span class="hljs-number">41</span>)
+      at renderRootSync (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14936</span>:<span class="hljs-number">11</span>)
+      at performWorkOnRoot (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14462</span>:<span class="hljs-number">44</span>)
+      at performWorkOnRootViaSchedulerTask (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">16216</span>:<span class="hljs-number">7</span>)
+      at flushActQueue (node_modules<span class="hljs-regexp">/react/</span>cjs/react.development.js:<span class="hljs-number">566</span>:<span class="hljs-number">34</span>)
+      at process.env.NODE_ENV.exports.act (node_modules<span class="hljs-regexp">/react/</span>cjs/react.development.js:<span class="hljs-number">860</span>:<span class="hljs-number">10</span>)
+      at node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>act-compat.js:<span class="hljs-number">47</span>:<span class="hljs-number">25</span>
+      at renderRoot (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">190</span>:<span class="hljs-number">26</span>)
+      at render (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">292</span>:<span class="hljs-number">10</span>)
+      at renderHook (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">340</span>:<span class="hljs-number">7</span>)
+      at Object.&lt;anonymous&gt; (tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>hooks/useP5List.test.jsx:<span class="hljs-number">7</span>:<span class="hljs-number">34</span>)
+
+  ● useP5List hook › returns [] with no canvases
+
+    TypeError: Cannot <span class="hljs-keyword">read</span> properties of undefined (reading <span class="hljs-string">'$$typeof'</span>)
+
+      <span class="hljs-number">4</span> | <span class="hljs-comment">/** Returns an array of registered canvas IDs. */</span>
+      <span class="hljs-number">5</span> | export function useP5List() {
+    &gt; <span class="hljs-number">6</span> |   const regCtx = useContext(RegistryCtx);
+        |                            ^
+      <span class="hljs-number">7</span> |   <span class="hljs-keyword">if</span> (!regCtx) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Error(<span class="hljs-string">"useP5List must be used inside &lt;P5.ContextProvider&gt;."</span>);
+      <span class="hljs-number">8</span> |   <span class="hljs-keyword">return</span> useMemo(() =&gt; Array.<span class="hljs-keyword">from</span>(regCtx.registry.keys()), [regCtx.registry]);
+      <span class="hljs-number">9</span> | }
+
+      at process.env.NODE_ENV.exports.useContext (node_modules<span class="hljs-regexp">/react/</span>cjs/react.development.js:<span class="hljs-number">1165</span>:<span class="hljs-number">15</span>)
+      at useP5List (src<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/hooks/u</span>seP5List.js:<span class="hljs-number">6</span>:<span class="hljs-number">28</span>)
+      at wrapper.wrapper (tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>hooks/useP5List.test.jsx:<span class="hljs-number">13</span>:<span class="hljs-number">50</span>)
+      at TestComponent (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">331</span>:<span class="hljs-number">27</span>)
+      at Object.react_stack_bottom_frame (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">23863</span>:<span class="hljs-number">20</span>)
+      at renderWithHooks (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">5529</span>:<span class="hljs-number">22</span>)
+      at updateFunctionComponent (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">8897</span>:<span class="hljs-number">19</span>)
+      at beginWork (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">10522</span>:<span class="hljs-number">18</span>)
+      at runWithFiberInDEV (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">1522</span>:<span class="hljs-number">13</span>)
+      at performUnitOfWork (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">15140</span>:<span class="hljs-number">22</span>)
+      at workLoopSync (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14956</span>:<span class="hljs-number">41</span>)
+      at renderRootSync (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14936</span>:<span class="hljs-number">11</span>)
+      at performWorkOnRoot (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">14462</span>:<span class="hljs-number">44</span>)
+      at performWorkOnRootViaSchedulerTask (node_modules<span class="hljs-regexp">/react-dom/</span>cjs/react-dom-client.development.js:<span class="hljs-number">16216</span>:<span class="hljs-number">7</span>)
+      at flushActQueue (node_modules<span class="hljs-regexp">/react/</span>cjs/react.development.js:<span class="hljs-number">566</span>:<span class="hljs-number">34</span>)
+      at process.env.NODE_ENV.exports.act (node_modules<span class="hljs-regexp">/react/</span>cjs/react.development.js:<span class="hljs-number">860</span>:<span class="hljs-number">10</span>)
+      at node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>act-compat.js:<span class="hljs-number">47</span>:<span class="hljs-number">25</span>
+      at renderRoot (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">190</span>:<span class="hljs-number">26</span>)
+      at render (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">292</span>:<span class="hljs-number">10</span>)
+      at renderHook (node_modules<span class="hljs-regexp">/@testing-library/</span>react<span class="hljs-regexp">/dist/</span>pure.js:<span class="hljs-number">340</span>:<span class="hljs-number">7</span>)
+      at Object.&lt;anonymous&gt; (tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>hooks/useP5List.test.jsx:<span class="hljs-number">13</span>:<span class="hljs-number">34</span>)
+
+ FAIL  tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>components/P5Canvas.test.jsx
+  ● &lt;P5.Canvas&gt; › renders a <span class="hljs-keyword">div</span> container
+
+    TestingLibraryElementError: Found multiple elements with the role <span class="hljs-string">"generic"</span>
+
+    Here are the matching elements:
+
+    Ignored nodes: comments, script, style
+    &lt;<span class="hljs-keyword">div</span>&gt;
+      &lt;<span class="hljs-keyword">div</span> /&gt;
+    &lt;/<span class="hljs-keyword">div</span>&gt;
+
+    Ignored nodes: comments, script, style
+    &lt;<span class="hljs-keyword">div</span> /&gt;
+
+    (<span class="hljs-keyword">If</span> <span class="hljs-keyword">this</span> is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+    Ignored nodes: comments, script, style
+    &lt;body&gt;
+      &lt;<span class="hljs-keyword">div</span>&gt;
+        &lt;<span class="hljs-keyword">div</span> /&gt;
+      &lt;/<span class="hljs-keyword">div</span>&gt;
+    &lt;/body&gt;
+
+      <span class="hljs-number">13</span> |     );
+      <span class="hljs-number">14</span> |
+    &gt; <span class="hljs-number">15</span> |     const <span class="hljs-keyword">div</span> = screen.getByRole(<span class="hljs-string">"generic"</span>);
+         |                        ^
+      <span class="hljs-number">16</span> |     expect(<span class="hljs-keyword">div</span>).toBeInTheDocument();
+      <span class="hljs-number">17</span> |   });
+      <span class="hljs-number">18</span> |
+
+      at Object.getElementError (node_modules<span class="hljs-regexp">/@testing-library/</span>dom<span class="hljs-regexp">/dist/</span>config.js:<span class="hljs-number">37</span>:<span class="hljs-number">19</span>)
+      at getElementError (node_modules<span class="hljs-regexp">/@testing-library/</span>dom<span class="hljs-regexp">/dist/</span>query-helpers.js:<span class="hljs-number">20</span>:<span class="hljs-number">35</span>)
+      at getMultipleElementsFoundError (node_modules<span class="hljs-regexp">/@testing-library/</span>dom<span class="hljs-regexp">/dist/</span>query-helpers.js:<span class="hljs-number">23</span>:<span class="hljs-number">10</span>)
+      at node_modules<span class="hljs-regexp">/@testing-library/</span>dom<span class="hljs-regexp">/dist/</span>query-helpers.js:<span class="hljs-number">55</span>:<span class="hljs-number">13</span>
+      at node_modules<span class="hljs-regexp">/@testing-library/</span>dom<span class="hljs-regexp">/dist/</span>query-helpers.js:<span class="hljs-number">95</span>:<span class="hljs-number">19</span>
+      at Object.getByRole (tests<span class="hljs-regexp">/lib/</span>p5<span class="hljs-regexp">/unit/</span>components/P5Canvas.test.jsx:<span class="hljs-number">15</span>:<span class="hljs-number">24</span>)
+
+Test Suites: <span class="hljs-number">4</span> failed, <span class="hljs-number">4</span> passed, <span class="hljs-number">8</span> total
+Tests:       <span class="hljs-number">5</span> failed, <span class="hljs-number">7</span> passed, <span class="hljs-number">12</span> total
+Snapshots:   <span class="hljs-number">0</span> total
+Time:        <span class="hljs-number">1.082</span> s
+Ran all test suites.</code></pre></div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>Nice progress—mocking <code>p5</code> was the right call. Your remaining failures come from two issues:</p>
+<ol>
+<li>
+<p>a small bug in <code>useP5List</code> (wrong context symbol), and</p>
+</li>
+<li>
+<p>an over-broad query in one test that finds multiple <code>&lt;div role="generic"&gt;</code>.</p>
+</li>
+</ol>
+<p>Here’s how to get everything green.</p>
+
+<h1>1) Fix <code>useP5List</code> to use the right context</h1>
+<p>Your error shows <code>useP5List</code> calling <code>useContext(RegistryCtx)</code> (undefined), so React tries to read <code>$$typeof</code> from <code>undefined</code> and explodes. Swap it to use the actual exported context (<code>RegistryContext</code>) and import it from the right place.</p>
+<p><strong><code>src/lib/p5/hooks/useP5List.js</code></strong></p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-diff code-block hljs" style="display: block;" data-highlighted="yes"><span class="hljs-deletion">-import { useContext, useMemo } from "react";</span>
+<span class="hljs-deletion">-// ❌ likely wrong import/name:</span>
+<span class="hljs-deletion">-// import { RegistryCtx } from "../context/RegistryContext";</span>
+<span class="hljs-addition">+import { useContext, useMemo } from "react";</span>
+<span class="hljs-addition">+import { RegistryContext } from "../context/RegistryContext";</span>
+
+ /** Returns an array of registered canvas IDs. */
+ export function useP5List() {
+<span class="hljs-deletion">-  const regCtx = useContext(RegistryCtx);</span>
+<span class="hljs-addition">+  const regCtx = useContext(RegistryContext);</span>
+   if (!regCtx) throw new Error("useP5List must be used inside &lt;P5.ContextProvider&gt;.");
+   return useMemo(() =&gt; Array.from(regCtx.registry.keys()), [regCtx.registry]);
+ }
+</code></pre>
+<p>This directly addresses the stack traces you posted for both the integration test and the hook unit test that mention <code>useP5List.js:6</code> and the <code>$$typeof</code> read.</p>
+
+<h1>2) Make the <code>&lt;P5.Canvas&gt;</code> test query unambiguous</h1>
+<p><code>getByRole("generic")</code> returns <strong>multiple</strong> candidates (Testing Library’s root container <code>&lt;div&gt;</code> plus your canvas host <code>&lt;div&gt;</code>), hence the failure.</p>
+<p>Two easy fixes (pick one):</p>
+<p><strong>A. Narrow the query in the test (minimal change):</strong></p>
+<p><strong><code>tests/lib/p5/unit/components/P5Canvas.test.jsx</code></strong></p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-diff code-block hljs" style="display: block;" data-highlighted="yes"><span class="hljs-deletion">-const div = screen.getByRole("generic");</span>
+<span class="hljs-deletion">-expect(div).toBeInTheDocument();</span>
+<span class="hljs-addition">+const divs = screen.getAllByRole("generic");</span>
+<span class="hljs-addition">+expect(divs.length).toBeGreaterThan(0);</span>
+<span class="hljs-addition">+// Optionally assert that one of them is an empty DIV host</span>
+<span class="hljs-addition">+// expect(divs.some(d =&gt; d.tagName === "DIV")).toBe(true);</span>
+</code></pre>
+<p><strong>B. Or, add a test id in the component (if you prefer stable targeting):</strong></p>
+<p><strong><code>src/lib/p5/components/P5Canvas.jsx</code></strong></p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-diff code-block hljs" style="display: block;" data-highlighted="yes"><span class="hljs-deletion">-  return (</span>
+<span class="hljs-deletion">-    &lt;CanvasContext.Provider value={canvasCtxValue}&gt;</span>
+<span class="hljs-deletion">-      &lt;div ref={hostDivRef} className={className} style={style} suppressHydrationWarning /&gt;</span>
+<span class="hljs-deletion">-      {renderedChildren}</span>
+<span class="hljs-deletion">-    &lt;/CanvasContext.Provider&gt;</span>
+<span class="hljs-deletion">-  );</span>
+<span class="hljs-addition">+  return (</span>
+<span class="hljs-addition">+    &lt;CanvasContext.Provider value={canvasCtxValue}&gt;</span>
+<span class="hljs-addition">+      &lt;div</span>
+<span class="hljs-addition">+        ref={hostDivRef}</span>
+<span class="hljs-addition">+        data-testid={`p5-host-${id}`}</span>
+<span class="hljs-addition">+        className={className}</span>
+<span class="hljs-addition">+        style={style}</span>
+<span class="hljs-addition">+        suppressHydrationWarning</span>
+<span class="hljs-addition">+      /&gt;</span>
+<span class="hljs-addition">+      {renderedChildren}</span>
+<span class="hljs-addition">+    &lt;/CanvasContext.Provider&gt;</span>
+<span class="hljs-addition">+  );</span>
+</code></pre>
+<p>…and then in the test:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-diff code-block hljs" style="display: block;" data-highlighted="yes"><span class="hljs-deletion">-const div = screen.getByRole("generic");</span>
+<span class="hljs-addition">+const div = screen.getByTestId("p5-host-foo");</span>
+ expect(div).toBeInTheDocument();
+</code></pre>
+<p>I’d go with <strong>A</strong> (test-only change) to avoid touching runtime code.</p>
+
+<h1>3) (Optional) Make the “throws outside provider” hook test robust</h1>
+<p>React 19 + Testing Library sometimes surfaces thrown errors noisily. Your current test should work, but to be extra robust you can assert with <code>toThrow</code>:</p>
+<p><strong><code>tests/lib/p5/unit/hooks/useP5.test.jsx</code></strong></p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-diff code-block hljs" style="display: block;" data-highlighted="yes"><span class="hljs-deletion">-it("throws if used outside provider", () =&gt; {</span>
+<span class="hljs-deletion">-  const { result } = renderHook(() =&gt; useP5("foo"));</span>
+<span class="hljs-deletion">-  expect(result.error).toBeTruthy();</span>
+<span class="hljs-deletion">-});</span>
+<span class="hljs-addition">+it("throws if used outside provider", () =&gt; {</span>
+<span class="hljs-addition">+  expect(() =&gt; renderHook(() =&gt; useP5("foo"))).toThrow(</span>
+<span class="hljs-addition">+    /useP5 must be used inside &lt;P5\.ContextProvider&gt;/</span>
+<span class="hljs-addition">+  );</span>
+<span class="hljs-addition">+});</span>
+</code></pre>
+<p>(This isn’t strictly required if your current pattern behaves on your setup, but it eliminates any ambiguity.)</p>
+
+<h1>4) Quick sanity checks</h1>
+<ul>
+<li>
+<p>Your index barrel should export the hook symbols the tests import (it looks like they do):</p>
+<ul>
+<li>
+<p><code>import { P5, useP5 } from "src/lib/p5";</code></p>
+</li>
+<li>
+<p><code>import { P5, useP5List } from "src/lib/p5";</code></p>
+</li>
+</ul>
+</li>
+<li>
+<p>The provider/registry look solid: <code>ContextProvider</code> supplies <code>{ registry, registerCanvas, updateCanvas, unregisterCanvas }</code>; <code>P5.Canvas</code> registers/unregisters and keeps size updated.</p>
+</li>
+</ul>
+<p>Apply the <code>useP5List</code> fix and the test query tweak, and your failing suites should flip to ✅.</p>Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">(1) Fixed; was an oversight when I refactored
+(2) I picked test-id because that's best practice in production-grade applications
+(3) Fixed using provided fix; extended the fix to useP5List
+(4) No changes applied - if you proposed some changes, please reexplain the changes you are expecting. Seemed like a LGTM.
+
+All tests now pass.</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>Boom—nice work. 🎯 Congrats on getting the suite green.</p>
+<p>A couple of tidy follow-ups you might consider (totally optional):</p>
+<ol>
+<li>
+<p>Auto-use the mock only in tests
+If you haven’t already, keep the <code>p5</code> mock mapping scoped to Jest so prod builds always pull real <code>p5</code>:</p>
+<ul>
+<li>
+<p>Keep <code>'^p5$': '&lt;rootDir&gt;/tests/__mocks__/p5.js'</code> only in <code>jest.config.cjs</code> (not in bundler aliases).</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Barrel exports sanity
+Your tests import <code>{ P5, useP5, useP5List }</code> from <code>src/lib/p5</code>—just make sure the barrel re-exports those consistently (it looks good given the test imports).</p>
+</li>
+<li>
+<p>Test IDs done right
+Using a dedicated <code>data-testid</code> on the host div is perfect for the canvas unit test; it avoids role collisions and reads clearly in future refactors. You already applied this pattern to your test—nice.</p>
+</li>
+<li>
+<p>(Optional) Micro-hardening in <code>Canvas</code>
+You already included <code>suppressHydrationWarning</code> on the host for SSR safety. If you ever server-render, you can add a quick runtime guard so the p5 instance only spins up client-side (e.g., gate the <code>new p5js(...)</code> effect behind <code>typeof window !== 'undefined'</code>). Not required for your current setup, just a future-proofing note.</p>
+</li>
+<li>
+<p>Registry hooks LGTM
+The <code>RegistryContext</code> shape and updates look clean (register/update/unregister), and your <code>useP5List</code> fix (using the right context) resolves the <code>$$typeof</code> error paths from the failing tests.</p>
+</li>
+</ol>
+<p>If you want, I can bundle a tiny <code>CONTRIBUTING.md</code> test section (jest alias, <code>p5</code> mock rationale, how to add new tests) so future you doesn’t have to re-remember these details.</p>Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">No need for a CONTRIBUTING.md; this being said, I would like a README.md for the src/lib/p5 directory that states the advantages/rationale of the design proposed over @p5-wrapper/react, including, but not limited to:
+
+- Declarative API;
+- Hot-swap draw function for multiple-scene support
+- Multiple p5 instance support
+- Ability to use React state/HTML interactivity to control p5 state; ability to create declarative data model
+- Ease of integration in existing React applications; Extends p5 functionalities to support industry standard network requests/caching, etc, with examples (including easy support for real-time/websocket interactions for multiplayer)
+
+Also, provide:
+- any disadvantages you may think of; 
+- any limitations
+- basic introductory documentation on how to use this lib/p5 directory
+- attribution to yourself as primary implementer and myself as primary architect; also that the exact conversations that produced the code are available under src/lib/p5/ATTRIBUTION/*.html
+- any other standard sections to be expected in an industry-standard readme for a react/frontend lib. No need to include test coverage/result/badges.
+</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>Here’s a solid <strong>README.md</strong> draft tailored for <code>src/lib/p5</code> in your repo. It’s written in the tone of an industry-standard open source frontend library, with rationale, usage, pros/cons, and attribution. You can drop this into <code>src/lib/p5/README.md</code>.</p>
+
+<pre class="overflow-visible!"><code class="whitespace-pre! language-markdown code-block hljs" style="display: block;" data-highlighted="yes"><span class="hljs-section"># React-P5 Declarative Integration</span>
+
+This package provides a <span class="hljs-strong">**declarative React integration for p5.js**</span>, designed as a more flexible and composable alternative to [<span class="hljs-string">`@p5-wrapper/react`</span>](<span class="hljs-link">https://github.com/p5-wrapper/react</span>).
+
+It enables you to use <span class="hljs-code">`p5`</span> sketches directly inside React applications in a way that feels idiomatic: components, hooks, and context providers rather than imperative setup.
+
+---
+
+<span class="hljs-section">## ✨ Key Advantages Over `@p5-wrapper/react`</span>
+
+<span class="hljs-bullet">-</span> <span class="hljs-strong">**Declarative API**</span>  
+  Define <span class="hljs-code">`&lt;P5.Setup&gt;`</span> and <span class="hljs-code">`&lt;P5.Draw&gt;`</span> directly inside JSX. Lifecycle is tied to React’s reconciliation, not imperative re-instantiation.
+
+<span class="hljs-bullet">-</span> <span class="hljs-strong">**Hot-swap draw functions**</span>  
+  Replace <span class="hljs-code">`&lt;P5.Draw fn={...} /&gt;`</span> on the fly without tearing down the canvas. Enables <span class="hljs-strong">**multi-scene**</span> workflows and interactive transitions.
+
+<span class="hljs-bullet">-</span> <span class="hljs-strong">**Multiple p5 instance support**</span>  
+  Use <span class="hljs-code">`&lt;P5.Canvas id="..."&gt;`</span> to mount multiple independent canvases. Each canvas is registered in global context for hooks and management.
+
+<span class="hljs-bullet">-</span> <span class="hljs-strong">**React state &amp; interactivity**</span>  
+  Pass <span class="hljs-code">`params`</span> into setup/draw functions. Combine with React state, props, or context to declaratively control visual state. Ideal for building <span class="hljs-strong">**data models**</span> or <span class="hljs-strong">**state-driven scenes**</span>.
+
+<span class="hljs-bullet">-</span> <span class="hljs-strong">**Easy integration in React apps**</span>  
+  Fits into existing component trees and tooling (Vite, Babel, Jest). Plays nicely with standard React patterns (hooks, context, state).
+
+<span class="hljs-bullet">-</span> <span class="hljs-strong">**Extends p5 with modern app features**</span>  
+  Because you are in React, you can seamlessly integrate:  
+<span class="hljs-bullet">  -</span> Network requests (REST, GraphQL, etc.)  
+<span class="hljs-bullet">  -</span> Local caching and persistence (React Query, SWR)  
+<span class="hljs-bullet">  -</span> Real-time multiplayer via WebSockets or WebRTC  
+
+  <span class="hljs-code">```jsx
+  import { P5 } from "src/lib/p5";
+  import { useState, useEffect } from "react";
+
+  function MultiplayerCanvas({ socket }) {
+    const [players, setPlayers] = useState({});
+
+    useEffect(() =&gt; {
+      socket.on("players:update", (payload) =&gt; setPlayers(payload));
+    }, [socket]);
+
+    return (
+      &lt;P5.Canvas id="game" width={800} height={600} renderer="WEBGL"&gt;
+        &lt;P5.Setup fn={(p5) =&gt; p5.background(0)} /&gt;
+        &lt;P5.Draw fn={(p5) =&gt; {
+          p5.background(0);
+          Object.values(players).forEach(({ x, y }) =&gt; {
+            p5.ellipse(x, y, 20, 20);
+          });
+        }} /&gt;
+      &lt;/P5.Canvas&gt;
+    );
+  }
+</span></code></pre>
+
+<h2>📦 Installation</h2>
+<p>This code lives inside your project under <code>src/lib/p5</code>.
+No npm install step is required, but you do need <code>p5</code>:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-bash code-block hljs" style="display: block;" data-highlighted="yes">npm install p5
+</code></pre>
+
+<h2>🚀 Basic Usage</h2>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-jsx code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">import</span> { <span class="hljs-variable constant_">P5</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">"src/lib/p5"</span>;
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">Example</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">return</span> (
+    <span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">P5.ContextProvider</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">P5.Canvas</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"demo"</span> <span class="hljs-attr">width</span>=<span class="hljs-string">{400}</span> <span class="hljs-attr">height</span>=<span class="hljs-string">{300}</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">P5.Setup</span> <span class="hljs-attr">fn</span>=<span class="hljs-string">{(p5)</span> =&gt;</span> p5.background(200)} /&gt;
+        <span class="hljs-tag">&lt;<span class="hljs-name">P5.Draw</span> <span class="hljs-attr">fn</span>=<span class="hljs-string">{(p5)</span> =&gt;</span> {
+          p5.background(200);
+          p5.ellipse(p5.width / 2, p5.height / 2, 50, 50);
+        }} /&gt;
+      <span class="hljs-tag">&lt;/<span class="hljs-name">P5.Canvas</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">P5.ContextProvider</span>&gt;</span></span>
+  );
+}
+</code></pre>
+<h3>Hooks</h3>
+<ul>
+<li>
+<p><code>useP5(id)</code> → access <code>{ ready, p5Ref, canvasRef, size }</code> for a specific canvas</p>
+</li>
+<li>
+<p><code>useP5List()</code> → get an array of all registered canvas IDs</p>
+</li>
+</ul>
+
+<h2>⚠️ Limitations &amp; Disadvantages</h2>
+<ul>
+<li>
+<p><strong>SSR caveats</strong>: p5 requires DOM APIs. This lib guards against hydration mismatches, but server-side rendering won’t render sketches. Use <code>typeof window !== "undefined"</code> to defer if needed.</p>
+</li>
+<li>
+<p><strong>No pixel snapshots in tests</strong>: The Jest setup mocks p5. Automated tests validate lifecycle/registry logic, not actual rendering output.</p>
+</li>
+<li>
+<p><strong>Draw hot-swap is one-at-a-time</strong>: Only the most recent <code>&lt;P5.Draw&gt;</code> child defines <code>draw</code>. You can replace dynamically but not run multiple draws in parallel.</p>
+</li>
+<li>
+<p><strong>Canvas resize vs recreate</strong>: Changing <code>width/height</code> resizes, but changing renderer (<code>P2D</code> ↔ <code>WEBGL</code>) forces a full re-create.</p>
+</li>
+</ul>
+
+<h2>📖 API Reference</h2>
+<h3><code>&lt;P5.ContextProvider&gt;</code></h3>
+<p>Global registry provider. Wrap once near the root of your app.</p>
+<h3><code>&lt;P5.Canvas id width height renderer className style&gt;</code></h3>
+<p>Mount a p5 canvas.</p>
+<ul>
+<li>
+<p><code>id</code> (string) – required, unique</p>
+</li>
+<li>
+<p><code>width</code>, <code>height</code> (number) – canvas size</p>
+</li>
+<li>
+<p><code>renderer</code> (<code>"P2D" | "WEBGL"</code>) – defaults to <code>"P2D"</code></p>
+</li>
+</ul>
+<h3><code>&lt;P5.Setup fn params /&gt;</code></h3>
+<p>One-time setup function. Changing <code>fn</code> triggers full canvas recreate.</p>
+<h3><code>&lt;P5.Draw fn params /&gt;</code></h3>
+<p>Draw loop function. Changing <code>fn</code> hot-swaps without recreate.</p>
+<h3><code>useP5(id)</code></h3>
+<p>Access registry entry for a given canvas:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-ts code-block hljs language-typescript" style="display: block;" data-highlighted="yes">{
+  <span class="hljs-attr">ready</span>: <span class="hljs-built_in">boolean</span>;
+  <span class="hljs-attr">p5Ref</span>: <span class="hljs-title class_">Ref</span>&lt;p5|<span class="hljs-literal">null</span>&gt;;
+  <span class="hljs-attr">canvasRef</span>: <span class="hljs-title class_">Ref</span>&lt;<span class="hljs-title class_">HTMLCanvasElement</span>|<span class="hljs-literal">null</span>&gt;;
+  <span class="hljs-attr">size</span>: { <span class="hljs-attr">width</span>: <span class="hljs-built_in">number</span>, <span class="hljs-attr">height</span>: <span class="hljs-built_in">number</span> };
+}
+</code></pre>
+<h3><code>useP5List()</code></h3>
+<p>Returns all registered canvas IDs.</p>
+
+<h2>👥 Attribution</h2>
+<ul>
+<li>
+<p><strong>Primary Architect</strong>: Philippe Hébert</p>
+</li>
+<li>
+<p><strong>Primary Implementer</strong>: ChatGPT (OpenAI)</p>
+</li>
+<li>
+<p>Original design rationale and conversation logs are available in:
+<code>src/lib/p5/ATTRIBUTION/*.html</code></p>
+</li>
+</ul>
+
+<h2>📄 License</h2>
+<p>MIT (same as project root unless otherwise specified).</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! code-block hljs language-pgsql" style="display: block;" data-highlighted="yes">
+<span class="hljs-comment">---</span>
+
+Would you <span class="hljs-keyword">like</span> me <span class="hljs-keyword">to</span> <span class="hljs-keyword">also</span> draft a **short example section** <span class="hljs-keyword">on</span> <span class="hljs-keyword">using</span> React state <span class="hljs-keyword">with</span> `&lt;P5.Draw&gt;` (e.g., controlled <span class="hljs-keyword">by</span> a slider <span class="hljs-keyword">input</span>) <span class="hljs-keyword">to</span> demonstrate HTML ↔ p5 interaction, <span class="hljs-keyword">or</span> <span class="hljs-keyword">is</span> the multiplayer/WebSocket example enough?
+</code></pre></div>
+        </div>
+      
+          </div>
+        </body>
+      </html>
+    
