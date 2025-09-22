@@ -15,19 +15,32 @@ function App() {
 
 function Project() {
   const [width, height] = [800, 800];
+  const [mouthX, mouthY] = [0.512 * width, 0.42 * height];
   const profilePic = useMemo(() => new ProfilePic(), []);
 
   const setupFn = useCallback((p5) => {
     p5.background(255);
-    p5.frameRate(1);
+    p5.frameRate(60);
   }, []);
 
   const drawParams = useMemo(() => ({}), []);
   const drawFn = useCallback(
     (p5) => {
+      p5.push();
+      p5.colorMode(p5.HSB, 100);
+      const hue = p5.map(p5.constrain(p5.mouseX, 0, width), 0, width, 0, 100);
+      const saturation = p5.map(p5.constrain(p5.mouseY, 0, height), 0, height, 0, 100);
+      // console.log(p5.mouseX, p5.mouseY);
+      p5.background(hue, saturation, 80);
+      p5.pop();
+
       profilePic.draw(p5);
+      p5.push();
+      p5.strokeWeight(2);
+      p5.ellipse(mouthX, mouthY, 30, 30);
+      p5.pop();
     },
-    [profilePic],
+    [width, height, mouthX, mouthY, profilePic],
   );
 
   return (

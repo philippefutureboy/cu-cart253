@@ -22,11 +22,7 @@ export default class SVGDrawer {
     // @see https://developer.mozilla.org/en-US/docs/Web/API/Path2D
     // @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/stroke
     this.paths = pathEls.map((el) => new Path2D(el.getAttribute('d')));
-    console.log(pathEls.map((el) => el.getAttribute('d')));
-
     this.padding = { top: padding[0], right: padding[1], bottom: padding[2], left: padding[3] };
-
-    console.log(this);
   }
 
   draw(p5) {
@@ -59,7 +55,6 @@ export default class SVGDrawer {
     ctx.lineWidth = 2 / scale; // FIXME: make this dynamic from options (or from the svg itself?)
 
     for (let path of this.paths) {
-      if (p5.frameCount == 1) console.log(path);
       ctx.stroke(path);
     }
 
