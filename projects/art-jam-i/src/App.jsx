@@ -26,12 +26,22 @@ function Project() {
   const drawParams = useMemo(() => ({}), []);
   const drawFn = useCallback(
     (p5) => {
+      p5.background(255);
       p5.push();
+      p5.angleMode(p5.DEGREES);
       p5.colorMode(p5.HSB, 100);
-      const hue = p5.map(p5.constrain(p5.mouseX, 0, width), 0, width, 0, 100);
-      const saturation = p5.map(p5.constrain(p5.mouseY, 0, height), 0, height, 0, 100);
-      // console.log(p5.mouseX, p5.mouseY);
-      p5.background(hue, saturation, 80);
+      p5.noStroke();
+      const hueStartAngle = p5.frameCount % 365;
+      const mapper = (angle) => p5.map(angle, 0 - hueStartAngle, 365 - hueStartAngle, 0, 100);
+      for (let i = 0; i < 365; i++) {
+        p5.fill(p5.color(mapper(i), 80, 80, 80));
+        p5.arc(p5.mouseX, p5.mouseY, width, height, i, i + 1);
+      }
+
+      // p5.colorMode(p5.HSB, 100);
+      // const hue = p5.map(p5.constrain(p5.mouseX, 0, width), 0, width, 0, 100);
+      // const saturation = p5.map(p5.constrain(p5.mouseY, 0, height), 0, height, 0, 100);
+      // // console.log(p5.mouseX, p5.mouseY);
       p5.pop();
 
       profilePic.draw(p5);
