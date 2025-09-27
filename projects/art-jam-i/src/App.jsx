@@ -5,18 +5,54 @@ import Portrait from "src/components/p5/portrait";
 import { P5 } from "src/lib/p5";
 import "./App.css";
 
+// FIXME: Dual canvas seem to interfere with clickCount
+
 // constants
 
 const FRAME_RATE = 60;
+const HOLD_THRESHOLD = FRAME_RATE / 3;
 const SECONDS_TO_FILL_BAR = 3;
 const BAR_FILL_PERCENT_PER_FRAME = 1 / (FRAME_RATE * SECONDS_TO_FILL_BAR);
+const ENCOURAGEMENT_DEFAULT_STYLE = {
+  font: "Chalkduster",
+  fontSize: 30,
+  fontStyle: "NORMAL",
+  textAlign: "CENTER",
+  marginBottom: 10,
+};
+const ENCOURAGEMENT_ROTATING_STYLES = [
+  ENCOURAGEMENT_DEFAULT_STYLE,
+  {
+    font: "Gill Sans",
+    fontSize: 32,
+    fontStyle: "ITALIC",
+    textAlign: "CENTER",
+    marginBottom: 10,
+  },
+  {
+    font: "Chalkduster",
+    fontSize: 30,
+    fontStyle: "NORMAL",
+    textAlign: "CENTER",
+    marginBottom: 20,
+  },
+  {
+    font: "Impact",
+    fontSize: 24,
+    fontStyle: "BOLD",
+    textAlign: "CENTER",
+    marginBottom: 5,
+  },
+];
 
 // mouse helper state & functions
 
 let mouseHasBeenDetected = false;
+let clickCount = 0;
 let lastClick = null;
 let lastPress = null;
 let lastRelease = null;
+let holdCount = 0;
 
 function hasMouseBeenDetected(p5) {
   if (!mouseHasBeenDetected) {
@@ -40,13 +76,45 @@ function hasClickedInNFrames(p5, frames = 1) {
 }
 
 function isPressed() {
-  return (
-    lastPress !== null && (lastRelease === null || lastRelease < lastPress)
-  );
+  // no previous press
+  if (lastPress === null) {
+    return false;
+  }
+  // we released already
+  if (lastRelease !== null && lastRelease >= lastPress) {
+    return false;
+  }
+  return true;
 }
 
-function hasReleasedInNFrames(p5, frames = 1) {
-  return lastRelease !== null && lastRelease > p5.frameCount - frames;
+function isHeld(p5, holdThreshold = HOLD_THRESHOLD) {
+  // has the press been long enough for us to acknowledge it?
+  return isPressed() && p5.frameCount - lastPress >= holdThreshold;
+}
+
+function hasHeldInLastNFrames(p5, frames = 1, holdThreshold = HOLD_THRESHOLD) {
+  // no previous release
+  if (lastRelease === null) {
+    return false;
+  }
+  // doesn't register as a press by our standards
+  if (lastRelease - lastPress < holdThreshold) {
+    return false;
+  }
+  // was last hold recent enough?
+  return lastRelease > p5.frameCount - frames;
+}
+
+// timing functions
+
+// returns true at a rate of every n frames
+// function debounce(p5, frames, initialFrame = 0) {
+//   return (p5.frameCount - initialFrame) % frames === 0;
+// }
+
+// returns how many debounce frames since initialFrame
+function debounceIndex(p5, frames, initialFrame = 0) {
+  return Math.floor((p5.frameCount - initialFrame) / frames);
 }
 
 function Project() {
@@ -77,6 +145,8 @@ function Project() {
     p5.frameRate(FRAME_RATE);
     p5.mouseClicked = () => {
       lastClick = p5.frameCount;
+      // oh boy, implicit typecast
+      clickCount += isMouseInBounds(p5, width, height);
     };
     p5.mousePressed = () => {
       lastPress = p5.frameCount;
@@ -98,22 +168,35 @@ function Project() {
       // const [mouthX, mouthY] = [0.512 * width, 0.42 * height]; // approx, on fixed canvas size
       // portrait.drawMouth(p5, mouthX, mouthY);
 
-      if (
-        mouseInBounds &&
-        (isPressed(p5) || hasReleasedInNFrames(p5, FRAME_RATE / 4))
-      ) {
+      // ENCOURAGEMENT DRAW --------------------
+      if (mouseInBounds && isHeld(p5)) {
         encouragement.text = "Hold!";
-        encouragement.draw(p5);
-      } else if (mouseInBounds && hasClickedInNFrames(p5, FRAME_RATE / 4)) {
-        encouragement.text = "Click!";
-        encouragement.draw(p5);
+        Object.assign(
+          encouragement,
+          ENCOURAGEMENT_ROTATING_STYLES[
+            debounceIndex(p5, FRAME_RATE / 3, lastPress ?? 0) %
+              ENCOURAGEMENT_ROTATING_STYLES.length
+          ],
+        );
+      } else if (
+        mouseInBounds &&
+        !hasHeldInLastNFrames(p5, FRAME_RATE / 4 + 1) &&
+        hasClickedInNFrames(p5, FRAME_RATE / 4)
+      ) {
+        Object.assign(encouragement, ENCOURAGEMENT_DEFAULT_STYLE);
+        const clickTexts = ["Click!", "Click?", "Try holding!"];
+        encouragement.text = clickTexts[clickCount % clickTexts.length];
+        encouragement.fontSize = 24;
       }
+      encouragement.draw(p5);
+
+      // CHARGING BAR DRAW --------------------
 
       // if mouse on canvas, fill bar slowly, else empty slowly
       // FIXME: Extract to Bar; but consider pattern implications
       if (!mouseDetected) {
         // do nothing
-      } else if (mouseInBounds && isPressed(p5)) {
+      } else if (mouseInBounds && isHeld(p5)) {
         bar.fillPercent = Math.min(
           1,
           bar.fillPercent + BAR_FILL_PERCENT_PER_FRAME,
