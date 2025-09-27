@@ -1,21 +1,13 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  Children,
-} from "react";
-import p5js from "p5";
-import { RegistryContext } from "../context/RegistryContext";
-import { CanvasContext } from "../context/CanvasContext";
+import { Children, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { CanvasContext } from '../context/CanvasContext';
+import { RegistryContext } from '../context/RegistryContext';
+import p5js from '../p5';
 
 /**
  * <P5.Canvas id width height renderer className style>
  * Children should include <P5.Setup/> and/or <P5.Draw/>, but any children are allowed.
  */
-export function Canvas({ id, width, height, renderer = "P2D", className, style, children }) {
+export function Canvas({ id, width, height, renderer = 'P2D', className, style, children }) {
   const hostDivRef = useRef(null);
 
   // per-instance refs/state
@@ -30,7 +22,7 @@ export function Canvas({ id, width, height, renderer = "P2D", className, style, 
   const { registerCanvas, updateCanvas, unregisterCanvas } = useContext(RegistryContext) || {};
 
   if (!registerCanvas) {
-    throw new Error("<P5.Canvas> must be used inside <P5.ContextProvider>.");
+    throw new Error('<P5.Canvas> must be used inside <P5.ContextProvider>.');
   }
   if (!id) {
     throw new Error("<P5.Canvas> requires an 'id' prop for multi-instance support.");
@@ -44,7 +36,7 @@ export function Canvas({ id, width, height, renderer = "P2D", className, style, 
       // Contract: setup changes trigger full recreation
       recreate();
     },
-    [recreate]
+    [recreate],
   );
 
   const setDraw = useCallback((fn, params) => {
@@ -90,7 +82,7 @@ export function Canvas({ id, width, height, renderer = "P2D", className, style, 
       p5Ref.current = p5;
 
       p5.setup = () => {
-        const rendererConst = renderer === "WEBGL" ? p5.WEBGL : p5.P2D;
+        const rendererConst = renderer === 'WEBGL' ? p5.WEBGL : p5.P2D;
         const cnv = p5.createCanvas(width, height, rendererConst);
         canvasRef.current = cnv.elt;
 
@@ -120,7 +112,7 @@ export function Canvas({ id, width, height, renderer = "P2D", className, style, 
       updateCanvas(id, { ready: false });
       try {
         inst.remove();
-      // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
       } catch (e) {
         // noop
       }
@@ -134,7 +126,7 @@ export function Canvas({ id, width, height, renderer = "P2D", className, style, 
   // Handle resize / renderer change
   useEffect(() => {
     const inst = p5Ref.current;
-    if (inst && (renderer === "WEBGL" ? inst.WEBGL : inst.P2D) === inst._renderer?.GL?.RENDERER) {
+    if (inst && (renderer === 'WEBGL' ? inst.WEBGL : inst.P2D) === inst._renderer?.GL?.RENDERER) {
       // same renderer → resize only
       inst.resizeCanvas(width, height);
       updateCanvas(id, { size: { width, height } });
@@ -145,10 +137,9 @@ export function Canvas({ id, width, height, renderer = "P2D", className, style, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [width, height, renderer]);
 
-
   const canvasCtxValue = useMemo(
     () => ({ id, setSetupSpec, setDraw, recreate }),
-    [id, setSetupSpec, setDraw, recreate]
+    [id, setSetupSpec, setDraw, recreate],
   );
 
   // Let children render (Setup/Draw will hook via CanvasCtx)
@@ -156,7 +147,7 @@ export function Canvas({ id, width, height, renderer = "P2D", className, style, 
 
   return (
     <CanvasContext.Provider value={canvasCtxValue}>
-      <div 
+      <div
         ref={hostDivRef}
         className={className}
         style={style}
