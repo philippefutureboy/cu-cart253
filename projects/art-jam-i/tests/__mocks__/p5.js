@@ -7,10 +7,12 @@ class P5 {
 
     // minimal API your code touches
     this.createCanvas = (w, h, renderer) => {
-      this._renderer.GL.RENDERER = renderer === this.WEBGL ? this.WEBGL : this.P2D;
-      const elt = (typeof document !== "undefined")
-        ? document.createElement("canvas")
-        : { nodeName: "CANVAS" };
+      this._renderer.GL.RENDERER =
+        renderer === this.WEBGL ? this.WEBGL : this.P2D;
+      const elt =
+        typeof document !== "undefined"
+          ? document.createElement("canvas")
+          : { nodeName: "CANVAS" };
       return { elt };
     };
     this.resizeCanvas = () => {};
@@ -22,7 +24,9 @@ class P5 {
     this._draw = () => {};
     Object.defineProperty(this, "draw", {
       get: () => this._draw,
-      set: (fn) => { this._draw = typeof fn === "function" ? fn : () => {}; },
+      set: (fn) => {
+        this._draw = typeof fn === "function" ? fn : () => {};
+      },
     });
 
     // run the provided sketch
@@ -33,4 +37,4 @@ class P5 {
   }
 }
 
-export default P5
+export default P5;

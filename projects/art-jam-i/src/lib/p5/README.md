@@ -24,10 +24,10 @@ It enables you to use `p5` sketches directly inside React applications in a way 
   Fits into existing component trees and tooling (Vite, Babel, Jest). Plays nicely with standard React patterns (hooks, context, state).
 
 - **Extends p5 with modern app features**  
-  Because you are in React, you can seamlessly integrate:  
-  - Network requests (REST, GraphQL, etc.)  
-  - Local caching and persistence (React Query, SWR)  
-  - Real-time multiplayer via WebSockets or WebRTC  
+  Because you are in React, you can seamlessly integrate:
+  - Network requests (REST, GraphQL, etc.)
+  - Local caching and persistence (React Query, SWR)
+  - Real-time multiplayer via WebSockets or WebRTC
 
   ```jsx
   import { P5 } from "src/lib/p5";
@@ -43,12 +43,14 @@ It enables you to use `p5` sketches directly inside React applications in a way 
     return (
       <P5.Canvas id="game" width={800} height={600} renderer="WEBGL">
         <P5.Setup fn={(p5) => p5.background(0)} />
-        <P5.Draw fn={(p5) => {
-          p5.background(0);
-          Object.values(players).forEach(({ x, y }) => {
-            p5.ellipse(x, y, 20, 20);
-          });
-        }} />
+        <P5.Draw
+          fn={(p5) => {
+            p5.background(0);
+            Object.values(players).forEach(({ x, y }) => {
+              p5.ellipse(x, y, 20, 20);
+            });
+          }}
+        />
       </P5.Canvas>
     );
   }
@@ -77,10 +79,12 @@ function Example() {
     <P5.ContextProvider>
       <P5.Canvas id="demo" width={400} height={300}>
         <P5.Setup fn={(p5) => p5.background(200)} />
-        <P5.Draw fn={(p5) => {
-          p5.background(200);
-          p5.ellipse(p5.width / 2, p5.height / 2, 50, 50);
-        }} />
+        <P5.Draw
+          fn={(p5) => {
+            p5.background(200);
+            p5.ellipse(p5.width / 2, p5.height / 2, 50, 50);
+          }}
+        />
       </P5.Canvas>
     </P5.ContextProvider>
   );
@@ -89,17 +93,17 @@ function Example() {
 
 ### Hooks
 
-* `useP5(id)` → access `{ ready, p5Ref, canvasRef, size }` for a specific canvas
-* `useP5List()` → get an array of all registered canvas IDs
+- `useP5(id)` → access `{ ready, p5Ref, canvasRef, size }` for a specific canvas
+- `useP5List()` → get an array of all registered canvas IDs
 
 ---
 
 ## ⚠️ Limitations & Disadvantages
 
-* **SSR caveats**: p5 requires DOM APIs. This lib guards against hydration mismatches, but server-side rendering won’t render sketches. Use `typeof window !== "undefined"` to defer if needed.
-* **No pixel snapshots in tests**: The Jest setup mocks p5. Automated tests validate lifecycle/registry logic, not actual rendering output.
-* **Draw hot-swap is one-at-a-time**: Only the most recent `<P5.Draw>` child defines `draw`. You can replace dynamically but not run multiple draws in parallel.
-* **Canvas resize vs recreate**: Changing `width/height` resizes, but changing renderer (`P2D` ↔ `WEBGL`) forces a full re-create.
+- **SSR caveats**: p5 requires DOM APIs. This lib guards against hydration mismatches, but server-side rendering won’t render sketches. Use `typeof window !== "undefined"` to defer if needed.
+- **No pixel snapshots in tests**: The Jest setup mocks p5. Automated tests validate lifecycle/registry logic, not actual rendering output.
+- **Draw hot-swap is one-at-a-time**: Only the most recent `<P5.Draw>` child defines `draw`. You can replace dynamically but not run multiple draws in parallel.
+- **Canvas resize vs recreate**: Changing `width/height` resizes, but changing renderer (`P2D` ↔ `WEBGL`) forces a full re-create.
 
 ---
 
@@ -113,9 +117,9 @@ Global registry provider. Wrap once near the root of your app.
 
 Mount a p5 canvas.
 
-* `id` (string) – required, unique
-* `width`, `height` (number) – canvas size
-* `renderer` (`"P2D" | "WEBGL"`) – defaults to `"P2D"`
+- `id` (string) – required, unique
+- `width`, `height` (number) – canvas size
+- `renderer` (`"P2D" | "WEBGL"`) – defaults to `"P2D"`
 
 ### `<P5.Setup fn params />`
 
@@ -146,9 +150,9 @@ Returns all registered canvas IDs.
 
 ## 👥 Attribution
 
-* **Primary Architect**: Philippe Hébert
-* **Primary Implementer**: ChatGPT (OpenAI)
-* Original design rationale and conversation logs are available in:
+- **Primary Architect**: Philippe Hébert
+- **Primary Implementer**: ChatGPT (OpenAI)
+- Original design rationale and conversation logs are available in:
   `src/lib/p5/ATTRIBUTION/*.html`, transcribed to HTML format using the Firefox Addon [ChatGPT Export](https://addons.mozilla.org/en-US/firefox/addon/chatgpt-export/)
 
 ---

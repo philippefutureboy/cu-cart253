@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from 'react';
-import './App.css';
-import Portrait from './assets/portrait';
-import { P5 } from './lib/p5';
+import { useCallback, useMemo } from "react";
+import "./App.css";
+import Portrait from "./assets/portrait";
+import { P5 } from "./lib/p5";
 
 function App() {
   return (
@@ -16,7 +16,10 @@ function App() {
 function Project() {
   const [width, height] = [800, 800];
   const [mouthX, mouthY] = [0.512 * width, 0.42 * height];
-  const portrait = useMemo(() => new Portrait({ globalStyles: { stroke: { weight: 1 } } }), []);
+  const portrait = useMemo(
+    () => new Portrait({ globalStyles: { stroke: { weight: 1 } } }),
+    [],
+  );
 
   const setupFn = useCallback((p5) => {
     p5.background(255);

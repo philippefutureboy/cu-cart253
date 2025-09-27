@@ -37,8 +37,12 @@ export function ContextProvider({ children }) {
 
   const value = useMemo(
     () => ({ registry, registerCanvas, updateCanvas, unregisterCanvas }),
-    [registry, registerCanvas, updateCanvas, unregisterCanvas]
+    [registry, registerCanvas, updateCanvas, unregisterCanvas],
   );
 
-  return <RegistryContext.Provider value={value}>{children}</RegistryContext.Provider>;
+  return (
+    <RegistryContext.Provider value={value}>
+      {children}
+    </RegistryContext.Provider>
+  );
 }

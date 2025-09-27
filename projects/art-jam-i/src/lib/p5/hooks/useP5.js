@@ -7,7 +7,8 @@ import { RegistryContext } from "../context/RegistryContext";
  */
 export function useP5(id) {
   const regCtx = useContext(RegistryContext);
-  if (!regCtx) throw new Error("useP5 must be used inside <P5.ContextProvider>.");
+  if (!regCtx)
+    throw new Error("useP5 must be used inside <P5.ContextProvider>.");
 
   const { registry } = regCtx;
 
@@ -15,14 +16,22 @@ export function useP5(id) {
     id != null
       ? registry.get(id)
       : registry.size === 1
-      ? Array.from(registry.values())[0]
-      : undefined;
+        ? Array.from(registry.values())[0]
+        : undefined;
 
   if (!entry) {
     if (id == null && registry.size > 1) {
-      throw new Error("useP5(): multiple canvases found; pass an 'id' to select one.");
+      throw new Error(
+        "useP5(): multiple canvases found; pass an 'id' to select one.",
+      );
     }
-    return { id, p5: null, canvas: null, ready: false, size: { width: 0, height: 0 } };
+    return {
+      id,
+      p5: null,
+      canvas: null,
+      ready: false,
+      size: { width: 0, height: 0 },
+    };
   }
 
   return {

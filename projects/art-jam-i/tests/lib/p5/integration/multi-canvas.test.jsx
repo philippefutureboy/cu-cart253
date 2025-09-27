@@ -18,7 +18,7 @@ describe("integration: multiple canvases", () => {
           <P5.Draw fn={() => {}} />
         </P5.Canvas>
         <ListIds />
-      </P5.ContextProvider>
+      </P5.ContextProvider>,
     );
 
     const ids = getByTestId("ids").textContent;

@@ -1,13 +1,29 @@
-import { Children, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { CanvasContext } from '../context/CanvasContext';
-import { RegistryContext } from '../context/RegistryContext';
-import p5js from '../p5';
+import {
+  Children,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { CanvasContext } from "../context/CanvasContext";
+import { RegistryContext } from "../context/RegistryContext";
+import p5js from "../p5";
 
 /**
  * <P5.Canvas id width height renderer className style>
  * Children should include <P5.Setup/> and/or <P5.Draw/>, but any children are allowed.
  */
-export function Canvas({ id, width, height, renderer = 'P2D', className, style, children }) {
+export function Canvas({
+  id,
+  width,
+  height,
+  renderer = "P2D",
+  className,
+  style,
+  children,
+}) {
   const hostDivRef = useRef(null);
 
   // per-instance refs/state
@@ -19,13 +35,16 @@ export function Canvas({ id, width, height, renderer = 'P2D', className, style, 
   const [ready, setReady] = useState(false);
   const [instanceKey, setInstanceKey] = useState(0);
 
-  const { registerCanvas, updateCanvas, unregisterCanvas } = useContext(RegistryContext) || {};
+  const { registerCanvas, updateCanvas, unregisterCanvas } =
+    useContext(RegistryContext) || {};
 
   if (!registerCanvas) {
-    throw new Error('<P5.Canvas> must be used inside <P5.ContextProvider>.');
+    throw new Error("<P5.Canvas> must be used inside <P5.ContextProvider>.");
   }
   if (!id) {
-    throw new Error("<P5.Canvas> requires an 'id' prop for multi-instance support.");
+    throw new Error(
+      "<P5.Canvas> requires an 'id' prop for multi-instance support.",
+    );
   }
 
   const recreate = useCallback(() => setInstanceKey((k) => k + 1), []);
@@ -82,7 +101,7 @@ export function Canvas({ id, width, height, renderer = 'P2D', className, style, 
       p5Ref.current = p5;
 
       p5.setup = () => {
-        const rendererConst = renderer === 'WEBGL' ? p5.WEBGL : p5.P2D;
+        const rendererConst = renderer === "WEBGL" ? p5.WEBGL : p5.P2D;
         const cnv = p5.createCanvas(width, height, rendererConst);
         canvasRef.current = cnv.elt;
 
@@ -126,7 +145,11 @@ export function Canvas({ id, width, height, renderer = 'P2D', className, style, 
   // Handle resize / renderer change
   useEffect(() => {
     const inst = p5Ref.current;
-    if (inst && (renderer === 'WEBGL' ? inst.WEBGL : inst.P2D) === inst._renderer?.GL?.RENDERER) {
+    if (
+      inst &&
+      (renderer === "WEBGL" ? inst.WEBGL : inst.P2D) ===
+        inst._renderer?.GL?.RENDERER
+    ) {
       // same renderer → resize only
       inst.resizeCanvas(width, height);
       updateCanvas(id, { size: { width, height } });
