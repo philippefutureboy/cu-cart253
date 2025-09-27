@@ -141,3 +141,5 @@ QUESTIONS.md
 
 # MacOS files
 .DS_Store
+
+.ignore
