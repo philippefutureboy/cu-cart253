@@ -46,7 +46,7 @@ export default class GradientOverlay {
     for (let i = 0; i <= stops; i++) {
       const t = i / stops; // 0..1 along radius
       const hue = (t * 360 - (p5.frameCount % 360) * 2) % 360;
-      const col = p5.color(hue, 80, 80);
+      const col = p5.color(hue, 80, 80, 50);
       // Convert to CSS rgba string explicitly
       const r = Math.round(p5.red(col));
       const gC = Math.round(p5.green(col));

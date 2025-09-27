@@ -197,9 +197,9 @@ function Project() {
       encouragement.draw(p5);
 
       // GRADIENT DRAW --------------------
-      if (bar.superCharged) {
-        gradient.draw(p5, { width, height }, mouseDetected, mouseInBounds);
-      }
+      // if (bar.superCharged && !isHeld(p5)) {
+      //   gradient.draw(p5, { width, height }, mouseDetected, mouseInBounds);
+      // }
 
       // CHARGING BAR DRAW --------------------
 
