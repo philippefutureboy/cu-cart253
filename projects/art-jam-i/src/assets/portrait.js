@@ -11,14 +11,12 @@ import SVGDrawer from '../utils/svg';
 import portraitSvgRaw from './portrait.svg?raw';
 // import portraitGlassesSvgRaw from './portrait-glasses.svg?raw';
 
-export default class ProfilePic {
-  constructor() {
-    this.portraitSvg = new SVGDrawer(portraitSvgRaw);
-    this.glassesSvg = new SVGDrawer(portraitGlassesSvgRaw, { fill: '#ffffff' });
+export default class Portrait {
+  constructor({ padding = [20, 20, 20, 20], styles = {}, globalStyles = {} } = {}) {
+    this.portraitSvg = new SVGDrawer(portraitSvgRaw, { padding, styles, globalStyles });
   }
 
   draw(p5) {
     this.portraitSvg.draw(p5);
-    this.glassesSvg.draw(p5);
   }
 }

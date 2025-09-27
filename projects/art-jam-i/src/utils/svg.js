@@ -1,5 +1,7 @@
+import merge from 'lodash.merge';
+
 export default class SVGDrawer {
-  constructor(rawSvg, { padding = [20, 20, 20, 20] } = {}) {
+  constructor(rawSvg, { padding = [20, 20, 20, 20], styles = {}, globalStyles = {} } = {}) {
     // Assuming a raw svg string,
     // we can load it as a DOM to query it for its content
     // @see https://stackoverflow.com/a/24109000
@@ -21,8 +23,36 @@ export default class SVGDrawer {
     // @see https://dev.to/hendrikras/coding-a-game-of-asteroids-while-dealing-with-svg-paths-in-p5-4baa
     // @see https://developer.mozilla.org/en-US/docs/Web/API/Path2D
     // @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/stroke
-    this.paths = pathEls.map((el) => new Path2D(el.getAttribute('d')));
+    this.paths = pathEls.map((el, i) => ({
+      id: el.getAttribute('id') || i,
+      path: new Path2D(el.getAttribute('d')),
+      styles: {
+        fill: el.getAttribute('fill'),
+        stroke: { color: el.getAttribute('stroke'), weight: el.getAttribute('stroke-width') },
+      },
+    }));
+
     this.padding = { top: padding[0], right: padding[1], bottom: padding[2], left: padding[3] };
+    this.styles = styles;
+    this.globalStyles = globalStyles;
+    // Calculate styles once and index by path.id (fallback to order index)
+    this.calculateStyles();
+  }
+
+  calculateStyles() {
+    this.calcStyles = Object.fromEntries(
+      this.paths.map((p) => [
+        p.id,
+        merge(
+          // defaults
+          { fill: undefined, stroke: { color: '#000', weight: 2 } },
+          // override in order - native styles, global styles, specific overriden styles
+          p.styles,
+          this.globalStyles ?? {},
+          this.styles[p.id] ?? {},
+        ),
+      ]),
+    );
   }
 
   draw(p5) {
@@ -51,11 +81,30 @@ export default class SVGDrawer {
     // handle viewbox offset (within scale)
     ctx.translate(-this.viewbox.minX, -this.viewbox.minY);
 
-    ctx.strokeStyle = '#222'; // FIXME: make this dynamic from options
-    ctx.lineWidth = 2 / scale; // FIXME: make this dynamic from options (or from the svg itself?)
+    for (let p of this.paths) {
+      // push a context for the styles of this specific path
+      ctx.save();
+      // obtain calculated styles for path
+      const styles = this.calcStyles[p.id];
 
-    for (let path of this.paths) {
-      ctx.stroke(path);
+      // apply styles
+      if (styles.fill) {
+        ctx.fill = styles.fill ?? undefined; // default
+      }
+      if (styles.stroke.color) {
+        ctx.strokeStyle = styles.stroke.color || '#000'; // default
+      }
+      if (styles.stroke.weight) {
+        ctx.lineWidth = styles.stroke.weight || '#000'; // default
+      }
+
+      // only print if we expect something to show
+      if (ctx.strokeStyle && ctx.lineWidth) {
+        ctx.stroke(p.path);
+      }
+
+      // pop the context
+      ctx.restore();
     }
 
     ctx.restore(); // p5.pop equivalent for canvas

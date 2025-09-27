@@ -12,6 +12,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "lodash.merge": "^4.6.2",
     "p5": "^2.0.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
