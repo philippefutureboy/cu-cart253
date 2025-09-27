@@ -17,14 +17,38 @@ export default class Portrait {
     styles = {},
     globalStyles = {},
   } = {}) {
-    this.portraitSvg = new SVGDrawer(portraitSvgRaw, {
+    this._showMouth = false;
+    this._globalStyles = globalStyles;
+    this._portraitSvg = new SVGDrawer(portraitSvgRaw, {
       padding,
       styles,
       globalStyles,
     });
   }
 
+  get showMouth() {
+    return this._showMouth;
+  }
+
+  set showMouth(value) {
+    this._showMouth = !!value;
+  }
+
+  toggleMouth() {
+    this._showMouth != this._showMouth;
+  }
+
   draw(p5) {
-    this.portraitSvg.draw(p5);
+    this._portraitSvg.draw(p5);
+  }
+
+  drawMouth(p5, mouthX, mouthY) {
+    if (this._showMouth) {
+      p5.push();
+      // x3 because it looks more coherent with the svg styling that way
+      p5.strokeWeight(this._globalStyles?.stroke?.weight * 3 || 3);
+      p5.ellipse(mouthX, mouthY, 30, 30);
+      p5.pop();
+    }
   }
 }
