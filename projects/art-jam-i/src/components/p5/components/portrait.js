@@ -6,7 +6,7 @@
  * This is just a P5/canvas-friendly wrapper for the portrait.svg file
  */
 
-import SVGDrawer from "src/components/p5/svg";
+import SVGDrawer from "src/components/p5/components/svg";
 // `?raw` tells vite to return the import as a string rather than wrap it as a React component
 import portraitSvgRaw from "src/assets/portrait.svg?raw";
 // import portraitGlassesSvgRaw from './portrait-glasses.svg?raw';

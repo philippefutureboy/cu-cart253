@@ -168,7 +168,6 @@ export default class SVGDrawer {
 
       // apply styles & only apply if the path will result in something being printed.
       if (hasStroke) {
-        console.log(`stroke ${stroke.color}, ${stroke.weight}`);
         ctx.strokeStyle = stroke.color;
         ctx.lineWidth = stroke.weight;
         ctx.stroke(p.path);
