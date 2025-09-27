@@ -29,6 +29,7 @@ export function Canvas({
   // per-instance refs/state
   const p5Ref = useRef(null);
   const canvasRef = useRef(null);
+  const preloadSpecRef = useRef({ fn: null, params: undefined });
   const setupSpecRef = useRef({ fn: null, params: undefined });
   const drawSpecRef = useRef({ fn: null, params: undefined });
 
@@ -49,6 +50,14 @@ export function Canvas({
 
   const recreate = useCallback(() => setInstanceKey((k) => k + 1), []);
 
+  const setPreloadSpec = useCallback(
+    (spec) => {
+      preloadSpecRef.current = spec || { fn: null, params: undefined };
+      // Contract: setup changes trigger full recreation
+      recreate();
+    },
+    [recreate],
+  );
   const setSetupSpec = useCallback(
     (spec) => {
       setupSpecRef.current = spec || { fn: null, params: undefined };
@@ -80,6 +89,7 @@ export function Canvas({
       ready: false,
       size: { width, height },
       setDraw,
+      setPreloadSpec,
       setSetupSpec,
       recreate,
     });
@@ -96,6 +106,9 @@ export function Canvas({
   useEffect(() => {
     const host = hostDivRef.current;
     if (!host) return;
+
+    // Ensure no stale canvases/wrappers are left in the host
+    while (host.firstChild) host.removeChild(host.firstChild);
 
     const sketch = (p5) => {
       p5Ref.current = p5;
@@ -145,10 +158,12 @@ export function Canvas({
   // Handle resize / renderer change
   useEffect(() => {
     const inst = p5Ref.current;
+    // If no instance yet, do nothing. Creation effect will handle it.
+    if (!inst) return;
+
     if (
-      inst &&
       (renderer === "WEBGL" ? inst.WEBGL : inst.P2D) ===
-        inst._renderer?.GL?.RENDERER
+      inst._renderer?.GL?.RENDERER
     ) {
       // same renderer → resize only
       inst.resizeCanvas(width, height);
@@ -161,8 +176,8 @@ export function Canvas({
   }, [width, height, renderer]);
 
   const canvasCtxValue = useMemo(
-    () => ({ id, setSetupSpec, setDraw, recreate }),
-    [id, setSetupSpec, setDraw, recreate],
+    () => ({ id, setPreloadSpec, setSetupSpec, setDraw, recreate }),
+    [id, setPreloadSpec, setSetupSpec, setDraw, recreate],
   );
 
   // Let children render (Setup/Draw will hook via CanvasCtx)
