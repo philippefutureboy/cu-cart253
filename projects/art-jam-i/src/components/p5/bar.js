@@ -10,6 +10,11 @@ export default class Bar {
     this._pulseHz = pulseHz;
     this._pulseStart = null;
     this._fillPercent = 0;
+    this._superCharged = false;
+  }
+
+  get superCharged() {
+    return this._superCharged;
   }
 
   get fillPercent() {
@@ -21,7 +26,13 @@ export default class Bar {
       throw new Error("Expected value to be within [0,1] range");
     }
     this._fillPercent = value;
-    if (this._pulseStart && this._fillPercent < 1) {
+    // SUPAH CHARGE RADY
+    if (value >= 1) {
+      this._superCharged = true;
+    }
+    // reset state when empty
+    if (value === 0) {
+      this._superCharged = false;
       this._pulseStart = null;
     }
   }
@@ -38,7 +49,7 @@ export default class Bar {
     } = this;
 
     let borderPulse = 0;
-    if (fillPercent === 1) {
+    if (this._superCharged) {
       // if we are just starting pulsating, let's note it
       // that way we can know where we are on the pulse cycle
       if (this._pulseStart === null) {

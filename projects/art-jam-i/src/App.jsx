@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import Bar from "src/components/p5/bar";
 import Encouragement from "src/components/p5/encouragement";
+import GradientOverlay from "src/components/p5/gradient";
 import Portrait from "src/components/p5/portrait";
 import { P5 } from "src/lib/p5";
 import "./App.css";
@@ -52,7 +53,6 @@ let clickCount = 0;
 let lastClick = null;
 let lastPress = null;
 let lastRelease = null;
-let holdCount = 0;
 
 function hasMouseBeenDetected(p5) {
   if (!mouseHasBeenDetected) {
@@ -107,19 +107,16 @@ function hasHeldInLastNFrames(p5, frames = 1, holdThreshold = HOLD_THRESHOLD) {
 
 // timing functions
 
-// returns true at a rate of every n frames
-// function debounce(p5, frames, initialFrame = 0) {
-//   return (p5.frameCount - initialFrame) % frames === 0;
-// }
-
 // returns how many debounce frames since initialFrame
 function debounceIndex(p5, frames, initialFrame = 0) {
   return Math.floor((p5.frameCount - initialFrame) / frames);
 }
 
+// MAIN -----
+
 function Project() {
   const [width, height] = [800, 800];
-  const [portrait, bar, encouragement] = useMemo(
+  const [portrait, bar, encouragement, gradient] = useMemo(
     // portrait automatically resizes to canvas size based on provided padding
     () => [
       new Portrait({ globalStyles: { stroke: { weight: 1 } } }),
@@ -136,25 +133,29 @@ function Project() {
         fontStyle: "BOLD",
         textAlign: "CENTER",
       }),
+      new GradientOverlay(),
     ],
     [width, height],
   );
 
-  const setupFn = useCallback((p5) => {
-    p5.background(255);
-    p5.frameRate(FRAME_RATE);
-    p5.mouseClicked = () => {
-      lastClick = p5.frameCount;
-      // oh boy, implicit typecast
-      clickCount += isMouseInBounds(p5, width, height);
-    };
-    p5.mousePressed = () => {
-      lastPress = p5.frameCount;
-    };
-    p5.mouseReleased = () => {
-      lastRelease = p5.frameCount;
-    };
-  }, []);
+  const setupFn = useCallback(
+    (p5) => {
+      p5.background(255);
+      p5.frameRate(FRAME_RATE);
+      p5.mouseClicked = () => {
+        lastClick = p5.frameCount;
+        // oh boy, implicit typecast
+        clickCount += isMouseInBounds(p5, width, height);
+      };
+      p5.mousePressed = () => {
+        lastPress = p5.frameCount;
+      };
+      p5.mouseReleased = () => {
+        lastRelease = p5.frameCount;
+      };
+    },
+    [width, height],
+  );
 
   const drawParams = useMemo(() => ({}), []);
   const drawFn = useCallback(
@@ -170,14 +171,19 @@ function Project() {
 
       // ENCOURAGEMENT DRAW --------------------
       if (mouseInBounds && isHeld(p5)) {
-        encouragement.text = "Hold!";
-        Object.assign(
-          encouragement,
-          ENCOURAGEMENT_ROTATING_STYLES[
-            debounceIndex(p5, FRAME_RATE / 3, lastPress ?? 0) %
-              ENCOURAGEMENT_ROTATING_STYLES.length
-          ],
-        );
+        if (bar.fillPercent !== 1) {
+          encouragement.text = "Hold!";
+          Object.assign(
+            encouragement,
+            ENCOURAGEMENT_ROTATING_STYLES[
+              debounceIndex(p5, FRAME_RATE / 3, lastPress ?? 0) %
+                ENCOURAGEMENT_ROTATING_STYLES.length
+            ],
+          );
+        } else {
+          Object.assign(encouragement, ENCOURAGEMENT_DEFAULT_STYLE);
+          encouragement.text = "Release!";
+        }
       } else if (
         mouseInBounds &&
         !hasHeldInLastNFrames(p5, FRAME_RATE / 4 + 1) &&
@@ -189,6 +195,11 @@ function Project() {
         encouragement.fontSize = 24;
       }
       encouragement.draw(p5);
+
+      // GRADIENT DRAW --------------------
+      if (bar.superCharged) {
+        gradient.draw(p5, { width, height }, mouseDetected, mouseInBounds);
+      }
 
       // CHARGING BAR DRAW --------------------
 
@@ -209,7 +220,7 @@ function Project() {
       }
       bar.draw(p5);
     },
-    [width, height, portrait, bar, encouragement],
+    [width, height, portrait, bar, encouragement, gradient],
   );
 
   return (
