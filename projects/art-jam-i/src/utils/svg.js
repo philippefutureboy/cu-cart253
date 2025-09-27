@@ -87,7 +87,6 @@ export default class SVGDrawer {
     const offsetX = (availW - drawnW) / 2;
     const offsetY = (availH - drawnH) / 2;
 
-    if (p5.frameCount == 1) console.log(offsetX, offsetY, drawnW, drawnH);
     ctx.save(); // p5.push equivalent for canvas
 
     // Future improvement: We could have an option "translate" with a sizeX, sizeY so that we know

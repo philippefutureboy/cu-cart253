@@ -59,6 +59,7 @@ export default class Bar {
     }
 
     p5.push();
+
     if (borderPulse !== 0) {
       p5.colorMode("HSB");
       p5.stroke(255 * borderPulse, 100, 80);
