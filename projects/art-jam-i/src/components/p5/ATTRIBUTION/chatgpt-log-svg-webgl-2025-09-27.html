@@ -1,0 +1,987 @@
+
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>ChatGPT Conversation Log</title>
+          <style>
+            :root {
+              --primary-color: #FFF;
+              --user-color: #ff3333;
+              --font-size: 16px;
+            }
+          
+            body {
+              font-family: ui-sans-serif,-apple-system,system-ui,Segoe UI,Helvetica,Apple Color Emoji,Arial,sans-serif,Segoe UI Emoji,Segoe UI Symbol;
+              font-size: var(--font-size);
+              background-color: #212121;
+              color: var(--primary-color);
+              padding: 20px;
+              margin: 0 auto;
+              line-height: 1.5;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              border-bottom: 2px dashed var(--primary-color);
+              padding-bottom: 15px;
+              max-width: 1200px;
+              margin-left: auto;
+              margin-right: auto;
+            }
+            .title {
+              font-size: 24px;
+              font-weight: bold;
+              margin: 0;
+              text-transform: uppercase;
+              letter-spacing: 2px;
+            }
+            .timestamp {
+              color: #00cc00;
+              font-size: 14px;
+              margin-top: 10px;
+            }
+            .conversation {
+              max-width: 1200px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .message {
+              margin-bottom: 20px;
+              padding: 10px 20px;
+              border-radius: 18px;
+              width: fit-content;
+              max-width: 80%;
+              clear: both;
+              overflow: hidden;
+            }
+            .user-message {
+              float: right;
+              background-color: #303030;
+            }
+            .assistant-message {
+              float: left;
+            }
+            .role {
+              font-weight: bold;
+              margin-bottom: 5px;
+              text-transform: uppercase;
+            }
+            .user-message .role {
+              color: #ff3333;
+              text-align: right;
+            }
+            .assistant-message .role {
+              color: var(--primary-color);
+            }
+            .content {
+              user-select: text;
+              word-wrap: break-word;
+            }
+            table {
+              border: 1px solid var(--primary-color);
+              border-collapse: collapse;
+              width: 100%;
+              margin: 1em 0;
+              table-layout: fixed;
+            }
+            th, td {
+                border: 1px solid var(--primary-color);
+                text-align: center;
+                height: 30px;
+                vertical-align: middle;
+                padding: 0 10px;
+            }
+            .content h1 { font-size: 2em; margin: 0.67em 0; }
+            .content h2 { font-size: 1.5em; margin: 0.75em 0; }
+            .content h3 { font-size: 1.17em; margin: 0.83em 0; }
+            .content h4 { font-size: 1em; margin: 1.12em 0; }
+            .content h5 { font-size: 0.83em; margin: 1.5em 0; }
+            .content h6 { font-size: 0.75em; margin: 1.67em 0; }
+            .code-block {
+              background-color: #2a2a2a !important;
+              color: #fff !important;
+              padding: 15px !important;
+              margin: 10px 0 !important;
+              border-radius: 5px !important;
+              border: 1px solid var(--primary-color) !important;
+              font-family: "Courier New", monospace !important;
+              overflow-x: auto !important;
+              width: auto !important;
+              max-width: 100% !important;
+              box-sizing: border-box !important;
+            }
+            li{
+              margin:15px 0;
+            }
+            .inline-code{
+              background: var(--primary-color);
+              color:#000;
+              padding:2px 5px;
+            }
+            /* Basic highlight.js theme */
+            .hljs {
+              background: transparent;
+              color: #fff;
+            }
+            .hljs-keyword { color: #ff79c6; }
+            .hljs-string { color: #f1fa8c; }
+            .hljs-number { color: #bd93f9; }
+            .hljs-function { color: #50fa7b; }
+            .hljs-comment { color: #6272a4; }
+            .hljs-title { color: #50fa7b; }
+            .hljs-params { color: #f8f8f2; }
+            .hljs-built_in { color: #8be9fd; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 class="title">== ChatGPT Log ==</h1>
+            <div class="timestamp">[2025-09-27, 5:16:23 p.m.]</div>
+          </div>
+          <div class="conversation">
+    
+        <div class="message user-message">
+          <div class="content">How can I render a video in p5.js over the canvas at a reduced opacity and increased saturation?</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>You’ve got two solid options—pick what fits your setup.</p>
+
+<h1>1) Fastest (no shaders): overlay the HTML <code>&lt;video&gt;</code> above the canvas</h1>
+<p>If you only need a visual overlay (not pixel-processing in the canvas), let the browser do the heavy lifting:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">let</span> cnv, vid;
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">setup</span>(<span class="hljs-params"></span>) {
+  cnv = <span class="hljs-title function_">createCanvas</span>(<span class="hljs-number">800</span>, <span class="hljs-number">450</span>); <span class="hljs-comment">// P2D is fine</span>
+  cnv.<span class="hljs-title function_">parent</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-property">body</span>);
+  <span class="hljs-title function_">background</span>(<span class="hljs-number">240</span>);
+
+  <span class="hljs-comment">// Create &amp; style the video element</span>
+  vid = <span class="hljs-title function_">createVideo</span>(<span class="hljs-string">"assets/clip.mp4"</span>, <span class="hljs-function">() =&gt;</span> vid.<span class="hljs-title function_">loop</span>());
+  vid.<span class="hljs-title function_">size</span>(width, height);
+  vid.<span class="hljs-title function_">attribute</span>(<span class="hljs-string">"playsinline"</span>, <span class="hljs-string">""</span>);
+  vid.<span class="hljs-property">elt</span>.<span class="hljs-property">muted</span> = <span class="hljs-literal">true</span>; <span class="hljs-comment">// autoplay-friendly</span>
+  vid.<span class="hljs-title function_">play</span>();
+
+  <span class="hljs-comment">// Position above canvas and style</span>
+  vid.<span class="hljs-title function_">style</span>(<span class="hljs-string">"position"</span>, <span class="hljs-string">"absolute"</span>);
+  vid.<span class="hljs-title function_">style</span>(<span class="hljs-string">"left"</span>, cnv.<span class="hljs-title function_">position</span>().<span class="hljs-property">x</span> + <span class="hljs-string">"px"</span>);
+  vid.<span class="hljs-title function_">style</span>(<span class="hljs-string">"top"</span>, cnv.<span class="hljs-title function_">position</span>().<span class="hljs-property">y</span> + <span class="hljs-string">"px"</span>);
+  vid.<span class="hljs-title function_">style</span>(<span class="hljs-string">"width"</span>, width + <span class="hljs-string">"px"</span>);
+  vid.<span class="hljs-title function_">style</span>(<span class="hljs-string">"height"</span>, height + <span class="hljs-string">"px"</span>);
+
+  <span class="hljs-comment">// Opacity + saturation boost via CSS</span>
+  vid.<span class="hljs-title function_">style</span>(<span class="hljs-string">"opacity"</span>, <span class="hljs-string">"0.4"</span>);
+  vid.<span class="hljs-title function_">style</span>(<span class="hljs-string">"filter"</span>, <span class="hljs-string">"saturate(1.6)"</span>);
+
+  <span class="hljs-comment">// Optional: let pointer events go through to the canvas</span>
+  vid.<span class="hljs-title function_">style</span>(<span class="hljs-string">"pointer-events"</span>, <span class="hljs-string">"none"</span>);
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">draw</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// draw your p5 art "under" the video</span>
+  <span class="hljs-title function_">background</span>(<span class="hljs-number">30</span>);
+  <span class="hljs-title function_">noStroke</span>();
+  <span class="hljs-title function_">fill</span>(<span class="hljs-number">255</span>, <span class="hljs-number">160</span>);
+  <span class="hljs-title function_">circle</span>(width/<span class="hljs-number">2</span>, height/<span class="hljs-number">2</span>, <span class="hljs-number">200</span>);
+}
+</code></pre>
+<p>Pros: dead-simple, performant, no WebGL.
+Cons: the video isn’t <em>inside</em> the canvas pixels (it’s an overlayed DOM element).</p>
+
+<h1>2) Properly inside the canvas: WebGL shader for saturation + opacity</h1>
+<p>This draws the video <em>into</em> the canvas, then boosts saturation and sets opacity in a fragment shader.</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">let</span> vid, theShader;
+
+<span class="hljs-keyword">const</span> vertSrc = <span class="hljs-string">`
+attribute vec3 aPosition;
+attribute vec2 aTexCoord;
+varying vec2 vTexCoord;
+void main() {
+  vTexCoord = aTexCoord;
+  // full-screen quad
+  gl_Position = vec4(aPosition, 1.0);
+}
+`</span>;
+
+<span class="hljs-keyword">const</span> fragSrc = <span class="hljs-string">`
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform sampler2D tex0;     // video
+uniform float u_saturation; // 1.0 = original, &gt;1 boosts, &lt;1 reduces
+uniform float u_alpha;      // 0..1
+varying vec2 vTexCoord;
+
+// Rec. 709 luminance
+vec3 saturateBoost(vec3 color, float s) {
+  float l = dot(color, vec3(0.2126, 0.7152, 0.0722));
+  return mix(vec3(l), color, s);
+}
+
+void main() {
+  vec4 c = texture2D(tex0, vTexCoord);
+  vec3 boosted = saturateBoost(c.rgb, u_saturation);
+  gl_FragColor = vec4(boosted, u_alpha);
+}
+`</span>;
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">preload</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// build shader from strings (no external files needed)</span>
+  theShader = <span class="hljs-keyword">new</span> p5.<span class="hljs-title class_">Shader</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">_renderer</span>, vertSrc, fragSrc);
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">setup</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// WEBGL to use the shader</span>
+  <span class="hljs-title function_">createCanvas</span>(<span class="hljs-number">800</span>, <span class="hljs-number">450</span>, <span class="hljs-variable constant_">WEBGL</span>);
+
+  <span class="hljs-comment">// Load video</span>
+  vid = <span class="hljs-title function_">createVideo</span>(<span class="hljs-string">"assets/clip.mp4"</span>, <span class="hljs-function">() =&gt;</span> vid.<span class="hljs-title function_">loop</span>());
+  vid.<span class="hljs-title function_">attribute</span>(<span class="hljs-string">"playsinline"</span>, <span class="hljs-string">""</span>);
+  vid.<span class="hljs-property">elt</span>.<span class="hljs-property">muted</span> = <span class="hljs-literal">true</span>;
+  vid.<span class="hljs-title function_">hide</span>();        <span class="hljs-comment">// IMPORTANT: hide the DOM element; we’ll sample it as a texture</span>
+  vid.<span class="hljs-title function_">play</span>();
+
+  <span class="hljs-title function_">noStroke</span>();
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">draw</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// draw your scene first (underlay)</span>
+  <span class="hljs-title function_">resetShader</span>();        <span class="hljs-comment">// use default renderer for any background/2D</span>
+  <span class="hljs-title function_">background</span>(<span class="hljs-number">20</span>);
+  <span class="hljs-title function_">push</span>();
+  <span class="hljs-title function_">fill</span>(<span class="hljs-number">255</span>, <span class="hljs-number">60</span>);
+  <span class="hljs-title function_">circle</span>(-<span class="hljs-number">150</span>, -<span class="hljs-number">60</span>, <span class="hljs-number">120</span>);
+  <span class="hljs-title function_">pop</span>();
+
+  <span class="hljs-comment">// Now render the video as a full-screen quad with the shader</span>
+  <span class="hljs-title function_">shader</span>(theShader);
+  theShader.<span class="hljs-title function_">setUniform</span>(<span class="hljs-string">"tex0"</span>, vid);
+  theShader.<span class="hljs-title function_">setUniform</span>(<span class="hljs-string">"u_saturation"</span>, <span class="hljs-number">1.6</span>); <span class="hljs-comment">// tweak as desired</span>
+  theShader.<span class="hljs-title function_">setUniform</span>(<span class="hljs-string">"u_alpha"</span>, <span class="hljs-number">0.4</span>);      <span class="hljs-comment">// opacity 0..1</span>
+
+  <span class="hljs-comment">// Draw a full-canvas rectangle in clip space</span>
+  <span class="hljs-title function_">beginShape</span>();
+  <span class="hljs-comment">// left-bottom</span>
+  <span class="hljs-title function_">vertex</span>(-<span class="hljs-number">1</span>, -<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>);
+  <span class="hljs-comment">// left-top</span>
+  <span class="hljs-title function_">vertex</span>(-<span class="hljs-number">1</span>,  <span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+  <span class="hljs-comment">// right-top</span>
+  <span class="hljs-title function_">vertex</span>( <span class="hljs-number">1</span>,  <span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);
+  <span class="hljs-comment">// right-bottom</span>
+  <span class="hljs-title function_">vertex</span>( <span class="hljs-number">1</span>, -<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>);
+  <span class="hljs-title function_">endShape</span>(<span class="hljs-variable constant_">CLOSE</span>);
+
+  <span class="hljs-comment">// If you need to draw more normal WEBGL stuff after, call resetShader()</span>
+  <span class="hljs-title function_">resetShader</span>();
+}
+</code></pre>
+<p>Notes:</p>
+<ul>
+<li>
+<p>Put your <code>clip.mp4</code> under a local server (Vite/webpack/etc.) to avoid CORS/autoplay headaches.</p>
+</li>
+<li>
+<p><code>vid.hide()</code> is crucial—otherwise the HTML video will also show as a DOM element.</p>
+</li>
+<li>
+<p>Adjust <code>u_saturation</code> (e.g., <code>1.0</code> = original, <code>1.6</code> = punchier) and <code>u_alpha</code> (opacity).</p>
+</li>
+<li>
+<p>If you prefer, you can draw your usual 2D shapes in WEBGL mode; most 2D APIs work.</p>
+</li>
+</ul>
+
+<h2>Which should you choose?</h2>
+<ul>
+<li>
+<p>Want quick results and don’t need pixel access? <strong>Option 1 (CSS overlay)</strong>.</p>
+</li>
+<li>
+<p>Need the video truly blended into the canvas pixels or want more effects? <strong>Option 2 (shader)</strong>.</p>
+</li>
+</ul>
+<p>If you’re using p5 <em>instance mode</em> or React/Vite, the same logic applies—just tuck the shader strings and <code>createVideo</code> into your instance and wire uniforms from your component state/controls.</p></div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">If my canvas is in WEBGL mode by default do I need to switch mode to draw 2D shapes?2/2</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>Short answer: no. You can draw “2D” primitives directly in a WEBGL canvas—you don’t (and can’t) switch the renderer after <code>createCanvas</code>. Just mind the coords.</p>
+<p>Key points:</p>
+<ul>
+<li>
+<p>In WEBGL, <code>(0,0)</code> is the <strong>center</strong>. Move the origin to top-left when you want screen-space 2D.</p>
+</li>
+<li>
+<p>Most 2D APIs (<code>rect</code>, <code>circle</code>, <code>line</code>, <code>beginShape/vertex</code>, <code>text</code>, etc.) work in WEBGL.</p>
+</li>
+<li>
+<p>If you need <strong>exact</strong> 2D behavior (pixel-perfect text, filters, blend modes), draw to an off-screen 2D buffer and then place it in WEBGL.</p>
+</li>
+</ul>
+<h3>A) Draw 2D directly in WEBGL (shift the origin)</h3>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">function</span> <span class="hljs-title function_">setup</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-title function_">createCanvas</span>(<span class="hljs-number">800</span>, <span class="hljs-number">500</span>, <span class="hljs-variable constant_">WEBGL</span>);
+  <span class="hljs-title function_">noStroke</span>();
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">draw</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-title function_">background</span>(<span class="hljs-number">20</span>);
+
+  <span class="hljs-comment">// 3D scene here (optional)</span>
+
+  <span class="hljs-comment">// 2D overlay in screen space</span>
+  <span class="hljs-title function_">push</span>();
+  <span class="hljs-comment">// emulate top-left origin</span>
+  <span class="hljs-title function_">translate</span>(-width/<span class="hljs-number">2</span>, -height/<span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+  <span class="hljs-comment">// (now x,y act like normal 2D)</span>
+  <span class="hljs-title function_">fill</span>(<span class="hljs-number">255</span>, <span class="hljs-number">80</span>);
+  <span class="hljs-title function_">rect</span>(<span class="hljs-number">20</span>, <span class="hljs-number">20</span>, <span class="hljs-number">140</span>, <span class="hljs-number">70</span>);
+  <span class="hljs-title function_">fill</span>(<span class="hljs-number">200</span>, <span class="hljs-number">160</span>);
+  <span class="hljs-title function_">circle</span>(<span class="hljs-number">240</span>, <span class="hljs-number">55</span>, <span class="hljs-number">50</span>);
+  <span class="hljs-title function_">pop</span>();
+}
+</code></pre>
+<p>Tip: If you’re using camera/perspective and want true screen-space sizing, add <code>ortho()</code> inside that <code>push()</code> block before drawing.</p>
+<h3>B) Off-screen 2D buffer (pure P2D → composited in WEBGL)</h3>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">let</span> pg;
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">setup</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-title function_">createCanvas</span>(<span class="hljs-number">800</span>, <span class="hljs-number">500</span>, <span class="hljs-variable constant_">WEBGL</span>);
+  pg = <span class="hljs-title function_">createGraphics</span>(width, height);      <span class="hljs-comment">// P2D by default</span>
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">draw</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-title function_">background</span>(<span class="hljs-number">10</span>);
+
+  <span class="hljs-comment">// draw 2D into the buffer with top-left origin</span>
+  pg.<span class="hljs-title function_">clear</span>();
+  pg.<span class="hljs-title function_">noStroke</span>();
+  pg.<span class="hljs-title function_">fill</span>(<span class="hljs-number">255</span>, <span class="hljs-number">60</span>);
+  pg.<span class="hljs-title function_">rect</span>(<span class="hljs-number">20</span>, <span class="hljs-number">20</span>, <span class="hljs-number">140</span>, <span class="hljs-number">70</span>);
+  pg.<span class="hljs-title function_">fill</span>(<span class="hljs-number">200</span>, <span class="hljs-number">160</span>);
+  pg.<span class="hljs-title function_">circle</span>(mouseX, mouseY, <span class="hljs-number">50</span>);
+  pg.<span class="hljs-title function_">fill</span>(<span class="hljs-number">255</span>);
+  pg.<span class="hljs-title function_">textSize</span>(<span class="hljs-number">18</span>);
+  pg.<span class="hljs-title function_">text</span>(<span class="hljs-string">"Crisp 2D text"</span>, <span class="hljs-number">24</span>, <span class="hljs-number">120</span>);
+
+  <span class="hljs-comment">// place the buffer on the WEBGL canvas</span>
+  <span class="hljs-title function_">push</span>();
+  <span class="hljs-title function_">translate</span>(-width/<span class="hljs-number">2</span>, -height/<span class="hljs-number">2</span>, <span class="hljs-number">0</span>); <span class="hljs-comment">// align top-left</span>
+  <span class="hljs-title function_">image</span>(pg, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);                   <span class="hljs-comment">// draws as a textured quad</span>
+  <span class="hljs-title function_">pop</span>();
+}
+</code></pre>
+<p>Use A for simplicity; use B when you need 2D-renderer fidelity (fonts, blend modes, filters) while staying in a single WEBGL canvas.</p></div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">u_saturation parameter's range is what?</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p><code>u_saturation</code> is just a scalar multiplier—there’s no hard limit in the shader.</p>
+<ul>
+<li>
+<p><strong>0.0</strong> → fully desaturated (grayscale)</p>
+</li>
+<li>
+<p><strong>1.0</strong> → original</p>
+</li>
+<li>
+<p><strong>&gt;1.0</strong> → boosts saturation (2.0 is strong; &gt;3.0 often clips)</p>
+</li>
+<li>
+<p><strong>&lt;0.0</strong> → “negative saturation” (weird tinting; usually not desired)</p>
+</li>
+</ul>
+<p><strong>Practical range:</strong> <strong>0.0–2.0</strong> (sweet spot ~<strong>1.2–1.8</strong>).
+If you want to avoid blown highlights at high values, either clamp on the CPU:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes">theShader.<span class="hljs-title function_">setUniform</span>(<span class="hljs-string">"u_saturation"</span>, <span class="hljs-title function_">constrain</span>(val, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>));
+</code></pre>
+<p>or soft-clip in the fragment shader (simple Reinhard tone map):</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-glsl code-block hljs" style="display: block;" data-highlighted="yes"><span class="hljs-type">vec3</span> boosted = saturateBoost(c.rgb, u_saturation);
+boosted = boosted / (<span class="hljs-number">1.0</span> + <span class="hljs-built_in">max</span>(boosted.r, <span class="hljs-built_in">max</span>(boosted.g, boosted.b)));
+</code></pre></div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">How can I know where in time in the playback the video is?</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>Two easy ways:</p>
+<p><strong>A) p5 way (preferred):</strong></p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">const</span> t = video.<span class="hljs-title function_">time</span>();      <span class="hljs-comment">// seconds since start</span>
+<span class="hljs-keyword">const</span> dur = video.<span class="hljs-title function_">duration</span>(); <span class="hljs-comment">// total seconds (may be NaN until metadata loads)</span>
+<span class="hljs-keyword">const</span> pct = t / dur;         <span class="hljs-comment">// 0..1 progress</span>
+</code></pre>
+<p><code>time()</code> gets/sets the playhead time; <code>duration()</code> returns the clip length. Note: when looping, <code>time()</code> jumps back to 0 at each loop. </p>
+<p><strong>B) Raw HTML video property:</strong></p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">const</span> t = video.<span class="hljs-property">elt</span>.<span class="hljs-property">currentTime</span>;  <span class="hljs-comment">// same units (seconds)</span>
+</code></pre>
+<p><code>currentTime</code> is the standard HTMLMediaElement property. </p>
+<p><strong>Events (if you want callbacks instead of polling in <code>draw()</code>):</strong></p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes">video.<span class="hljs-property">elt</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">'loadedmetadata'</span>, <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'duration'</span>, video.<span class="hljs-property">elt</span>.<span class="hljs-property">duration</span>);
+});
+video.<span class="hljs-property">elt</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">'timeupdate'</span>, <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'time'</span>, video.<span class="hljs-property">elt</span>.<span class="hljs-property">currentTime</span>);
+});
+</code></pre>
+<p><code>timeupdate</code> fires periodically as playback advances; frequency isn’t fixed and depends on system load. </p>
+<p>That’s it—use A for simple polling, B/C if you’re integrating with non-p5 UI or need event-driven updates.</p>
+Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">How do I stop the video?</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>Use the p5 <strong>MediaElement</strong> controls on the object you got from <code>createVideo(...)</code>.</p>
+<p><strong>Common cases</strong></p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-comment">// freeze on the current frame</span>
+video.<span class="hljs-title function_">pause</span>();
+
+<span class="hljs-comment">// stop and rewind to t = 0</span>
+video.<span class="hljs-title function_">stop</span>();
+
+<span class="hljs-comment">// resume</span>
+video.<span class="hljs-title function_">play</span>();
+
+<span class="hljs-comment">// if you’d previously set it to loop, turn looping off</span>
+video.<span class="hljs-title function_">noLoop</span>();
+</code></pre>
+<p><strong>Example (toggle with keys)</strong></p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">function</span> <span class="hljs-title function_">keyPressed</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'P'</span>) video.<span class="hljs-title function_">pause</span>();   <span class="hljs-comment">// pause</span>
+  <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'S'</span>) video.<span class="hljs-title function_">stop</span>();    <span class="hljs-comment">// stop + rewind</span>
+  <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'R'</span>) video.<span class="hljs-title function_">play</span>();    <span class="hljs-comment">// resume</span>
+}
+</code></pre>
+<p><strong>If you want to completely remove it (free resources / CPU):</strong></p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes">video.<span class="hljs-title function_">remove</span>(); <span class="hljs-comment">// detaches the HTML &lt;video&gt;, stops playback</span>
+</code></pre>
+<p>Notes:</p>
+<ul>
+<li>
+<p><code>hide()</code> only hides the DOM element; it <strong>doesn’t</strong> stop playback.</p>
+</li>
+<li>
+<p>Works the same whether you’re overlaying the <code>&lt;video&gt;</code> or using it as a texture in WEBGL—the paused frame will simply stay on screen.</p>
+</li>
+</ul>
+Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">OK, I get an issue when I switch to WEBGL; in another component I need to access the Canvas context through <code>const ctx = p5.drawingContext;</code>, but the API seems to be different; there is no longer a <code>save()</code> and I imagine <code>restore()</code> function available</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>You’re seeing that because in <strong>WEBGL</strong>, <code>p5.drawingContext</code> is a <strong>WebGLRenderingContext</strong>, not a 2D canvas context—so there’s no <code>save()</code>/<code>restore()</code>.</p>
+<h3>What to use instead</h3>
+<p><strong>1) For transforms/styles:</strong> use p5’s own stack</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-title function_">push</span>();
+<span class="hljs-comment">// transforms, fill/stroke, etc.</span>
+<span class="hljs-title function_">pop</span>();
+</code></pre>
+<p><code>push()/pop()</code> in WEBGL safely isolate p5 transforms, camera/projection, and styles (the common reasons people used <code>ctx.save()/restore()</code>).</p>
+<p><strong>2) If you truly need 2D canvas APIs (e.g., <code>ctx.save/restore</code>, <code>clip</code>, <code>getImageData</code>, <code>shadow*</code>, <code>globalCompositeOperation</code>):</strong> draw to an off-screen 2D buffer and then place it in the WEBGL canvas.</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">let</span> pg;
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">setup</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-title function_">createCanvas</span>(<span class="hljs-number">800</span>, <span class="hljs-number">500</span>, <span class="hljs-variable constant_">WEBGL</span>);
+  pg = <span class="hljs-title function_">createGraphics</span>(width, height); <span class="hljs-comment">// P2D by default (2D Canvas)</span>
+  pg.<span class="hljs-title function_">pixelDensity</span>(<span class="hljs-number">1</span>);                 <span class="hljs-comment">// optional: avoid HiDPI surprises</span>
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">draw</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-title function_">background</span>(<span class="hljs-number">10</span>);
+
+  <span class="hljs-comment">// --- 2D Canvas work with real ctx.save/restore ---</span>
+  <span class="hljs-keyword">const</span> ctx = pg.<span class="hljs-property">drawingContext</span>; <span class="hljs-comment">// HTMLCanvasRenderingContext2D</span>
+  pg.<span class="hljs-title function_">clear</span>();
+  ctx.<span class="hljs-title function_">save</span>();
+  ctx.<span class="hljs-property">globalAlpha</span> = <span class="hljs-number">0.6</span>;
+  pg.<span class="hljs-title function_">noStroke</span>();
+  pg.<span class="hljs-title function_">fill</span>(<span class="hljs-number">255</span>, <span class="hljs-number">80</span>);
+  pg.<span class="hljs-title function_">rect</span>(<span class="hljs-number">20</span>, <span class="hljs-number">20</span>, <span class="hljs-number">140</span>, <span class="hljs-number">70</span>);
+  ctx.<span class="hljs-title function_">restore</span>();
+
+  <span class="hljs-comment">// --- composite the 2D buffer into WEBGL ---</span>
+  <span class="hljs-title function_">push</span>();
+  <span class="hljs-comment">// move to top-left so image() uses screen coords</span>
+  <span class="hljs-title function_">translate</span>(-width/<span class="hljs-number">2</span>, -height/<span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+  <span class="hljs-title function_">image</span>(pg, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+  <span class="hljs-title function_">pop</span>();
+}
+</code></pre>
+<p><strong>3) If you’re toggling low-level GL state:</strong> there’s still no <code>save/restore</code> in raw WebGL. Either:</p>
+<ul>
+<li>
+<p>avoid direct GL calls and stick to p5 APIs, or</p>
+</li>
+<li>
+<p><strong>manually</strong> enable/disable what you change (e.g., <code>gl.enable/disable</code>, <code>gl.blendFunc</code>, <code>gl.scissor</code>) and undo it after. Wrap in a tiny helper if needed.</p>
+</li>
+</ul>
+<h3>TL;DR</h3>
+<ul>
+<li>
+<p>In WEBGL, replace <code>ctx.save/restore</code> with <strong><code>push/pop</code></strong> for p5 state.</p>
+</li>
+<li>
+<p>When you need <em>actual</em> 2D Canvas features, use <strong><code>createGraphics(...)</code></strong> (P2D), do your <code>ctx.save/restore</code> there, then <code>image(pg, …)</code> into the WEBGL canvas.</p>
+</li>
+</ul>
+Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">I have Path2D objects that I want to render; but currently it seems like the <code>WebGLRenderingContext</code> and <code>HTMLCanvasRenderingContext2D</code> are way different in terms of API; can you convert the below code to a context agnostic approach (I guess using p5's wrapper functions)?
+
+<pre class="overflow-x-auto"><code data-highlighted="yes" class="hljs language-arduino">p<span class="hljs-number">5.</span><span class="hljs-built_in">push</span>(); <span class="hljs-comment">// p5.push equivalent for canvas</span>
+
+    <span class="hljs-comment">// Future improvement: We could have an option "translate" with a sizeX, sizeY so that we know</span>
+    <span class="hljs-comment">// where to draw; for now we just draw so it takes the whole canvas minus padding</span>
+    ctx.<span class="hljs-built_in">translate</span>(<span class="hljs-keyword">this</span>.padding.left + offsetX, <span class="hljs-keyword">this</span>.padding.top + offsetY);
+    <span class="hljs-comment">// set scale to minimum scale to fit</span>
+    ctx.<span class="hljs-built_in">scale</span>(scale, scale);
+    <span class="hljs-comment">// handle viewbox offset (within scale)</span>
+    ctx.<span class="hljs-built_in">translate</span>(-<span class="hljs-keyword">this</span>.viewbox.minX, -<span class="hljs-keyword">this</span>.viewbox.minY);
+
+    <span class="hljs-keyword">for</span> (let p of <span class="hljs-keyword">this</span>.paths) {
+      <span class="hljs-comment">// push a context for the styles of this specific path</span>
+      p<span class="hljs-number">5.</span><span class="hljs-built_in">push</span>();
+      <span class="hljs-comment">// obtain calculated styles for path</span>
+      <span class="hljs-type">const</span> styles = <span class="hljs-keyword">this</span>.calcStyles[p.id];
+
+      <span class="hljs-comment">// apply styles</span>
+      <span class="hljs-keyword">if</span> (styles.fill) {
+        ctx.fill = styles.fill ?? undefined; <span class="hljs-comment">// default</span>
+      }
+      <span class="hljs-keyword">if</span> (styles.stroke.color) {
+        ctx.strokeStyle = styles.stroke.color || <span class="hljs-string">"#000"</span>; <span class="hljs-comment">// default</span>
+      }
+      <span class="hljs-keyword">if</span> (styles.stroke.weight) {
+        ctx.lineWidth = styles.stroke.weight || <span class="hljs-string">"#000"</span>; <span class="hljs-comment">// default</span>
+      }
+
+      <span class="hljs-comment">// only print if we expect something to show</span>
+      <span class="hljs-keyword">if</span> (ctx.strokeStyle &amp;&amp; ctx.lineWidth) {
+        ctx.<span class="hljs-built_in">stroke</span>(p.path);
+      }
+
+      <span class="hljs-comment">// pop the context</span>
+      p<span class="hljs-number">5.</span><span class="hljs-built_in">pop</span>();
+    }</code></pre>
+
+Note that in the <code>ctx.stroke(p.path);</code> call, p.path is a Path2D object2/2</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>You can’t draw a <code>Path2D</code> with p5’s wrappers (there’s no <code>beginShape</code> → <code>Path2D</code> bridge). The reliable, renderer-agnostic pattern is:</p>
+<ul>
+<li>
+<p><strong>If in 2D (P2D):</strong> draw directly to <code>p5.drawingContext</code> (real 2D ctx).</p>
+</li>
+<li>
+<p><strong>If in WEBGL:</strong> draw the <code>Path2D</code> onto an off-screen <strong>2D</strong> buffer (<code>createGraphics</code>) and then <code>image()</code> that buffer into the WEBGL canvas.</p>
+</li>
+</ul>
+<p>Here’s a drop-in helper that does both:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-comment">// Reuse a single offscreen 2D layer in WEBGL</span>
+<span class="hljs-keyword">let</span> pathLayer;
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">drawPathsAgnostic</span>(<span class="hljs-params">p5, {
+  paths,                 // [{ id, path: Path2D }]
+  calcStyles,            // { [id]: { fill, stroke: { color, weight, cap, join } } }
+  viewbox,               // { minX, minY }
+  padding,               // { left, top }
+  offsetX = <span class="hljs-number">0</span>,
+  offsetY = <span class="hljs-number">0</span>,
+  scale = <span class="hljs-number">1</span>,
+}</span>) {
+  <span class="hljs-keyword">const</span> isWebGL = p5.<span class="hljs-property">_renderer</span>.<span class="hljs-property">drawingContext</span> <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">WebGLRenderingContext</span>;
+
+  <span class="hljs-comment">// ensure/create 2D target</span>
+  <span class="hljs-keyword">let</span> ctx, layer;
+  <span class="hljs-keyword">if</span> (isWebGL) {
+    <span class="hljs-keyword">if</span> (!pathLayer || pathLayer.<span class="hljs-property">width</span> !== p5.<span class="hljs-property">width</span> || pathLayer.<span class="hljs-property">height</span> !== p5.<span class="hljs-property">height</span>) {
+      pathLayer = p5.<span class="hljs-title function_">createGraphics</span>(p5.<span class="hljs-property">width</span>, p5.<span class="hljs-property">height</span>);
+      <span class="hljs-comment">// Optional: avoid HiDPI softness mismatch; match main pixel density</span>
+      pathLayer.<span class="hljs-title function_">pixelDensity</span>(p5.<span class="hljs-title function_">pixelDensity</span>());
+    }
+    layer = pathLayer;
+    ctx = layer.<span class="hljs-property">drawingContext</span>; <span class="hljs-comment">// HTMLCanvasRenderingContext2D</span>
+    layer.<span class="hljs-title function_">clear</span>();
+  } <span class="hljs-keyword">else</span> {
+    ctx = p5.<span class="hljs-property">drawingContext</span>; <span class="hljs-comment">// HTMLCanvasRenderingContext2D</span>
+  }
+
+  <span class="hljs-comment">// --- draw the Path2D’s on a 2D context ---</span>
+  ctx.<span class="hljs-title function_">save</span>();
+
+  <span class="hljs-comment">// Global transform (position+scale+viewBox)</span>
+  ctx.<span class="hljs-title function_">translate</span>(padding.<span class="hljs-property">left</span> + offsetX, padding.<span class="hljs-property">top</span> + offsetY);
+  ctx.<span class="hljs-title function_">scale</span>(scale, scale);
+  ctx.<span class="hljs-title function_">translate</span>(-viewbox.<span class="hljs-property">minX</span>, -viewbox.<span class="hljs-property">minY</span>);
+
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> p <span class="hljs-keyword">of</span> paths) {
+    <span class="hljs-keyword">const</span> s = calcStyles[p.<span class="hljs-property">id</span>] || {};
+    ctx.<span class="hljs-title function_">save</span>();
+
+    <span class="hljs-comment">// Styles (SVG-like "none" respected)</span>
+    <span class="hljs-keyword">const</span> hasFill = s.<span class="hljs-property">fill</span> &amp;&amp; s.<span class="hljs-property">fill</span> !== <span class="hljs-string">"none"</span>;
+    <span class="hljs-keyword">const</span> stroke = s.<span class="hljs-property">stroke</span> || {};
+    <span class="hljs-keyword">const</span> hasStroke = stroke.<span class="hljs-property">color</span> &amp;&amp; stroke.<span class="hljs-property">color</span> !== <span class="hljs-string">"none"</span> &amp;&amp; (stroke.<span class="hljs-property">weight</span> ?? <span class="hljs-number">1</span>) &gt; <span class="hljs-number">0</span>;
+
+    <span class="hljs-keyword">if</span> (hasFill) ctx.<span class="hljs-property">fillStyle</span> = s.<span class="hljs-property">fill</span>;
+    <span class="hljs-keyword">if</span> (hasStroke) {
+      ctx.<span class="hljs-property">strokeStyle</span> = stroke.<span class="hljs-property">color</span>;
+      ctx.<span class="hljs-property">lineWidth</span> = stroke.<span class="hljs-property">weight</span> ?? <span class="hljs-number">1</span>;
+      <span class="hljs-keyword">if</span> (stroke.<span class="hljs-property">join</span>) ctx.<span class="hljs-property">lineJoin</span> = stroke.<span class="hljs-property">join</span>;          <span class="hljs-comment">// 'miter' | 'round' | 'bevel'</span>
+      <span class="hljs-keyword">if</span> (stroke.<span class="hljs-property">cap</span>)  ctx.<span class="hljs-property">lineCap</span>  = stroke.<span class="hljs-property">cap</span>;           <span class="hljs-comment">// 'butt' | 'round' | 'square'</span>
+      <span class="hljs-keyword">if</span> (stroke.<span class="hljs-property">miterLimit</span>) ctx.<span class="hljs-property">miterLimit</span> = stroke.<span class="hljs-property">miterLimit</span>;
+    }
+
+    <span class="hljs-keyword">if</span> (hasFill)   ctx.<span class="hljs-title function_">fill</span>(p.<span class="hljs-property">path</span>);
+    <span class="hljs-keyword">if</span> (hasStroke) ctx.<span class="hljs-title function_">stroke</span>(p.<span class="hljs-property">path</span>);
+
+    ctx.<span class="hljs-title function_">restore</span>();
+  }
+
+  ctx.<span class="hljs-title function_">restore</span>();
+
+  <span class="hljs-comment">// --- composite into main canvas if WEBGL ---</span>
+  <span class="hljs-keyword">if</span> (isWebGL) {
+    p5.<span class="hljs-title function_">push</span>();
+    <span class="hljs-comment">// Align 2D pixels to screen space</span>
+    p5.<span class="hljs-title function_">translate</span>(-p5.<span class="hljs-property">width</span> / <span class="hljs-number">2</span>, -p5.<span class="hljs-property">height</span> / <span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+    p5.<span class="hljs-title function_">image</span>(pathLayer, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+    p5.<span class="hljs-title function_">pop</span>();
+  }
+}
+</code></pre>
+<p><strong>Usage</strong></p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">function</span> <span class="hljs-title function_">draw</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-title function_">background</span>(<span class="hljs-number">20</span>);
+
+  <span class="hljs-title function_">drawPathsAgnostic</span>(p5, {
+    <span class="hljs-attr">paths</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">paths</span>,                <span class="hljs-comment">// your [{id, path: Path2D}]</span>
+    <span class="hljs-attr">calcStyles</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">calcStyles</span>,      <span class="hljs-comment">// your style map</span>
+    <span class="hljs-attr">viewbox</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">viewbox</span>,            <span class="hljs-comment">// {minX, minY}</span>
+    <span class="hljs-attr">padding</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">padding</span>,            <span class="hljs-comment">// {left, top}</span>
+    offsetX, offsetY, scale,
+  });
+}
+</code></pre>
+<h3>Why this works</h3>
+<ul>
+<li>
+<p><code>Path2D</code> only renders on a <strong>2D</strong> canvas. In WEBGL we render onto a 2D buffer, then blit it in—so your calling code stays the same.</p>
+</li>
+<li>
+<p>When you later need effects like <code>globalCompositeOperation</code>, <code>shadow*</code>, <code>clip()</code>, etc., they’ll “just work” inside the 2D buffer too.</p>
+</li>
+</ul>
+<blockquote>
+<p>If you <em>do</em> have the original SVG path strings and want a pure-p5 path renderer (using <code>beginShape</code>, <code>bezierVertex</code>, etc.) that works in both renderers, I can give you a lightweight parser—and then you won’t need <code>Path2D</code> at all.</p>
+</blockquote>
+Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">OK, let's do this differently;
+Here's the original code for a 2D context:
+
+<pre class="overflow-x-auto"><code data-highlighted="yes" class="hljs language-kotlin">draw(p5) {
+    <span class="hljs-keyword">const</span> ctx = p5.drawingContext;
+
+    <span class="hljs-comment">// Get the available space</span>
+    <span class="hljs-keyword">const</span> availW = p5.width - (<span class="hljs-keyword">this</span>.padding.left + <span class="hljs-keyword">this</span>.padding.right);
+    <span class="hljs-keyword">const</span> availH = p5.height - (<span class="hljs-keyword">this</span>.padding.top + <span class="hljs-keyword">this</span>.padding.bottom);
+    <span class="hljs-comment">// Now we get the scaling factor by mapping the viewbox to the bounding box of the canvas;</span>
+    <span class="hljs-comment">// we the minimum scale because we want the svg to fit on the drawing</span>
+    <span class="hljs-keyword">const</span> scale = Math.min(
+      availW / <span class="hljs-keyword">this</span>.viewbox.width,
+      availH / <span class="hljs-keyword">this</span>.viewbox.height,
+    );
+
+    <span class="hljs-keyword">const</span> drawnW = <span class="hljs-keyword">this</span>.viewbox.width * scale;
+    <span class="hljs-keyword">const</span> drawnH = <span class="hljs-keyword">this</span>.viewbox.height * scale;
+    <span class="hljs-keyword">const</span> offsetX = (availW - drawnW) / <span class="hljs-number">2</span>;
+    <span class="hljs-keyword">const</span> offsetY = (availH - drawnH) / <span class="hljs-number">2</span>;
+
+    ctx.save(); <span class="hljs-comment">// p5.push equivalent for canvas</span>
+
+    <span class="hljs-comment">// Future improvement: We could have an option "translate" with a sizeX, sizeY so that we know</span>
+    <span class="hljs-comment">// where to draw; for now we just draw so it takes the whole canvas minus padding</span>
+    ctx.translate(<span class="hljs-keyword">this</span>.padding.left + offsetX, <span class="hljs-keyword">this</span>.padding.top + offsetY);
+    <span class="hljs-comment">// set scale to minimum scale to fit</span>
+    ctx.scale(scale, scale);
+    <span class="hljs-comment">// handle viewbox offset (within scale)</span>
+    ctx.translate(-<span class="hljs-keyword">this</span>.viewbox.minX, -<span class="hljs-keyword">this</span>.viewbox.minY);
+
+    <span class="hljs-keyword">for</span> (let p of <span class="hljs-keyword">this</span>.paths) {
+      <span class="hljs-comment">// push a context for the styles of this specific path</span>
+      ctx.save();
+      <span class="hljs-comment">// obtain calculated styles for path</span>
+      <span class="hljs-keyword">const</span> styles = <span class="hljs-keyword">this</span>.calcStyles[p.id];
+
+      <span class="hljs-comment">// apply styles</span>
+      <span class="hljs-keyword">if</span> (styles.fill) {
+        ctx.fill = styles.fill ?? undefined; <span class="hljs-comment">// default</span>
+      }
+      <span class="hljs-keyword">if</span> (styles.stroke.color) {
+        ctx.strokeStyle = styles.stroke.color || <span class="hljs-string">"#000"</span>; <span class="hljs-comment">// default</span>
+      }
+      <span class="hljs-keyword">if</span> (styles.stroke.weight) {
+        ctx.lineWidth = styles.stroke.weight || <span class="hljs-string">"#000"</span>; <span class="hljs-comment">// default</span>
+      }
+
+      <span class="hljs-comment">// only print if we expect something to show</span>
+      <span class="hljs-keyword">if</span> (ctx.strokeStyle &amp;&amp; ctx.lineWidth) {
+        ctx.stroke(p.path);
+      }
+
+      <span class="hljs-comment">// pop the context</span>
+      ctx.restore();
+    }
+
+    ctx.restore(); <span class="hljs-comment">// p5.pop equivalent for canvas</span>
+  }</code></pre>
+
+Can you provide an equivalent but for WebGLRenderingContext?
+
+I'll just have draw(p5) switch between the 2DContext version and the WebGLRenderingContext version based on the class of drawingContext</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>You can’t draw a <code>Path2D</code> directly with WebGL, so the WEBGL-equivalent is: render the paths onto an off-screen <strong>2D</strong> buffer (<code>createGraphics</code>) and then blit that buffer into your WEBGL canvas.</p>
+<p>Here’s a drop-in <code>drawWebGL(p5)</code> that mirrors your 2D logic (same math, same styles), plus a tiny switcher:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-comment">// Keep one reusable 2D buffer for WEBGL mode</span>
+<span class="hljs-keyword">let</span> _pathLayer;
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">draw</span>(<span class="hljs-params">p5</span>) {
+  <span class="hljs-keyword">const</span> ctx = p5.<span class="hljs-property">drawingContext</span>;
+  <span class="hljs-keyword">const</span> isWebGL =
+    ctx <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">WebGLRenderingContext</span> || ctx <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">WebGL2RenderingContext</span>;
+
+  <span class="hljs-keyword">if</span> (isWebGL) {
+    drawWebGL.<span class="hljs-title function_">call</span>(<span class="hljs-variable language_">this</span>, p5);
+  } <span class="hljs-keyword">else</span> {
+    draw2D.<span class="hljs-title function_">call</span>(<span class="hljs-variable language_">this</span>, p5); <span class="hljs-comment">// your original function</span>
+  }
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">drawWebGL</span>(<span class="hljs-params">p5</span>) {
+  <span class="hljs-comment">// create/recreate the 2D layer if size or pixel density changed</span>
+  <span class="hljs-keyword">if</span> (
+    !_pathLayer ||
+    _pathLayer.<span class="hljs-property">width</span> !== p5.<span class="hljs-property">width</span> ||
+    _pathLayer.<span class="hljs-property">height</span> !== p5.<span class="hljs-property">height</span> ||
+    _pathLayer.<span class="hljs-title function_">pixelDensity</span>() !== p5.<span class="hljs-title function_">pixelDensity</span>()
+  ) {
+    _pathLayer = p5.<span class="hljs-title function_">createGraphics</span>(p5.<span class="hljs-property">width</span>, p5.<span class="hljs-property">height</span>); <span class="hljs-comment">// P2D</span>
+    _pathLayer.<span class="hljs-title function_">pixelDensity</span>(p5.<span class="hljs-title function_">pixelDensity</span>());
+  }
+
+  <span class="hljs-keyword">const</span> pg = _pathLayer;
+  <span class="hljs-keyword">const</span> ctx = pg.<span class="hljs-property">drawingContext</span>; <span class="hljs-comment">// HTMLCanvasRenderingContext2D</span>
+
+  <span class="hljs-comment">// --- compute layout exactly like your 2D version ---</span>
+  <span class="hljs-keyword">const</span> availW = p5.<span class="hljs-property">width</span>  - (<span class="hljs-variable language_">this</span>.<span class="hljs-property">padding</span>.<span class="hljs-property">left</span> + <span class="hljs-variable language_">this</span>.<span class="hljs-property">padding</span>.<span class="hljs-property">right</span>);
+  <span class="hljs-keyword">const</span> availH = p5.<span class="hljs-property">height</span> - (<span class="hljs-variable language_">this</span>.<span class="hljs-property">padding</span>.<span class="hljs-property">top</span>  + <span class="hljs-variable language_">this</span>.<span class="hljs-property">padding</span>.<span class="hljs-property">bottom</span>);
+  <span class="hljs-keyword">const</span> scale = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">min</span>(availW / <span class="hljs-variable language_">this</span>.<span class="hljs-property">viewbox</span>.<span class="hljs-property">width</span>, availH / <span class="hljs-variable language_">this</span>.<span class="hljs-property">viewbox</span>.<span class="hljs-property">height</span>);
+
+  <span class="hljs-keyword">const</span> drawnW = <span class="hljs-variable language_">this</span>.<span class="hljs-property">viewbox</span>.<span class="hljs-property">width</span> * scale;
+  <span class="hljs-keyword">const</span> drawnH = <span class="hljs-variable language_">this</span>.<span class="hljs-property">viewbox</span>.<span class="hljs-property">height</span> * scale;
+  <span class="hljs-keyword">const</span> offsetX = (availW - drawnW) / <span class="hljs-number">2</span>;
+  <span class="hljs-keyword">const</span> offsetY = (availH - drawnH) / <span class="hljs-number">2</span>;
+
+  <span class="hljs-comment">// --- draw paths onto the 2D buffer ---</span>
+  pg.<span class="hljs-title function_">clear</span>();         <span class="hljs-comment">// transparent background</span>
+  ctx.<span class="hljs-title function_">save</span>();
+
+  ctx.<span class="hljs-title function_">translate</span>(<span class="hljs-variable language_">this</span>.<span class="hljs-property">padding</span>.<span class="hljs-property">left</span> + offsetX, <span class="hljs-variable language_">this</span>.<span class="hljs-property">padding</span>.<span class="hljs-property">top</span> + offsetY);
+  ctx.<span class="hljs-title function_">scale</span>(scale, scale);
+  ctx.<span class="hljs-title function_">translate</span>(-<span class="hljs-variable language_">this</span>.<span class="hljs-property">viewbox</span>.<span class="hljs-property">minX</span>, -<span class="hljs-variable language_">this</span>.<span class="hljs-property">viewbox</span>.<span class="hljs-property">minY</span>);
+
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> p <span class="hljs-keyword">of</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">paths</span>) {
+    <span class="hljs-keyword">const</span> styles = <span class="hljs-variable language_">this</span>.<span class="hljs-property">calcStyles</span>[p.<span class="hljs-property">id</span>] || {};
+    <span class="hljs-keyword">const</span> stroke = styles.<span class="hljs-property">stroke</span> || {};
+    <span class="hljs-keyword">const</span> hasFill   = styles.<span class="hljs-property">fill</span> &amp;&amp; styles.<span class="hljs-property">fill</span> !== <span class="hljs-string">"none"</span>;
+    <span class="hljs-keyword">const</span> hasStroke = stroke.<span class="hljs-property">color</span> &amp;&amp; stroke.<span class="hljs-property">color</span> !== <span class="hljs-string">"none"</span> &amp;&amp; (stroke.<span class="hljs-property">weight</span> ?? <span class="hljs-number">1</span>) &gt; <span class="hljs-number">0</span>;
+
+    ctx.<span class="hljs-title function_">save</span>();
+
+    <span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> Canvas uses fillStyle/strokeStyle/lineWidth (NOT `fill`)</span>
+    <span class="hljs-keyword">if</span> (hasFill)           ctx.<span class="hljs-property">fillStyle</span>  = styles.<span class="hljs-property">fill</span>;
+    <span class="hljs-keyword">if</span> (hasStroke) {
+      ctx.<span class="hljs-property">strokeStyle</span> = stroke.<span class="hljs-property">color</span>;
+      ctx.<span class="hljs-property">lineWidth</span>   = stroke.<span class="hljs-property">weight</span> ?? <span class="hljs-number">1</span>;
+      <span class="hljs-keyword">if</span> (stroke.<span class="hljs-property">cap</span>)        ctx.<span class="hljs-property">lineCap</span>    = stroke.<span class="hljs-property">cap</span>;   <span class="hljs-comment">// 'butt'|'round'|'square'</span>
+      <span class="hljs-keyword">if</span> (stroke.<span class="hljs-property">join</span>)       ctx.<span class="hljs-property">lineJoin</span>   = stroke.<span class="hljs-property">join</span>;  <span class="hljs-comment">// 'miter'|'round'|'bevel'</span>
+      <span class="hljs-keyword">if</span> (stroke.<span class="hljs-property">miterLimit</span>) ctx.<span class="hljs-property">miterLimit</span> = stroke.<span class="hljs-property">miterLimit</span>;
+    }
+
+    <span class="hljs-keyword">if</span> (hasFill)   ctx.<span class="hljs-title function_">fill</span>(p.<span class="hljs-property">path</span>);
+    <span class="hljs-keyword">if</span> (hasStroke) ctx.<span class="hljs-title function_">stroke</span>(p.<span class="hljs-property">path</span>);
+
+    ctx.<span class="hljs-title function_">restore</span>();
+  }
+
+  ctx.<span class="hljs-title function_">restore</span>();
+
+  <span class="hljs-comment">// --- composite the 2D buffer into the WEBGL canvas ---</span>
+  <span class="hljs-comment">// (optional) ensure it draws on top of 3D by disabling depth test just for this blit</span>
+  <span class="hljs-keyword">const</span> gl = p5.<span class="hljs-property">drawingContext</span>;
+  <span class="hljs-keyword">const</span> hadDepth = gl.<span class="hljs-property">isEnabled</span> ? gl.<span class="hljs-title function_">isEnabled</span>(gl.<span class="hljs-property">DEPTH_TEST</span>) : <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">if</span> (hadDepth) gl.<span class="hljs-title function_">disable</span>(gl.<span class="hljs-property">DEPTH_TEST</span>);
+
+  p5.<span class="hljs-title function_">push</span>();
+  p5.<span class="hljs-property">resetShader</span>?.();                          <span class="hljs-comment">// avoid any active custom shader</span>
+  p5.<span class="hljs-title function_">translate</span>(-p5.<span class="hljs-property">width</span> / <span class="hljs-number">2</span>, -p5.<span class="hljs-property">height</span> / <span class="hljs-number">2</span>); <span class="hljs-comment">// align top-left</span>
+  p5.<span class="hljs-title function_">image</span>(pg, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);                          <span class="hljs-comment">// draw 1:1</span>
+  p5.<span class="hljs-title function_">pop</span>();
+
+  <span class="hljs-keyword">if</span> (hadDepth) gl.<span class="hljs-title function_">enable</span>(gl.<span class="hljs-property">DEPTH_TEST</span>);
+}
+</code></pre>
+<p><strong>Notes &amp; gotchas</strong></p>
+<ul>
+<li>
+<p><code>Path2D</code> only works on a 2D context; that’s why we render to <code>createGraphics(...)</code> (P2D) first.</p>
+</li>
+<li>
+<p>Match <strong>pixel density</strong> to avoid blurriness on HiDPI (<code>pixelDensity(p5.pixelDensity())</code>).</p>
+</li>
+<li>
+<p>If you’re applying custom shaders before this, <code>resetShader()</code> ensures the <code>image()</code> blit isn’t affected.</p>
+</li>
+<li>
+<p>Your original snippet uses <code>ctx.fill = ...</code>; the correct property is <strong><code>ctx.fillStyle</code></strong>. (Kept fixed above.)</p>
+</li>
+<li>
+<p>If you need this layer <em>under</em> your 3D scene, draw it earlier (before your 3D) and skip the depth disable.</p>
+</li>
+</ul>
+Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">I understood that I can't draw a Path2D directly on WebGL; I think I just wasn't clear; I just wanted a version that "worked" with WebGL2RenderingContext, irrespectively of the technique (using createGraphics for example).
+
+Do the p5 standard shape functions (ellipse, rect, etc) change their coordinate system as well when using a WebGLRenderingContext, or do they map it to the same coordinate system as when working in 2DContext?2/2</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>Short version: the p5 shape APIs are the same, but they use whatever coordinate system the <strong>current renderer</strong> uses.</p>
+<ul>
+<li>
+<p>In <strong>2D (P2D)</strong>, the origin is <strong>top-left</strong>; +x right, +y down.</p>
+</li>
+<li>
+<p>In <strong>WEBGL</strong>, the origin is <strong>center</strong>; +x right, +y down, +z toward you. Shapes like <code>rect()</code>/<code>ellipse()</code> are positioned in that centered system. </p>
+</li>
+</ul>
+<p>Defaults still apply:</p>
+<ul>
+<li>
+<p><code>rect()</code> defaults to <code>rectMode(CORNER)</code> (x,y is the <strong>upper-left corner</strong> of the rect), just now measured from the <strong>center</strong> origin in WEBGL. Switch to <code>rectMode(CENTER)</code> if you want it centered. </p>
+</li>
+<li>
+<p><code>ellipse()</code> defaults to <code>ellipseMode(CENTER)</code> in both renderers. In WEBGL, <code>(0,0)</code> is screen center, so <code>ellipse(0,0,…)</code> draws right in the middle. </p>
+</li>
+</ul>
+<h3>Make WEBGL feel like 2D screen space (top-left origin)</h3>
+<p>Wrap your “UI overlay” in a block like this:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-title function_">push</span>();
+<span class="hljs-title function_">ortho</span>();                            <span class="hljs-comment">// switch to an orthographic projection</span>
+<span class="hljs-title function_">translate</span>(-width/<span class="hljs-number">2</span>, -height/<span class="hljs-number">2</span>, <span class="hljs-number">0</span>);  <span class="hljs-comment">// move origin to top-left</span>
+<span class="hljs-comment">// now 2D-like drawing:</span>
+<span class="hljs-title function_">rectMode</span>(<span class="hljs-variable constant_">CORNER</span>);
+<span class="hljs-title function_">rect</span>(<span class="hljs-number">20</span>, <span class="hljs-number">20</span>, <span class="hljs-number">160</span>, <span class="hljs-number">80</span>);
+<span class="hljs-title function_">ellipse</span>(<span class="hljs-number">300</span>, <span class="hljs-number">60</span>, <span class="hljs-number">50</span>, <span class="hljs-number">50</span>);           <span class="hljs-comment">// centers at (300,60)</span>
+<span class="hljs-title function_">pop</span>();
+</code></pre>
+<p>This keeps your 3D world intact, but draws the overlay in familiar 2D-style coordinates.</p>
+<h3>FYI on detection</h3>
+<p>If you’re branching logic, detect both WebGL versions:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">const</span> gl = p5.<span class="hljs-property">drawingContext</span>;
+<span class="hljs-keyword">const</span> isWebGL = gl <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">WebGLRenderingContext</span> || gl <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">WebGL2RenderingContext</span>;
+</code></pre>
+<p>That’s it—same shape functions, different origin. Use <code>translate(-width/2, -height/2)</code> (and optionally <code>ortho()</code>) to get top-left style coordinates in WEBGL when you want them.</p>
+Sources</div>
+        </div>
+      
+        <div class="message user-message">
+          <div class="content">Great, thanks for the precision.
+My understanding is that anything done on the canvas created with createGraphics will work in the 2D coordinate system, correct?
+
+Also, should the result of <code>createGraphics</code> be global?</div>
+        </div>
+      
+        <div class="message assistant-message">
+          <div class="content"><p>Yep—by default <code>createGraphics(w, h)</code> gives you a <strong>2D (P2D)</strong> buffer with a <strong>top-left origin</strong> (x→right, y→down). So all your 2D canvas expectations apply there: <code>Path2D</code>, <code>ctx.save/restore</code>, <code>globalCompositeOperation</code>, shadows, etc. If you <em>do</em> call <code>createGraphics(w, h, WEBGL)</code>, that buffer will use WEBGL’s centered origin instead.</p>
+<p>A few best-practice tips:</p>
+<ul>
+<li>
+<p><strong>Match pixel density</strong> to avoid blur on HiDPI:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes">pg.<span class="hljs-title function_">pixelDensity</span>(p5.<span class="hljs-title function_">pixelDensity</span>());
+</code></pre>
+</li>
+<li>
+<p><strong>Clear vs background:</strong> <code>pg.clear()</code> keeps the buffer transparent; <code>pg.background()</code> paints a solid backdrop.</p>
+</li>
+<li>
+<p><strong>Blitting into WEBGL:</strong> before <code>image(pg, 0, 0)</code> in WEBGL, align to top-left:</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-title function_">push</span>();
+<span class="hljs-title function_">translate</span>(-width/<span class="hljs-number">2</span>, -height/<span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+<span class="hljs-title function_">image</span>(pg, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+<span class="hljs-title function_">pop</span>();
+</code></pre>
+<p>(Optionally disable depth test so it always draws on top.)</p>
+</li>
+</ul>
+<h3>Should it be “global”?</h3>
+<p>Not necessarily global, but <strong>persist it</strong>—don’t recreate every frame. Create once (e.g., in <code>setup</code>) or <strong>lazy-init</strong> and reuse; recreate only when size or pixel density changes.</p>
+<pre class="overflow-visible!"><code class="whitespace-pre! language-js code-block hljs language-javascript" style="display: block;" data-highlighted="yes"><span class="hljs-keyword">let</span> pg; <span class="hljs-comment">// persist across frames / component renders</span>
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">getPG</span>(<span class="hljs-params">p5</span>) {
+  <span class="hljs-keyword">if</span> (!pg ||
+      pg.<span class="hljs-property">width</span> !== p5.<span class="hljs-property">width</span> ||
+      pg.<span class="hljs-property">height</span> !== p5.<span class="hljs-property">height</span> ||
+      pg.<span class="hljs-title function_">pixelDensity</span>() !== p5.<span class="hljs-title function_">pixelDensity</span>()) {
+    <span class="hljs-keyword">if</span> (pg) pg.<span class="hljs-title function_">remove</span>();                       <span class="hljs-comment">// free old buffer</span>
+    pg = p5.<span class="hljs-title function_">createGraphics</span>(p5.<span class="hljs-property">width</span>, p5.<span class="hljs-property">height</span>);
+    pg.<span class="hljs-title function_">pixelDensity</span>(p5.<span class="hljs-title function_">pixelDensity</span>());
+  }
+  <span class="hljs-keyword">return</span> pg;
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">draw</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">const</span> layer = <span class="hljs-title function_">getPG</span>(p5);
+  layer.<span class="hljs-title function_">clear</span>();
+  <span class="hljs-comment">// ...draw 2D stuff onto `layer` (Path2D, etc.)...</span>
+  <span class="hljs-title function_">push</span>();
+  <span class="hljs-title function_">translate</span>(-width/<span class="hljs-number">2</span>, -height/<span class="hljs-number">2</span>);
+  <span class="hljs-title function_">image</span>(layer, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+  <span class="hljs-title function_">pop</span>();
+}
+</code></pre>
+<p>If you’re in React/instance mode, store <code>pg</code> in a <code>useRef</code> or as a field on your class, and call <code>pg.remove()</code> on unmount.</p></div>
+        </div>
+      
+          </div>
+        </body>
+      </html>
+    
