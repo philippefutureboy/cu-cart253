@@ -48,7 +48,10 @@ export function Canvas({
     );
   }
 
-  const recreate = useCallback(() => setInstanceKey((k) => k + 1), []);
+  const recreate = useCallback(() => {
+    console.log("[P5.Canvas] recreate");
+    setInstanceKey((k) => k + 1);
+  }, []);
 
   const setPreloadSpec = useCallback(
     (spec) => {

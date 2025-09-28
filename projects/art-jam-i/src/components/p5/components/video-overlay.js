@@ -1,3 +1,22 @@
+import P5 from "p5"; // for typing
+
+/**
+ * VideoOverlay component
+ *
+ * Displays a video on a WebGLRenderingContext canvas.
+ *
+ * This code and the conceptualisation was authored by ChatGPT-5 (OpenAI), and then integrated
+ * by Philippe Hebert.
+ * Full conversation available at ./ATTRIBUTION/chatgpt-log-video-overlay-2025-09-27.html
+ */
+const READY_STATES = {
+  HAVE_NOTHING: 0,
+  HAVE_METADATA: 1,
+  HAVE_CURRENT_DATA: 2,
+  HAVE_FUTURE_DATA: 3,
+  HAVE_ENOUGH_DATA: 4,
+};
+
 const vertSrc = `
 attribute vec3 aPosition;
 attribute vec2 aTexCoord;
@@ -33,59 +52,113 @@ void main() {
 `;
 
 export default class VideoOverlay {
-  constructor({ uri = null, loop = false } = {}) {
+  constructor({
+    uri = null,
+    loop = false,
+    opacity = 1, // 0..1
+    saturation = 1, // 0..2 (<1 lower saturation, 1 = original saturation, >1 = increased saturation)
+  } = {}) {
     if (uri === null) {
       throw TypeError("uri should be a valid uri string");
     }
-    this.video_uri = uri;
-    this.loop = loop;
-    this.video = null;
-    this.shader = null;
+    this._uri = uri;
+    this._loop = loop;
+    this._opacity = opacity;
+    this._saturation = saturation;
+    this._video = null;
+    this._shader = null;
+    this._renderer = null;
   }
 
-  preload(p5) {
-    this.shader = new p5.Shader(p5._renderer, vertSrc, fragSrc);
-  }
+  unlock() {
+    const v = this._video;
 
-  setup(p5) {
-    this.video = p5.createVideo(this.video_uri, () =>
-      this.loop ? this.video.loop() : this.video.noLoop(),
-    );
-    this.video.attribute("playsinline", "");
-    // We hide the video player DOM element; we’ll sample it as a texture
-    this.video.hide();
+    v.attribute("playsinline", ""); // keep this for iOS
+    v.removeAttribute("muted"); // (optional) clear boolean attribute
+    v.elt.muted = false; // property
+    v.play();
+    v.pause(); // pause immediately; element is now “unlocked”
+    v.time(0);
+    v.volume(1.0); // p5 helper (0..1)
   }
 
   play() {
-    this.video.play();
+    this._video?.play();
   }
 
   pause() {
-    this.video.pause();
+    this._video?.pause();
   }
 
   stop() {
-    this.video.stop(); // stop and rewind to t=0
+    this._video?.stop(); // stop and rewind to t=0
   }
 
   get time() {
-    return this.video.time(); // in seconds
+    return this._video?.time() ?? 0; // in seconds
   }
 
   get duration() {
-    return this.video.duration(); // in seconds
+    return this._video?.duration() ?? NaN; // in seconds
   }
 
   get progress() {
-    return this.time / this.duration; // in percents, 0..1
+    return this.duration > 0 ? this.time / this.duration : 0;
   }
 
+  /**
+   * Draws the video as a shader on the WebGL canvas.
+   * Ensures first that the video is loaded
+   *
+   * @param {P5} p5
+   * @returns
+   */
   draw(p5) {
+    // Ensure shader matches the current renderer
+    this._ensureResources(p5);
+
+    // const seconds = Math.floor(p5.frameCount / FRAME_RATE);
+    // const onTheDot = p5.frameCount % FRAME_RATE === 0;
+    let shouldLog = false;
+    // exponential fallback
+    // if (seconds <= 5) {
+    //   shouldLog = onTheDot;
+    // } else if (seconds < 20) {
+    //   shouldLog = onTheDot && seconds % 2 === 0;
+    // } else {
+    //   shouldLog = onTheDot && seconds % 10 === 0;
+    // }
+
+    const v = this._video?.elt;
+    if (shouldLog) {
+      console.log(p5.frameCount, "[VideoOverlay] State: ", {
+        video: this._video,
+        elt: v,
+        rs: v?.readyState, // 0..4
+        vw: v?.videoWidth,
+        vh: v?.videoHeight,
+        paused: v?.paused,
+        ended: v?.ended,
+        currentTime: v?.currentTime,
+      });
+    }
+
+    if (!v) return;
+
+    // Gate until the video actually has pixels
+    if (
+      v.readyState < READY_STATES.HAVE_CURRENT_DATA ||
+      v.videoWidth === 0 ||
+      v.videoHeight === 0
+    ) {
+      return;
+    }
+
     p5.resetShader();
-    p5.shader(this.shader);
-    this.shader.setUniform("tex0", this.video);
-    this.shader.setUniform("u_saturation", 1.6); // saturation, 0..?
-    this.shader.setUniform("u_alpha", 0.4); // opacity 0..1
+    p5.shader(this._shader);
+    this._shader.setUniform("tex0", this._video);
+    this._shader.setUniform("u_saturation", this._saturation); // saturation, 0..?
+    this._shader.setUniform("u_alpha", this._opacity); // opacity 0..1
 
     // Draw a full-canvas rectangle in clip space
     p5.beginShape();
@@ -99,5 +172,47 @@ export default class VideoOverlay {
     p5.vertex(1, -1, 0, 1, 1);
     p5.endShape(p5.CLOSE);
     p5.resetShader();
+  }
+
+  _ensureResources(p5) {
+    // Need to recreate the shader because React forces recreation of canvas
+    // a few times, and a shader needs to be loaded on the same context it will
+    // be used.
+    // Otherwise we get:
+    //
+    // "Error: The shader being run is attached to a different context.
+    //  Do you need to copy it to this context first with .copyToContext()?"
+    if (!this._shader || this._renderer !== p5._renderer) {
+      this._shader = p5.createShader(vertSrc, fragSrc);
+      this._renderer = p5._renderer;
+    }
+
+    if (!this._video) {
+      this._video = p5.createVideo(this._uri, () => {
+        this._loop ? this._video.loop() : this._video.noLoop();
+      });
+      this._video.attribute("playsinline", "");
+      this._video.attribute("crossOrigin", "anonymous");
+      // Most web browsers will prevent video autoplay if not muted
+      this._video.attribute("muted", "");
+      this._video.elt.muted = true;
+      // We hide the video player DOM element; we’ll sample it as a texture
+      this._video.hide();
+      // Optional debug hooks
+      this._video.elt.load();
+      this._video.elt.addEventListener("loadedmetadata", () => {
+        console.log(
+          "[VideoOverlay] metadata",
+          this._video.elt.videoWidth,
+          this._video.elt.videoHeight,
+        );
+      });
+      this._video.elt.addEventListener("canplay", () =>
+        console.log("[VideoOverlay] canplay"),
+      );
+      this._video.elt.addEventListener("error", (e) =>
+        console.error("[VideoOverlay] video error", e),
+      );
+    }
   }
 }
