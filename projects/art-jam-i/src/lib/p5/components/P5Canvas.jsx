@@ -11,10 +11,6 @@ import { CanvasContext } from "../context/CanvasContext";
 import { RegistryContext } from "../context/RegistryContext";
 import p5js from "../p5";
 
-/**
- * <P5.Canvas id width height renderer className style>
- * Children should include <P5.Setup/> and/or <P5.Draw/>, but any children are allowed.
- */
 export function Canvas({
   id,
   width,
@@ -33,8 +29,10 @@ export function Canvas({
   const setupSpecRef = useRef({ fn: null, params: undefined });
   const drawSpecRef = useRef({ fn: null, params: undefined });
 
-  const [ready, setReady] = useState(false);
+  // boot + lifecycle flags
+  const [bootReady, setBootReady] = useState(false); // gate first creation until after children effects
   const [instanceKey, setInstanceKey] = useState(0);
+  const hasInstanceRef = useRef(false); // becomes true after the first successful create
 
   const { registerCanvas, updateCanvas, unregisterCanvas } =
     useContext(RegistryContext) || {};
@@ -48,24 +46,47 @@ export function Canvas({
     );
   }
 
+  // Boot barrier: allow children (Preload/Setup) to run their useEffect first
+  useEffect(() => {
+    setBootReady(true);
+  }, []);
+
   const recreate = useCallback(() => {
-    console.log("[P5.Canvas] recreate");
-    setInstanceKey((k) => k + 1);
+    // Only recreate after an instance has actually been created
+    if (hasInstanceRef.current) {
+      // console.log("[P5.Canvas] recreate");
+      setInstanceKey((k) => k + 1);
+    }
   }, []);
 
   const setPreloadSpec = useCallback(
     (spec) => {
+      const prev = preloadSpecRef.current;
       preloadSpecRef.current = spec || { fn: null, params: undefined };
-      // Contract: setup changes trigger full recreation
-      recreate();
+
+      // Do NOT recreate during boot (first-time wiring).
+      // After first instance exists, changing preload requires full recreate.
+      const isInitialSet =
+        !hasInstanceRef.current && !prev?.fn && !!preloadSpecRef.current.fn;
+      if (!isInitialSet && hasInstanceRef.current) {
+        recreate();
+      }
     },
     [recreate],
   );
+
   const setSetupSpec = useCallback(
     (spec) => {
+      const prev = setupSpecRef.current;
       setupSpecRef.current = spec || { fn: null, params: undefined };
-      // Contract: setup changes trigger full recreation
-      recreate();
+
+      // Do NOT recreate during boot (first-time wiring).
+      // After first instance exists, changing setup requires full recreate.
+      const isInitialSet =
+        !hasInstanceRef.current && !prev?.fn && !!setupSpecRef.current.fn;
+      if (!isInitialSet && hasInstanceRef.current) {
+        recreate();
+      }
     },
     [recreate],
   );
@@ -84,7 +105,7 @@ export function Canvas({
     }
   }, []);
 
-  // Register in global registry on mount; unregister on unmount
+  // registry lifecycle
   useEffect(() => {
     registerCanvas(id, {
       p5Ref,
@@ -100,32 +121,44 @@ export function Canvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Keep size up to date in registry
+  // keep size up to date
   useEffect(() => {
     updateCanvas(id, { size: { width, height } });
   }, [id, width, height, updateCanvas]);
 
-  // Create/recreate p5 instance when instanceKey/size/renderer change
+  // Create/recreate p5 instance (gated by bootReady)
   useEffect(() => {
+    if (!bootReady) return; // wait for one tick so children can set specs
+
     const host = hostDivRef.current;
     if (!host) return;
 
-    // Ensure no stale canvases/wrappers are left in the host
+    // Ensure no stale nodes are left (StrictMode / plugin side-effects)
     while (host.firstChild) host.removeChild(host.firstChild);
 
     const sketch = (p5) => {
       p5Ref.current = p5;
+
+      // optional: support user preload if provided
+      const { fn: preloadFn, params: plParams } = preloadSpecRef.current || {};
+      if (preloadFn) {
+        p5.preload = () => {
+          try {
+            return preloadFn(p5, plParams);
+          } catch (e) {
+            console.error(e);
+          }
+        };
+      }
 
       p5.setup = () => {
         const rendererConst = renderer === "WEBGL" ? p5.WEBGL : p5.P2D;
         const cnv = p5.createCanvas(width, height, rendererConst);
         canvasRef.current = cnv.elt;
 
-        // run user setup
         const { fn: setupFn, params: sparams } = setupSpecRef.current || {};
         if (setupFn) Promise.resolve(setupFn(p5, sparams)).catch(console.error);
 
-        // bind user draw
         const { fn: drawFn, params: dparams } = drawSpecRef.current || {};
         if (drawFn) {
           p5.draw = () => drawFn(p5, dparams);
@@ -135,7 +168,7 @@ export function Canvas({
           p5.draw = () => {};
         }
 
-        setReady(true);
+        hasInstanceRef.current = true; // mark that we have created at least once
         updateCanvas(id, { ready: true });
       };
     };
@@ -143,36 +176,31 @@ export function Canvas({
     const inst = new p5js(sketch, host);
 
     return () => {
-      setReady(false);
       updateCanvas(id, { ready: false });
       try {
         inst.remove();
-        // eslint-disable-next-line no-unused-vars
-      } catch (e) {
-        // noop
-      }
+      } catch {}
       if (p5Ref.current === inst) p5Ref.current = null;
       canvasRef.current = null;
+
+      // Defensive clean
+      while (host.firstChild) host.removeChild(host.firstChild);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instanceKey, width, height, renderer]);
+  }, [bootReady, instanceKey, width, height, renderer]);
 
-  // By default, change in width/height/renderer => recreate
-  // Handle resize / renderer change
+  // Resize vs renderer change
   useEffect(() => {
     const inst = p5Ref.current;
-    // If no instance yet, do nothing. Creation effect will handle it.
-    if (!inst) return;
+    if (!inst) return; // don’t trigger recreate during boot
 
-    if (
-      (renderer === "WEBGL" ? inst.WEBGL : inst.P2D) ===
-      inst._renderer?.GL?.RENDERER
-    ) {
-      // same renderer → resize only
+    const currentRenderer = inst._renderer?.GL?.RENDERER;
+    const desired = renderer === "WEBGL" ? inst.WEBGL : inst.P2D;
+
+    if (currentRenderer === desired) {
       inst.resizeCanvas(width, height);
       updateCanvas(id, { size: { width, height } });
     } else {
-      // renderer changed → must recreate
       recreate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -183,7 +211,6 @@ export function Canvas({
     [id, setPreloadSpec, setSetupSpec, setDraw, recreate],
   );
 
-  // Let children render (Setup/Draw will hook via CanvasCtx)
   const renderedChildren = Children.map(children, (child) => child);
 
   return (
