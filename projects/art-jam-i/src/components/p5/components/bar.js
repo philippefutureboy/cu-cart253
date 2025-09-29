@@ -1,9 +1,14 @@
+import withP5Space from "src/utils/p5/with-p5-space";
+
 export default class Bar {
-  constructor({ x, y, w, h, padding, fill, pulseHz = 1 }) {
+  constructor({ x, y, w, h, padding, fill, pulseHz = 1, mode = "P2D" }) {
     this._x = x;
     this._y = y;
     this._w = w;
     this._h = h;
+    this._mode = mode; // specifies in which type of canvas context we expect to render;
+    // this means that our coordinates above are supposed to be interpreted
+    // in the 'mode' specified (P2D or WEBGL)
     this._strokeWeight = 3;
     this._padding = padding;
     this._fill = fill;
@@ -30,14 +35,13 @@ export default class Bar {
     if (value >= 1) {
       this._superCharged = true;
     }
-    // reset state when empty
-    if (value === 0) {
-      this._superCharged = false;
-      this._pulseStart = null;
-    }
   }
 
   draw(p5) {
+    withP5Space(p5, this._mode, this._draw.bind(this));
+  }
+
+  _draw(p5) {
     const {
       _x: x,
       _y: y,

@@ -68,9 +68,23 @@ export default class VideoOverlay {
     this._video = null;
     this._shader = null;
     this._renderer = null;
+    this._unlocked = false;
   }
 
+  /**
+   * Unlocks the autoplay with sound.
+   *
+   * Since browsers prevent autoplay of videos when sound is not muted, we need to have a user
+   * event listener to enable sound.
+   * This method can be called as part of an event listener - whether a native DOM event listener,
+   * or a p5 event listener.
+   *
+   */
   unlock() {
+    // unlock only once
+    if (this._unlocked) {
+      return;
+    }
     const v = this._video;
 
     v.attribute("playsinline", ""); // keep this for iOS
@@ -80,6 +94,9 @@ export default class VideoOverlay {
     v.pause(); // pause immediately; element is now “unlocked”
     v.time(0);
     v.volume(1.0); // p5 helper (0..1)
+
+    // mark unlocked
+    this._unlocked = true;
   }
 
   play() {
@@ -104,6 +121,10 @@ export default class VideoOverlay {
 
   get progress() {
     return this.duration > 0 ? this.time / this.duration : 0;
+  }
+
+  setup(p5) {
+    this._ensureResources(p5);
   }
 
   /**

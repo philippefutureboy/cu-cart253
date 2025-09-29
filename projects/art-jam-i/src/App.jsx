@@ -6,8 +6,9 @@ import VideoOverlay from "src/components/p5/components/video-overlay";
 import { FRAME_RATE } from "src/constants";
 import { P5 } from "src/lib/p5";
 import "./App.css";
+// import P5FontRegistry from "src/utils/p5/font-registry";
 
-// FIXME: Dual canvas seem to interfere with clickCount
+// const FONT_REGISTRY = new P5FontRegistry();
 
 // constants
 const HOLD_THRESHOLD = FRAME_RATE / 3;
@@ -23,7 +24,7 @@ const ENCOURAGEMENT_DEFAULT_STYLE = {
 const ENCOURAGEMENT_ROTATING_STYLES = [
   ENCOURAGEMENT_DEFAULT_STYLE,
   {
-    font: "Gill Sans",
+    font: "Chalkduster",
     fontSize: 32,
     fontStyle: "ITALIC",
     textAlign: "CENTER",
@@ -37,7 +38,7 @@ const ENCOURAGEMENT_ROTATING_STYLES = [
     marginBottom: 20,
   },
   {
-    font: "Impact",
+    fontPath: "Impact",
     fontSize: 24,
     fontStyle: "BOLD",
     textAlign: "CENTER",
@@ -61,12 +62,12 @@ function hasMouseBeenDetected(p5) {
   return mouseHasBeenDetected;
 }
 
-function isMouseInBounds(p5, width, height) {
+function isMouseInBounds(p5) {
   return (
     p5.mouseX >= 0 &&
-    p5.mouseX <= width &&
+    p5.mouseX <= p5.width &&
     p5.mouseY >= 0 &&
-    p5.mouseY <= height
+    p5.mouseY <= p5.height
   );
 }
 
@@ -126,6 +127,7 @@ function Project() {
         h: 40,
         padding: 5,
         fill: "#0f0",
+        mode: "P2D",
       }),
       new Encouragement({
         fontSize: 30,
@@ -144,21 +146,34 @@ function Project() {
 
   const setupFn = useCallback(
     (p5) => {
+      // FONT_REGISTRY.load(p5, "Chalkduster", "src/assets/fonts/Chalkduster.ttf");
+      // FONT_REGISTRY.load(p5, "Impact", "src/assets/fonts/Impact.ttf");
+
       p5.background(255);
       p5.frameRate(FRAME_RATE);
       p5.mouseClicked = () => {
         lastClick = p5.frameCount;
+        const isInBounds = isMouseInBounds(p5);
         // oh boy, implicit typecast
-        clickCount += isMouseInBounds(p5, width, height);
+        clickCount += isInBounds;
+        if (isInBounds) {
+          videoOverlay.unlock();
+        }
       };
       p5.mousePressed = () => {
         lastPress = p5.frameCount;
       };
       p5.mouseReleased = () => {
         lastRelease = p5.frameCount;
+
+        if (bar.superCharged) {
+          videoOverlay.play();
+        }
       };
+
+      videoOverlay.setup(p5);
     },
-    [width, height],
+    [bar, videoOverlay],
   );
 
   const drawParams = useMemo(() => ({}), []);
@@ -193,6 +208,7 @@ function Project() {
       //   !hasHeldInLastNFrames(p5, FRAME_RATE / 4 + 1) &&
       //   hasClickedInNFrames(p5, FRAME_RATE / 4)
       // ) {
+      //   console.log("Click!");
       //   Object.assign(encouragement, ENCOURAGEMENT_DEFAULT_STYLE);
       //   const clickTexts = ["Click!", "Click?", "Try holding!"];
       //   encouragement.text = clickTexts[clickCount % clickTexts.length];
@@ -201,7 +217,10 @@ function Project() {
       // encouragement.draw(p5);
 
       // VIDEO OVERLAY DRAW
-      videoOverlay.draw(p5);
+      if (bar.superCharged) {
+        videoOverlay.draw(p5);
+        videoOverlay.play();
+      }
 
       // GRADIENT DRAW --------------------
       // if (bar.superCharged && !isHeld(p5)) {
@@ -220,10 +239,12 @@ function Project() {
           bar.fillPercent + BAR_FILL_PERCENT_PER_FRAME,
         );
       } else {
-        bar.fillPercent = Math.max(
-          0,
-          bar.fillPercent - BAR_FILL_PERCENT_PER_FRAME,
-        );
+        if (!bar.superCharged) {
+          bar.fillPercent = Math.max(
+            0,
+            bar.fillPercent - BAR_FILL_PERCENT_PER_FRAME,
+          );
+        }
       }
       bar.draw(p5);
     },
