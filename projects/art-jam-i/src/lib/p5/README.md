@@ -8,53 +8,29 @@ It enables you to use `p5` sketches directly inside React applications in a way 
 
 ## ✨ Key Advantages Over `@p5-wrapper/react`
 
-- **Declarative API**  
-  Define `<P5.Setup>` and `<P5.Draw>` directly inside JSX. Lifecycle is tied to React’s reconciliation, not imperative re-instantiation.
+- **Declarative API**
+  Define `<P5.Scene>` components with ES6 classes extending `AbstractP5Scene`. Lifecycle hooks (`preload`, `setup`, `draw`, `destroy`) map cleanly to p5 phases.
 
-- **Hot-swap draw functions**  
-  Replace `<P5.Draw fn={...} />` on the fly without tearing down the canvas. Enables **multi-scene** workflows and interactive transitions.
+- **Scene support & hot-swapping**
+  Register multiple `<P5.Scene>` children and switch between them with `ctx.setScene(name)`. Scenes encapsulate their own event handlers, resources, and teardown.
 
-- **Multiple p5 instance support**  
-  Use `<P5.Canvas id="...">` to mount multiple independent canvases. Each canvas is registered in global context for hooks and management.
+- **Multiple p5 instance support**
+  Use `<P5.Canvas id="...">` to mount multiple independent canvases. Each canvas is registered in a global registry for hooks and state management.
 
-- **React state & interactivity**  
-  Pass `params` into setup/draw functions. Combine with React state, props, or context to declaratively control visual state. Ideal for building **data models** or **state-driven scenes**.
+- **Event listener management**
+  Register multiple cursor/key/mouse event callbacks per scene with `ctx.addEventListener`. Scoped listeners are automatically removed on scene switch.
 
-- **Easy integration in React apps**  
+- **React state & interactivity**
+  Scenes can react to external React state and props. Build declarative data-driven sketches that integrate tightly with your app.
+
+- **Easy integration in React apps**
   Fits into existing component trees and tooling (Vite, Babel, Jest). Plays nicely with standard React patterns (hooks, context, state).
 
-- **Extends p5 with modern app features**  
+- **Extends p5 with modern app features**
   Because you are in React, you can seamlessly integrate:
   - Network requests (REST, GraphQL, etc.)
   - Local caching and persistence (React Query, SWR)
   - Real-time multiplayer via WebSockets or WebRTC
-
-  ```jsx
-  import { P5 } from "src/lib/p5";
-  import { useState, useEffect } from "react";
-
-  function MultiplayerCanvas({ socket }) {
-    const [players, setPlayers] = useState({});
-
-    useEffect(() => {
-      socket.on("players:update", (payload) => setPlayers(payload));
-    }, [socket]);
-
-    return (
-      <P5.Canvas id="game" width={800} height={600} renderer="WEBGL">
-        <P5.Setup fn={(p5) => p5.background(0)} />
-        <P5.Draw
-          fn={(p5) => {
-            p5.background(0);
-            Object.values(players).forEach(({ x, y }) => {
-              p5.ellipse(x, y, 20, 20);
-            });
-          }}
-        />
-      </P5.Canvas>
-    );
-  }
-  ```
 
 ---
 
@@ -67,34 +43,103 @@ No npm install step is required, but you do need `p5`:
 npm install p5
 ```
 
+Optional plugins (e.g. `p5.collide2d`) can be registered by importing them once after ensuring `window.p5` is set.
+
 ---
 
 ## 🚀 Basic Usage
 
 ```jsx
-import { P5 } from "src/lib/p5";
+import { P5, AbstractP5Scene } from "src/lib/p5";
+
+// Define a scene by subclassing AbstractP5Scene
+class BouncingBallScene extends AbstractP5Scene {
+  static scene = "bouncing";
+
+  setup(p5, ctx) {
+    this.x = p5.width / 2;
+    this.y = p5.height / 2;
+    this.vx = 2;
+    this.vy = 3;
+    p5.background(200);
+
+    // Register event listener
+    ctx.addEventListener("mousePressed", (p5) => {
+      this.vx *= -1;
+      this.vy *= -1;
+    });
+  }
+
+  draw(p5) {
+    p5.background(200);
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > p5.width) this.vx *= -1;
+    if (this.y < 0 || this.y > p5.height) this.vy *= -1;
+    p5.ellipse(this.x, this.y, 40, 40);
+  }
+}
 
 function Example() {
   return (
     <P5.ContextProvider>
-      <P5.Canvas id="demo" width={400} height={300}>
-        <P5.Setup fn={(p5) => p5.background(200)} />
-        <P5.Draw
-          fn={(p5) => {
-            p5.background(200);
-            p5.ellipse(p5.width / 2, p5.height / 2, 50, 50);
-          }}
-        />
+      <P5.Canvas id="demo" width={400} height={300} scene="bouncing">
+        <P5.Scene cls={BouncingBallScene} />
       </P5.Canvas>
     </P5.ContextProvider>
   );
 }
 ```
 
-### Hooks
+---
 
-- `useP5(id)` → access `{ ready, p5Ref, canvasRef, size }` for a specific canvas
-- `useP5List()` → get an array of all registered canvas IDs
+## 🎮 Scene API
+
+All scenes must extend `AbstractP5Scene` and define a static `scene` string.
+
+```ts
+class MyScene extends AbstractP5Scene {
+  static scene = "uniqueName";
+
+  preload(p5: P5, ctx: SceneContext): void | Promise<void>;
+  setup(p5: P5, ctx: SceneContext): void | Promise<void>;
+  draw(p5: P5, ctx: SceneContext): void;
+  destroy(p5: P5, ctx: SceneContext): void | Promise<void>;
+}
+```
+
+- `preload` → load assets before first render (executed inside `setup` because `p5.preload` is deprecated in p5 2.0).
+- `setup` → run once when the scene becomes active.
+- `draw` → runs every frame.
+- `destroy` → cleanup resources, unsubscribe events.
+
+---
+
+## 🎛 Context API
+
+The second argument to scene methods is a `SceneContext` instance, exposing:
+
+```ts
+class SceneContext {
+  preload(sceneName: string): Promise<void>;
+  setScene(sceneName: string): Promise<void>;
+  addEventListener(
+    event: string,
+    fn: (p5, evt) => any,
+    opts?: { id?: string },
+  ): () => void;
+  addEventListenerScoped(
+    event: string,
+    fn: (p5, evt) => any,
+    opts?: { id?: string },
+  ): () => void;
+  removeEventListener(event: string, id: string): void;
+}
+```
+
+- `addEventListener` → subscribe to global p5 events.
+- `addEventListenerScoped` → subscribe, but automatically unsubscribed when the scene is destroyed.
+- `removeEventListener` → manually remove by event + id.
 
 ---
 
@@ -102,49 +147,8 @@ function Example() {
 
 - **SSR caveats**: p5 requires DOM APIs. This lib guards against hydration mismatches, but server-side rendering won’t render sketches. Use `typeof window !== "undefined"` to defer if needed.
 - **No pixel snapshots in tests**: The Jest setup mocks p5. Automated tests validate lifecycle/registry logic, not actual rendering output.
-- **Draw hot-swap is one-at-a-time**: Only the most recent `<P5.Draw>` child defines `draw`. You can replace dynamically but not run multiple draws in parallel.
-- **Canvas resize vs recreate**: Changing `width/height` resizes, but changing renderer (`P2D` ↔ `WEBGL`) forces a full re-create.
-
----
-
-## 📖 API Reference
-
-### `<P5.ContextProvider>`
-
-Global registry provider. Wrap once near the root of your app.
-
-### `<P5.Canvas id width height renderer className style>`
-
-Mount a p5 canvas.
-
-- `id` (string) – required, unique
-- `width`, `height` (number) – canvas size
-- `renderer` (`"P2D" | "WEBGL"`) – defaults to `"P2D"`
-
-### `<P5.Setup fn params />`
-
-One-time setup function. Changing `fn` triggers full canvas recreate.
-
-### `<P5.Draw fn params />`
-
-Draw loop function. Changing `fn` hot-swaps without recreate.
-
-### `useP5(id)`
-
-Access registry entry for a given canvas:
-
-```ts
-{
-  ready: boolean;
-  p5Ref: Ref<p5|null>;
-  canvasRef: Ref<HTMLCanvasElement|null>;
-  size: { width: number, height: number };
-}
-```
-
-### `useP5List()`
-
-Returns all registered canvas IDs.
+- **Scene switching clears state**: When switching scenes, local variables in the scene instance are discarded unless you persist them externally.
+- **Renderer changes recreate canvas**: Switching between `P2D` and `WEBGL` forces a full recreate.
 
 ---
 
@@ -164,8 +168,7 @@ MIT
 This code was written primarily by ChatGPT (OpenAI). Works generated entirely by a machine without human creative input are generally not copyrightable.
 That means there might be no copyright holder at all, and the output may effectively be in the public domain.
 
-This being said, I, as the author, Philippe Hebert, have made some creative choices, especially around architecting/directing
-the structure of this solution, and as such, I am de-facto the "author" of this work.
+This being said, I, as the author, Philippe Hébert, have made some creative choices, especially around architecting/directing the structure of this solution, and as such, I am de-facto the "author" of this work.
 This being said, given that ChatGPT is trained using the work of countless developers, most of then time irrespectively of licensing, I also included "The Internet Collective" as a noteworthy, but non-enforceable copyright holder.
 
 Full license is available in LICENSE.md.
