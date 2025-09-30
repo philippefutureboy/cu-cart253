@@ -94,6 +94,7 @@ export default class Scene2 extends AbstractP5Scene {
     // start
     const transcendentStarted = this._videosStartedFrame.transcendent !== null;
     if (!transcendentStarted) {
+      videos.transcendent.time = 7.6; // start at 7.6 seconds for a punch
       videos.transcendent.play();
       this._videosStartedFrame.transcendent = p5.frameCount;
     }
