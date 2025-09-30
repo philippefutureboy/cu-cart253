@@ -123,7 +123,7 @@ export default class VideoOverlay {
     return this.duration > 0 ? this.time / this.duration : 0;
   }
 
-  setup(p5) {
+  load(p5) {
     this._ensureResources(p5);
   }
 

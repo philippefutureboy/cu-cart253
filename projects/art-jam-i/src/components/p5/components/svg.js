@@ -29,6 +29,25 @@ export default class SVGDrawer {
     this._processSvg(rawSvg);
   }
 
+  get styles() {
+    return this._styles;
+  }
+
+  set styles(newStyles) {
+    this._styles = newStyles;
+    this._recalculateStyles();
+  }
+
+  get globalStyles() {
+    return this._globalStyles;
+  }
+
+  set globalStyles(gstyles) {
+    this._globalStyles = gstyles;
+    this._recalculateStyles();
+    console.log("recalculated styles", gstyles, this._calcStyles);
+  }
+
   /**
    * Branches between drawWebGL / draw2D drawing methods based on canvas rendering context type.
    *
@@ -227,6 +246,10 @@ export default class SVGDrawer {
       },
     }));
 
+    this._recalculateStyles();
+  }
+
+  _recalculateStyles() {
     // Calculate styles once and index by path.id (fallback to order index);
     // merges the styles (default <- path.styles <- globalStyles <- custom per-path styles)
     this._calcStyles = Object.fromEntries(

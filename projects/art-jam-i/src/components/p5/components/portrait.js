@@ -26,6 +26,24 @@ export default class Portrait {
     });
   }
 
+  get styles() {
+    return this._styles;
+  }
+
+  set styles(newStyles) {
+    this._styles = newStyles;
+    this._portraitSvg.styles = newStyles;
+  }
+
+  get globalStyles() {
+    return this._globalStyles;
+  }
+
+  set globalStyles(gstyles) {
+    this._globalStyles = gstyles;
+    this._portraitSvg.globalStyles = gstyles;
+  }
+
   get showMouth() {
     return this._showMouth;
   }

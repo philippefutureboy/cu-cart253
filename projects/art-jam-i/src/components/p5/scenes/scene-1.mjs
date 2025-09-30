@@ -1,13 +1,13 @@
+/**
+ * @typedef {import('p5')} P5
+ */
+
 import Bar from "src/components/p5/components/bar";
 import Encouragement from "src/components/p5/components/encouragement";
 import Portrait from "src/components/p5/components/portrait";
 import { FRAME_RATE } from "src/constants";
 import { AbstractP5Scene, SceneContext, Store } from "src/lib/p5";
 import { hasMouseBeenDetected, isMouseInBounds } from "src/utils/p5/mouse";
-
-/**
- * @typedef {import('p5')} P5
- */
 
 const HOLD_THRESHOLD = FRAME_RATE / 3;
 const SECONDS_TO_FILL_BAR = 3;
@@ -37,8 +37,11 @@ export default class Scene1 extends AbstractP5Scene {
     p5.frameRate(FRAME_RATE); // FIXME: Maybe have a bootstrap function on lib/p5 P5.Canvas?
     p5.background(255);
 
+    // Start preloading Scene2
+    ctx.preload("scene2");
+
     // Register mouse events
-    ctx.addEventListenerScoped("mousePressed", (p5) => {
+    ctx.addEventListenerScoped("mousePressed", (p5, ctx) => {
       this.mouseEvents.lastPress = p5.frameCount;
     });
     ctx.addEventListenerScoped("mouseReleased", (p5) => {
@@ -115,6 +118,10 @@ export default class Scene1 extends AbstractP5Scene {
       }
     }
     this._objects.bar.draw(p5);
+
+    if (this._objects.bar.superCharged) {
+      ctx.setScene("scene2");
+    }
   }
 
   // utilities -----

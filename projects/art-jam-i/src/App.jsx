@@ -1,4 +1,5 @@
 import Scene1 from "src/components/p5/scenes/scene-1.mjs";
+import Scene2 from "src/components/p5/scenes/scene-2.mjs";
 import { FRAME_RATE } from "src/constants";
 import { P5 } from "src/lib/p5";
 import "./App.css";
@@ -22,6 +23,7 @@ function Project() {
         setup={setup}
       >
         <P5.Scene cls={Scene1} />
+        <P5.Scene cls={Scene2} />
       </P5.Canvas>
     </>
   );
