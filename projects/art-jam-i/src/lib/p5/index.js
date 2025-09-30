@@ -12,4 +12,5 @@ export const P5 = {
 
 export * from "./store";
 export * from "./types/scene";
+export * from "./types/scene-context";
 export { useP5, useP5List };

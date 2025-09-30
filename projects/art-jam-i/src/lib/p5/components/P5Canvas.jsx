@@ -49,6 +49,7 @@ export function Canvas({
   className,
   style,
   scene, // initial or controlled scene name
+  setup, // optional global setup: runs once per p5 instance before scenes
   children,
 }) {
   if (!id) throw new Error("<P5.Canvas> requires an 'id' prop.");
@@ -69,6 +70,11 @@ export function Canvas({
   const p5Ref = useRef(null);
   const canvasRef = useRef(null);
 
+  // global (non-scene) setup function
+  const globalSetupRef = useRef(
+    /** @type {null | ((p5:any, ctx:any)=>any)} */ (null),
+  );
+
   // boot + recreate
   const [bootReady, setBootReady] = useState(false);
   const [instanceKey, setInstanceKey] = useState(0);
@@ -77,7 +83,7 @@ export function Canvas({
   const listenersRef = useRef(new Map());
   const sceneSubscriptionsRef = useRef(new Set()); // Set<() => void> auto-removed on scene switch
 
-  // scenes: Map<name, { cls, instance?, status?:'idle'|'preloaded'|'setup' }>
+  // scenes: Map<name, { cls, instance?, status?:'idle'|'preloaded'|'setup', _setupRunning?:boolean }>
   const scenesRef = useRef(new Map());
   const preloadPromisesRef = useRef(new Map());
   const requestedPreloadsRef = useRef(new Set()); // preloads requested before p5 exists
@@ -176,7 +182,12 @@ export function Canvas({
         );
       }
       if (!scenesRef.current.has(name)) {
-        scenesRef.current.set(name, { cls, status: "idle", instance: null });
+        scenesRef.current.set(name, {
+          cls,
+          status: "idle",
+          instance: null,
+          _setupRunning: false,
+        });
       } else {
         const rec = scenesRef.current.get(name);
         rec.cls = cls;
@@ -306,6 +317,11 @@ export function Canvas({
     setBootReady(true);
   }, []);
 
+  // keep latest global setup in a ref (no rerender/recreate)
+  useEffect(() => {
+    globalSetupRef.current = typeof setup === "function" ? setup : null;
+  }, [setup]);
+
   // ---- registry lifecycle
   useEffect(() => {
     registerCanvas(id, {
@@ -360,6 +376,19 @@ export function Canvas({
         const cnv = p5.createCanvas(width, height, rendererConst);
         canvasRef.current = cnv.elt;
 
+        // --- global (non-scene) setup hook, if provided
+        const gsetup = globalSetupRef.current;
+        if (gsetup) {
+          try {
+            const maybe = gsetup(p5, makeSceneContext());
+            if (maybe && typeof maybe.then === "function") {
+              await maybe;
+            }
+          } catch (e) {
+            console.error(`[P5.Canvas:${id}] global setup() failed`, e);
+          }
+        }
+
         // Initial scene resolution
         const initialName =
           scene ||
@@ -413,6 +442,41 @@ export function Canvas({
           if (!name) return;
           const rec = scenesRef.current.get(name);
           if (!rec || !rec.instance) return;
+
+          // Ensure one-time setup before first draw for this scene.
+          if (rec.status !== "setup") {
+            if (!rec._setupRunning) {
+              rec._setupRunning = true;
+              (async () => {
+                try {
+                  const p5i = p5;
+                  // If scene overrides preload and hasn't been preloaded yet, do it now.
+                  if (
+                    isOwnOverride(rec.instance, "preload") &&
+                    rec.status !== "preloaded"
+                  ) {
+                    await rec.instance.preload(p5i, makeSceneContext());
+                    rec.status = "preloaded";
+                  }
+                  // Run setup exactly once.
+                  ensureImplemented(name, rec.instance, "setup");
+                  const maybe = rec.instance.setup(p5i, makeSceneContext());
+                  if (maybe && typeof maybe.then === "function") await maybe;
+                  rec.status = "setup";
+                } catch (e) {
+                  console.error(
+                    `[P5.Canvas:${id}] setup-on-draw("${name}")`,
+                    e,
+                  );
+                } finally {
+                  rec._setupRunning = false;
+                }
+              })();
+            }
+            // Skip drawing until setup completes.
+            return;
+          }
+
           try {
             ensureImplemented(name, rec.instance, "draw");
             rec.instance.draw(p5, makeSceneContext());
