@@ -136,11 +136,10 @@ export default class Scene2 extends AbstractP5Scene {
         );
         // decrease opacity gradually until the end of the vid
       } else {
-        const decreaseStartFrame = p5.frameCount + 5 * FRAME_RATE;
+        const decreaseStartFrame =
+          this._videosStartedFrame.meow + 5 * FRAME_RATE;
         videos.meow.opacity = Math.max(
-          100 -
-            (decreaseStartFrame - this._videosStartedFrame.meow) /
-              (FRAME_RATE / 1.5),
+          100 - (p5.frameCount - decreaseStartFrame) / (FRAME_RATE / 1.5),
           0,
         );
       }
