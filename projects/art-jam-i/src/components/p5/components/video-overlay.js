@@ -53,6 +53,7 @@ void main() {
 
 export default class VideoOverlay {
   constructor({
+    name,
     uri = null,
     loop = false,
     opacity = 1, // 0..1
@@ -61,6 +62,7 @@ export default class VideoOverlay {
     if (uri === null) {
       throw TypeError("uri should be a valid uri string");
     }
+    this.name = name;
     this._uri = uri;
     this._loop = loop;
     this._opacity = opacity;
@@ -69,6 +71,14 @@ export default class VideoOverlay {
     this._shader = null;
     this._renderer = null;
     this._unlocked = false;
+  }
+
+  get opacity() {
+    return this._opacity;
+  }
+
+  set opacity(opah) {
+    this._opacity = opah;
   }
 
   /**
@@ -223,16 +233,16 @@ export default class VideoOverlay {
       this._video.elt.load();
       this._video.elt.addEventListener("loadedmetadata", () => {
         console.log(
-          "[VideoOverlay] metadata",
+          `[VideoOverlay] ${this.name} metadata`,
           this._video.elt.videoWidth,
           this._video.elt.videoHeight,
         );
       });
       this._video.elt.addEventListener("canplay", () =>
-        console.log("[VideoOverlay] canplay"),
+        console.log(`[VideoOverlay] ${this.name} canplay`),
       );
       this._video.elt.addEventListener("error", (e) =>
-        console.error("[VideoOverlay] video error", e),
+        console.error(`[VideoOverlay] ${this.name} video error`, e),
       );
     }
   }
