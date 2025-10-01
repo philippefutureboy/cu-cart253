@@ -37,6 +37,7 @@ export default function App() {
           <Project />
         </P5.ContextProvider>
       </div>
+      <p>Click and hold on the canvas to get started</p>
     </>
   );
 }

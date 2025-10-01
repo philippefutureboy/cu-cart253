@@ -5,6 +5,10 @@
   text-align: center;
 }
 
+body {
+  background-color: #212121;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -39,4 +43,12 @@
 
 .read-the-docs {
   color: #888;
+}
+
+p {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 30px;
+  font-weight: bold;
+  color: black;
 }
