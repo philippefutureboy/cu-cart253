@@ -3,7 +3,6 @@
  */
 
 import Bar from "src/components/p5/components/bar";
-import Encouragement from "src/components/p5/components/encouragement";
 import Portrait from "src/components/p5/components/portrait";
 import { FRAME_RATE } from "src/constants";
 import { AbstractP5Scene, SceneContext, Store } from "src/lib/p5";
@@ -67,16 +66,9 @@ export default class Scene1 extends AbstractP5Scene {
       mode: "P2D",
     });
 
-    const encouragement = new Encouragement({
-      fontSize: 30,
-      fontStyle: "BOLD",
-      textAlign: "CENTER",
-    });
-
     // save these objects for the draw cycle
     this._objects.portrait = portrait;
     this._objects.bar = bar;
-    this._objects.encouragement = encouragement;
 
     // save these objects for next scenes
     Store.set({ key: "portrait", value: portrait });
