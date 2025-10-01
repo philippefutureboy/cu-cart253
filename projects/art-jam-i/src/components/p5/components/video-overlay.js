@@ -125,6 +125,10 @@ export default class VideoOverlay {
     return this._video?.time() ?? 0; // in seconds
   }
 
+  set time(value) {
+    this._video?.time(value);
+  }
+
   get duration() {
     return this._video?.duration() ?? NaN; // in seconds
   }

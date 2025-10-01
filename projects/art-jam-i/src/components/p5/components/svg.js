@@ -1,11 +1,29 @@
+/**
+ * @typedef {import('p5')} P5
+ */
+
 import merge from "lodash.merge";
-import P5 from "p5"; // for typing
+import withOpacity from "src/utils/p5/with-opacity";
 
 export default class SVGDrawer {
   constructor(
     rawSvg,
-    { padding = [20, 20, 20, 20], styles = {}, globalStyles = {} } = {},
+    {
+      x,
+      y,
+      width,
+      height,
+      padding = [20, 20, 20, 20],
+      opacity = 1,
+      styles = {},
+      globalStyles = {},
+    } = {},
   ) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.opacity = opacity;
     // processed svg path elements
     this._paths = null;
     // viewbox of the svg
@@ -62,16 +80,16 @@ export default class SVGDrawer {
    * @param {P5} p5
    * @author ChatGPT-5 (OpenAI)
    */
-  draw(p5) {
+  draw(p5, { debug = false } = {}) {
     const ctx = p5.drawingContext;
 
     if (
       ctx instanceof WebGLRenderingContext ||
       ctx instanceof WebGL2RenderingContext
     ) {
-      this._drawWebGL(p5);
+      this._drawWebGL(p5, debug);
     } else {
-      this._draw2D(ctx, p5.width, p5.height);
+      this._draw2D(p5, ctx, debug);
     }
   }
 
@@ -121,10 +139,10 @@ export default class SVGDrawer {
    * @param {P5} p5
    * @author ChatGPT-5 (OpenAI)
    */
-  _drawWebGL(p5) {
+  _drawWebGL(p5, debug) {
     this._createGraphics(p5);
     this._pathLayer.clear(); // setting clear background
-    this._draw2D(this._pathLayer.drawingContext, p5.width, p5.height); // draw on side canvas
+    this._draw2D(p5, this._pathLayer.drawingContext, debug); // draw on side canvas
 
     // composite the 2D buffer into the WEBGL canvas
     // (optional) ensure it draws on top of 3D by disabling depth test just for this blit
@@ -145,11 +163,11 @@ export default class SVGDrawer {
    * Renders the SVG on a CanvasRenderingContext2D of size { width, height }.
    *
    * @param {CanvasRenderingContext2D} ctx Canvas
-   * @param {Number} width Canvas width in pixel (integer)
-   * @param {Number} height Canvas height in pixel (integer)
    */
-  _draw2D(ctx, width, height) {
+  _draw2D(p5, ctx, debug) {
     // Get the available space
+    const width = this.width ?? p5.width; // defaults to full canvas width
+    const height = this.height ?? p5.height; // defaults to full canvas height
     const availW = width - (this._padding.left + this._padding.right);
     const availH = height - (this._padding.top + this._padding.bottom);
     // Now we get the scaling factor by mapping the viewbox to the bounding box of the canvas;
@@ -161,8 +179,22 @@ export default class SVGDrawer {
 
     const drawnW = this._viewbox.width * scale;
     const drawnH = this._viewbox.height * scale;
-    const offsetX = (availW - drawnW) / 2;
-    const offsetY = (availH - drawnH) / 2;
+    const offsetX = this.x ?? (availW - drawnW) / 2; // defaults to center
+    const offsetY = this.y ?? (availH - drawnH) / 2; // defaults to center
+
+    if (debug) {
+      console.log("[SVGDrawer]", {
+        width,
+        height,
+        availW,
+        availH,
+        scale,
+        drawnW,
+        drawnH,
+        offsetX,
+        offsetY,
+      });
+    }
 
     ctx.save(); // p5.push equivalent for canvas
 
@@ -181,18 +213,27 @@ export default class SVGDrawer {
       // obtain calculated styles for path
       const styles = this._calcStyles[p.id];
       const stroke = styles.stroke || {};
+      const isVisible = this.opacity ?? 0 !== 0;
       const hasFill = styles.fill && styles.fill !== "none";
       const hasStroke =
         stroke.color && stroke.color !== "none" && (stroke.weight ?? 0) > 0;
 
+      if (debug) {
+        console.log(
+          `[SVGDrawer] ${p.id}`,
+          { isVisible, hasFill, hasStroke },
+          styles,
+        );
+      }
+
       // apply styles & only apply if the path will result in something being printed.
-      if (hasStroke) {
-        ctx.strokeStyle = stroke.color;
+      if (isVisible && hasStroke) {
+        ctx.strokeStyle = withOpacity(p5, stroke.color, this.opacity);
         ctx.lineWidth = stroke.weight;
         ctx.stroke(p.path);
       }
-      if (hasFill) {
-        ctx.fillStyle = styles.fill;
+      if (isVisible && hasFill) {
+        ctx.fillStyle = withOpacity(p5, styles.fill, this.opacity);
         ctx.fill(p.path);
       }
 
