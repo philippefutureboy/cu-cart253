@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /**
  * @typedef {import('p5')} P5
- * @typedef {import('../types').SceneContext} SceneContext
+ * @typedef {import('./scene-context').SceneContext} SceneContext
  */
 
 export class NotImplementedError extends TypeError {
