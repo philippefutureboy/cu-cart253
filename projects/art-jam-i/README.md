@@ -6,15 +6,21 @@ Author: PHILIPPE HEBERT
 
 ## Description
 
-TODO: Description
+Art Jam I submission.
 
-## Screenshot(s)
+Presents a literal portrait of myself as an SVG outline; upon user interaction, fills
+up a bar, to then display a video [Transcendence - Limitless](https://www.youtube.com/watch?v=h3p_9-R_siI) and play some animations of the SVG on top.
 
-TODO: Screenshot(s)
+I think this is a very fitting self-portrait of myself -
+
+- The project is well technically architected, with clean separation of concerns and interfaces, which reflects my experience (and inclinations towards more engineering than less)
+- The video reflects my interest in ontology, metaphysics, spirituality, and curiosity
+- The video reflects my humour (at the end principally)
+- The global idea reflects my technical background, but also limited creativity, in the sense that I took "self-portrait" quite literal rather than creatively. It's something I'd like to improve on the next project.
 
 ## Attribution
 
-*This project adheres to the [Attribution section in the root README of this repository](https://github.com/philippefutureboy/cu-cart253/#Attribution)*
+_This project adheres to the [Attribution section in the root README of this repository](https://github.com/philippefutureboy/cu-cart253/#Attribution)_
 
 For the sake of thoroughness, this project relies on the following libraries:
 
@@ -22,7 +28,12 @@ For the sake of thoroughness, this project relies on the following libraries:
 - Vite (& Vite's React template/scaffold - generated using `npm create vite@latest`)
 - React
 - p5.js
-- @p5-wrapper/react for integration within React
+
+Furthermore, the following videos are used from YouTube:
+
+- Krause, Pedro. 2017. "Transcendence - Limitless." September 6, 2017. Accessed September 24, 2025. Music video. Music produced by Hans Zimmer. 1:40. https://www.youtube.com/watch?v=h3p_9-R_siI.
+
+- JLesis. 2023. "mmaaAAAaah." March 18, 2023. Accessed September 26, 2025. Viral meme. 0:09. https://www.youtube.com/watch?v=SWkMYO9V_-k.
 
 ### Usage of Gen AI
 
@@ -30,18 +41,4 @@ Any use of Generative AI will have proper attribution at the site of usage.
 
 ## License
 
-*This project adheres to the [License section in the root README of this repository](https://github.com/philippefutureboy/cu-cart253/#License).*
-
-
-## React + Vite template
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-### Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+_This project adheres to the [License section in the root README of this repository](https://github.com/philippefutureboy/cu-cart253/#License)._
