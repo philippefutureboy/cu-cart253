@@ -248,9 +248,14 @@ export default class SVGDrawer {
    * Inspects and processes the provided SVG string; extracts styling, path commands, and stores
    * the resulting Path2D + metadata/styling info into this._paths.
    *
-   * @param {String} rawSvg An SVG document, as a raw (utf-8 encoded) string
+   * @param {string|Promise<string>} rawSvg An SVG document, as a raw (utf-8 encoded) string
    */
-  _processSvg(rawSvg) {
+  async _processSvg(rawSvg) {
+    // resolve the rawSvg value if it is a Promise
+    if (rawSvg instanceof Promise) {
+      rawSvg = await rawSvg;
+    }
+
     // Assuming a raw svg string,
     // we can load it as a DOM to query it for its content
     // @see https://stackoverflow.com/a/24109000

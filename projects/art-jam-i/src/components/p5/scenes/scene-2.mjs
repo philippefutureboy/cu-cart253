@@ -39,15 +39,18 @@ export default class Scene2 extends AbstractP5Scene {
    * @returns {void|Promise<void>}
    */
   async preload(p5, ctx) {
+    // Vite serves public/ at the web root and copies it verbatim to the build
+    // this is the easiest way to load static video files on production build
+    const ASSETS = `${import.meta.env.BASE_URL}assets/`;
     const transcendent = new VideoOverlay({
       name: "transcendent",
-      uri: "src/assets/Pedro Krause - Transcendence - Limitless - h3p_9-R_siI.mp4",
+      uri: `${ASSETS}/Pedro Krause - Transcendence - Limitless - h3p_9-R_siI.mp4`,
       opacity: 1,
       saturation: 1,
     });
     const meow = new VideoOverlay({
       name: "meow",
-      uri: "src/assets/JLesis - mmaaAAAaah - SWkMYO9V_-k.mp4",
+      uri: `${ASSETS}/JLesis - mmaaAAAaah - SWkMYO9V_-k.mp4`,
       opacity: 0,
       saturation: 1,
     });

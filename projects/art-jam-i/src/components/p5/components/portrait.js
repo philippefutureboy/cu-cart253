@@ -12,9 +12,11 @@
  */
 
 import SVGDrawer from "src/components/p5/components/svg";
-// `?raw` tells vite to return the import as a string rather than wrap it as a React component
-import portraitSvgRaw from "src/assets/portrait.svg?raw";
-// import portraitGlassesSvgRaw from './portrait-glasses.svg?raw';
+import { loadSvgText } from "src/utils/assets";
+
+// since vite doesn't process files under public/, we need to load svgs under public/ via
+// a network request
+const portraitSvgRaw = loadSvgText("assets/portrait.svg");
 
 export default class Portrait {
   constructor({
