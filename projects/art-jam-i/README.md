@@ -18,6 +18,12 @@ I think this is a very fitting self-portrait of myself -
 - The video reflects my humour (at the end principally)
 - The global idea reflects my technical background, but also limited creativity, in the sense that I took "self-portrait" quite literal rather than creatively. It's something I'd like to improve on the next project.
 
+## New p5.js functions
+
+- p5.ortho + p5.translate: For projection between WebGL and P2D coordinate systems
+- p5.createShader + p5.createVideo: To load a video as a texture on WebGL canvas
+- p5.rotateZ: To rotate an image loaded on the canvas (WebGL)
+
 ## Attribution
 
 _This project adheres to the [Attribution section in the root README of this repository](https://github.com/philippefutureboy/cu-cart253/#Attribution)_
