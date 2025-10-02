@@ -44,13 +44,13 @@ export default class Scene2 extends AbstractP5Scene {
     const ASSETS = `${import.meta.env.BASE_URL}assets`;
     const transcendent = new VideoOverlay({
       name: "transcendent",
-      uri: `${ASSETS}/Pedro Krause - Transcendence - Limitless - h3p_9-R_siI.mp4`,
+      uri: `${ASSETS}/Pedro_Krause_Transcendence_Limitless_h3p_9-R_siI.mp4`,
       opacity: 1,
       saturation: 1,
     });
     const meow = new VideoOverlay({
       name: "meow",
-      uri: `${ASSETS}/JLesis - mmaaAAAaah - SWkMYO9V_-k.mp4`,
+      uri: `${ASSETS}/JLesis_mmaaAAAaah_SWkMYO9V_-k.mp4`,
       opacity: 0,
       saturation: 1,
     });
