@@ -9,7 +9,7 @@ describe("<P5.Setup>", () => {
         <P5.Canvas id="foo" width={200} height={100}>
           <P5.Setup fn={() => {}} />
         </P5.Canvas>
-      </P5.ContextProvider>
+      </P5.ContextProvider>,
     );
   });
 });

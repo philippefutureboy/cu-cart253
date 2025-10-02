@@ -14,7 +14,7 @@ describe("<P5.Canvas>", () => {
 
     
     const div = screen.getByTestId("p5-host-foo");
- expect(div).toBeInTheDocument();
+    expect(div).toBeInTheDocument();
   });
 
   it("unmounts cleanly", () => {

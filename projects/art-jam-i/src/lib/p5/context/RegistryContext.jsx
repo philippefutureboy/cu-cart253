@@ -1,44 +1,53 @@
-import React, { createContext, useCallback, useMemo, useState } from "react";
-
-export const RegistryContext = createContext(null);
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useCallback, useMemo, useRef, useState } from "react";
 
 /**
- * Global provider that keeps a registry of canvases.
- * Each entry: id -> { p5Ref, canvasRef, ready, size, setDraw, setSetupSpec, recreate }
+ * Shape per canvas:
+ * {
+ *   p5Ref, canvasRef,
+ *   ready: boolean,
+ *   size: {width, height},
+ *   setScene, preload, addEventListener, addEventListenerScoped, removeEventListener
+ * }
  */
+export const RegistryContext = createContext(null);
+
 export function ContextProvider({ children }) {
-  const [registry, setRegistry] = useState(() => new Map());
+  const [version, setVersion] = useState(0);
+  const mapRef = useRef(new Map());
 
-  const registerCanvas = useCallback((id, api) => {
-    setRegistry((prev) => {
-      const next = new Map(prev);
-      next.set(id, api);
-      return next;
-    });
-  }, []);
-
-  const updateCanvas = useCallback((id, patch) => {
-    setRegistry((prev) => {
-      if (!prev.has(id)) return prev;
-      const next = new Map(prev);
-      next.set(id, { ...prev.get(id), ...patch });
-      return next;
-    });
+  const registerCanvas = useCallback((id, entry) => {
+    mapRef.current.set(id, { ...(mapRef.current.get(id) || {}), ...entry });
+    setVersion((v) => v + 1);
   }, []);
 
   const unregisterCanvas = useCallback((id) => {
-    setRegistry((prev) => {
-      if (!prev.has(id)) return prev;
-      const next = new Map(prev);
-      next.delete(id);
-      return next;
-    });
+    mapRef.current.delete(id);
+    setVersion((v) => v + 1);
+  }, []);
+
+  const updateCanvas = useCallback((id, patch) => {
+    const prev = mapRef.current.get(id);
+    if (!prev) return;
+    mapRef.current.set(id, { ...prev, ...patch });
+    setVersion((v) => v + 1);
   }, []);
 
   const value = useMemo(
-    () => ({ registry, registerCanvas, updateCanvas, unregisterCanvas }),
-    [registry, registerCanvas, updateCanvas, unregisterCanvas]
+    () => ({
+      registerCanvas,
+      unregisterCanvas,
+      updateCanvas,
+      get: (id) => mapRef.current.get(id),
+      list: () => Array.from(mapRef.current.keys()),
+      version, // allow subscribers to react to changes
+    }),
+    [registerCanvas, unregisterCanvas, updateCanvas, version],
   );
 
-  return <RegistryContext.Provider value={value}>{children}</RegistryContext.Provider>;
+  return (
+    <RegistryContext.Provider value={value}>
+      {children}
+    </RegistryContext.Provider>
+  );
 }

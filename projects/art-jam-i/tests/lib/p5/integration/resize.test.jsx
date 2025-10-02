@@ -16,7 +16,7 @@ describe("integration: resize behavior", () => {
           <P5.Draw fn={() => {}} />
         </P5.Canvas>
         <ShowSize id="foo" />
-      </P5.ContextProvider>
+      </P5.ContextProvider>,
     );
 
     // initial size
@@ -29,7 +29,7 @@ describe("integration: resize behavior", () => {
           <P5.Draw fn={() => {}} />
         </P5.Canvas>
         <ShowSize id="foo" />
-      </P5.ContextProvider>
+      </P5.ContextProvider>,
     );
 
     // should update without error
@@ -43,7 +43,7 @@ describe("integration: resize behavior", () => {
           <P5.Draw fn={() => {}} />
         </P5.Canvas>
         <ShowSize id="foo" />
-      </P5.ContextProvider>
+      </P5.ContextProvider>,
     );
 
     expect(getByTestId("size-foo").textContent).toBe("100x100");
@@ -55,7 +55,7 @@ describe("integration: resize behavior", () => {
           <P5.Draw fn={() => {}} />
         </P5.Canvas>
         <ShowSize id="foo" />
-      </P5.ContextProvider>
+      </P5.ContextProvider>,
     );
 
     // We can only assert that size info is still valid after recreate

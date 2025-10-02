@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "format": "prettier --write 'src/**/*.{js,ts,jsx,tsx,json,css,md}' 'tests/**/*.{js,ts,jsx,tsx,json,css,md}'",
     "preview": "vite preview",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "lodash.merge": "^4.6.2",
     "p5": "^2.0.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
@@ -34,6 +36,8 @@
     "globals": "^16.3.0",
     "jest": "^30.1.3",
     "jest-environment-jsdom": "^30.1.2",
+    "path": "^0.12.7",
+    "prettier": "^3.6.2",
     "vite": "^7.1.2"
   }
 }

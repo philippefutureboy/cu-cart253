@@ -1,7 +1,8 @@
 import { createContext } from "react";
 
 /**
- * Per-canvas context so <P5.Setup> / <P5.Draw> target their owning canvas.
- * value: { id, setSetupSpec, setDraw, recreate }
+ * CanvasContext is used by components rendered as children of <P5.Canvas>,
+ * such as <P5.Scene>, to register themselves and to access Canvas wiring.
+ * Scene classes DO NOT consume this; they get a SceneContext instance instead.
  */
 export const CanvasContext = createContext(null);
