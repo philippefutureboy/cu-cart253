@@ -1,0 +1,21 @@
+{
+    "security.workspace.trust.untrustedFiles": "open",
+    "workbench.startupEditor": "none",
+    "liveServer.settings.donotShowInfoMsg": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "[json]": {
+        "editor.quickSuggestions": {
+            "other": "off",
+            "strings": "off"
+        },
+        "editor.inlineSuggest.suppressSuggestions": true,
+        "editor.inlineSuggest.enabled": false
+    },
+    "editor.acceptSuggestionOnCommitCharacter": false,
+    "editor.trimAutoWhitespace": false,
+    "editor.formatOnPaste": true,
+    "update.showReleaseNotes": false,
+    "javascript.suggest.enabled": false,
+    "typescript.suggest.enabled": false
+}
