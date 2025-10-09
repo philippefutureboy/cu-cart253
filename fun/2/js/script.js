@@ -19,6 +19,31 @@ const user = {
   moves: [],
   gx: 0,
   gy: 0,
+
+  addMove(direction) {
+    this.moves.push(direction);
+  },
+
+  applyMove(arrowKeysDown) {
+    switch (this.moves.at(-1)) {
+      case "down":
+        this.gy = constrain(this.gy + 1, 0, gridSize[1]);
+        break;
+      case "up":
+        this.gy = constrain(this.gy - 1, 0, gridSize[1]);
+        break;
+      case "left":
+        this.gx = constrain(this.gx - 1, 0, gridSize[0]);
+        break;
+      case "right":
+        this.gx = constrain(this.gx + 1, 0, gridSize[0]);
+        break;
+      default:
+        break;
+    }
+    // clear the moves, but keep the direction if the arrow key is down
+    this.moves = this.moves.filter((move) => arrowKeysDown[move]);
+  },
 };
 
 function setup() {
@@ -29,22 +54,12 @@ function setup() {
 function draw() {
   // move once per half second
   if (Math.floor(frameCount % MOVE_RATE) === 0 && user.moves.length !== 0) {
-    switch (user.moves.at(0)) {
-      case "down":
-        user.gy = constrain(user.gy + 1, 0, gridSize[1]);
-        break;
-      case "up":
-        user.gy = constrain(user.gy - 1, 0, gridSize[1]);
-        break;
-      case "left":
-        user.gx = constrain(user.gx - 1, 0, gridSize[0]);
-        break;
-      case "right":
-        user.gx = constrain(user.gx + 1, 0, gridSize[0]);
-        break;
-      default:
-        break;
-    }
+    user.applyMove({
+      down: keyIsDown(DOWN_ARROW),
+      up: keyIsDown(UP_ARROW),
+      left: keyIsDown(LEFT_ARROW),
+      right: keyIsDown(RIGHT_ARROW),
+    });
   }
 
   background("#808080");
@@ -70,17 +85,8 @@ function draw() {
 }
 
 function keyPressed() {
-  if (key === "ArrowDown") {
-    user.moves.unshift("down");
-  } else if (key === "ArrowUp") {
-    user.moves.unshift("up");
-  } else if (key === "ArrowLeft") {
-    user.moves.unshift("left");
-  } else if (key === "ArrowRight") {
-    user.moves.unshift("right");
+  if (key.startsWith("Arrow")) {
+    const direction = key.substring(5).toLowerCase();
+    user.addMove(direction);
   }
-}
-
-function keyReleased() {
-  user.moves.pop();
 }
