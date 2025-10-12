@@ -145,6 +145,11 @@ jobs:
           set -eux
           [ -d challenges ] && cp -r challenges site
 
+      - name: Collect static fun/** -> site/fun/**
+        run: |
+          set -eux
+          [ -d fun ] && cp -r fun site
+
       # --- UPLOAD ARTIFACT FOR PAGES --------------------------------------------------------------
 
       - name: Upload Pages artifact (./site)
