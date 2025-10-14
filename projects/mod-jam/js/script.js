@@ -11,16 +11,11 @@ class MouseCursor {
   }
 }
 
-class Frog {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  draw() {
+class FrogDrawer {
+  draw(x, y, angle = 0) {
     push();
-    translate(this.x, this.y);
-    // rotate((frameCount / 360) * 2 * PI)
+    translate(x, y);
+    rotate(angle);
 
     // frog helmet lens
     fill(color(255, 255, 255, 40));
@@ -77,8 +72,28 @@ class Frog {
     endShape(CLOSE);
     pop();
 
-    translate(-this.x, -this.y);
+    translate(-x, -y);
     pop();
+  }
+}
+
+class FrogModel {
+  constructor(x, y, angle = 0) {
+    this.x = x;
+    this.y = y;
+    this.angle = angle;
+  }
+}
+
+class Frog {
+  constructor(x, y, angle = 0) {
+    this.model = new FrogModel(x, y, angle);
+    this.drawer = new FrogDrawer();
+  }
+
+  draw() {
+    const { x, y, angle } = this.model;
+    this.drawer.draw(x, y, angle);
   }
 }
 
