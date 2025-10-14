@@ -15,6 +15,7 @@ const grid = [
 const FRAME_RATE = 60;
 const MOVE_RATE = 30; // every half a second
 const gridSize = [grid[0].length, grid.length];
+
 const user = {
   moves: [],
   gx: 0,
