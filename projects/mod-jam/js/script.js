@@ -1,28 +1,58 @@
 // --- CLASS DECLARATIONS --------------------------------------------------------------------------
 
-class GameController {
-  constructor() {
-    this.up = false;
-    this.down = false;
-    this.left = false;
-    this.right = false;
+class DebuggerView {
+  constructor(input) {
+    this.input = input;
   }
 
-  draw() {
+  draw({ showStats = false, showInput = true } = {}) {
+    const { up, down, left, right, clickAt } = this.input;
+
+    // draw crosshair at last clicked position
+    if (input && clickAt !== null) {
+      push();
+      stroke("blue");
+      strokeWeight(1);
+      line(clickAt[0], 0, clickAt[0], height);
+      line(0, clickAt[1], width, clickAt[1]);
+      pop();
+    }
+    // draw info
+    let lines = [];
+
+    if (showStats) {
+      lines = [
+        ...lines,
+        "Stats:",
+        `  frameCount: ${frameCount}`,
+        `  frameRate: ${frameRate()}`,
+        `  time: ${millis() / 1000}s`,
+        `  size: (${width}, ${height})`,
+      ];
+    }
+    if (showInput) {
+      lines = [
+        ...lines,
+        "Input:",
+        `  up: ${up}`,
+        `  down: ${down}`,
+        `  left: ${left}`,
+        `  right: ${right}`,
+        `  mouse: (${Math.floor(mouseX)}, ${Math.floor(mouseY)})`,
+        clickAt !== null
+          ? `  click: (${Math.floor(clickAt[0])}, ${Math.floor(clickAt[1])})`
+          : "  click:",
+      ];
+    }
     push();
     fill("white");
     textAlign(LEFT, TOP);
-    text("Controller:", 5, 5);
-    text(`  up: ${this.up}`, 5, 20);
-    text(`  down: ${this.down}`, 5, 35);
-    text(`  left: ${this.left}`, 5, 50);
-    text(`  right: ${this.right}`, 5, 65);
+    for (let [i, line] of lines.entries()) {
+      text(line, 5, 5 + i * 15);
+    }
     pop();
-  }
-}
 
-class MouseCursor {
-  draw() {
+    // draw cursor position next to it
     const onCanvas =
       mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height;
 
@@ -133,8 +163,14 @@ class Frog {
 
 // --- GLOBAL VARIABLES ----------------------------------------------------------------------------
 
-const gameController = new GameController();
-const mouseCursor = new MouseCursor();
+const input = {
+  up: false,
+  down: false,
+  left: false,
+  right: false,
+  clickAt: null,
+};
+const debuggerView = new DebuggerView(input);
 const frog = new Frog(300, 300);
 
 // --- P5.js RUNTIME -------------------------------------------------------------------------------
@@ -146,22 +182,25 @@ function setup() {
 function draw() {
   background(0);
   frog.draw();
-  gameController.draw();
-  mouseCursor.draw();
+  debuggerView.draw();
 }
 
 function keyPressed() {
   if (key.startsWith("Arrow")) {
     const direction = key.substring(5).toLowerCase();
-    gameController[direction] = true;
+    input[direction] = true;
   }
 }
 
 function keyReleased() {
   if (key.startsWith("Arrow")) {
     const direction = key.substring(5).toLowerCase();
-    gameController[direction] = false;
+    input[direction] = false;
   }
+}
+
+function mouseClicked() {
+  input.clickAt = [mouseX, mouseY];
 }
 
 // --- HELPER FUNCTIONS ----------------------------------------------------------------------------
