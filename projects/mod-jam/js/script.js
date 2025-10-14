@@ -1,20 +1,48 @@
+// --- CLASS DECLARATIONS --------------------------------------------------------------------------
+
+class GameController {
+  constructor() {
+    this.up = false;
+    this.down = false;
+    this.left = false;
+    this.right = false;
+  }
+
+  draw() {
+    push();
+    fill("white");
+    textAlign(LEFT, TOP);
+    text("Controller:", 5, 5);
+    text(`  up: ${this.up}`, 5, 20);
+    text(`  down: ${this.down}`, 5, 35);
+    text(`  left: ${this.left}`, 5, 50);
+    text(`  right: ${this.right}`, 5, 65);
+    pop();
+  }
+}
+
 class MouseCursor {
   draw() {
     const onCanvas =
       mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height;
 
     if (onCanvas) {
+      push();
       fill("white");
       textAlign(LEFT, BOTTOM);
       text(` (${Math.floor(mouseX)}, ${Math.floor(mouseY)})`, mouseX, mouseY);
+      pop();
     }
   }
 }
 
-class FrogDrawer {
-  draw(x, y, angle = 0) {
+/**
+ * View (MVC pattern) for the Frog
+ */
+class FrogView {
+  draw(fx, fy, tx, ty, angle = 0) {
     push();
-    translate(x, y);
+    translate(fx, fy);
     rotate(angle);
 
     // frog helmet lens
@@ -72,11 +100,14 @@ class FrogDrawer {
     endShape(CLOSE);
     pop();
 
-    translate(-x, -y);
+    translate(-fx, -fy);
     pop();
   }
 }
 
+/**
+ * Model (MVC pattern) for the Frog
+ */
 class FrogModel {
   constructor(x, y, angle = 0) {
     this.x = x;
@@ -85,20 +116,28 @@ class FrogModel {
   }
 }
 
+/**
+ * Controller (MVC pattern) for the Frog
+ */
 class Frog {
   constructor(x, y, angle = 0) {
     this.model = new FrogModel(x, y, angle);
-    this.drawer = new FrogDrawer();
+    this.view = new FrogView();
   }
 
   draw() {
     const { x, y, angle } = this.model;
-    this.drawer.draw(x, y, angle);
+    this.view.draw(x, y, angle);
   }
 }
 
+// --- GLOBAL VARIABLES ----------------------------------------------------------------------------
+
+const gameController = new GameController();
 const mouseCursor = new MouseCursor();
 const frog = new Frog(300, 300);
+
+// --- P5.js RUNTIME -------------------------------------------------------------------------------
 
 function setup() {
   createCanvas(600, 600);
@@ -107,8 +146,25 @@ function setup() {
 function draw() {
   background(0);
   frog.draw();
+  gameController.draw();
   mouseCursor.draw();
 }
+
+function keyPressed() {
+  if (key.startsWith("Arrow")) {
+    const direction = key.substring(5).toLowerCase();
+    gameController[direction] = true;
+  }
+}
+
+function keyReleased() {
+  if (key.startsWith("Arrow")) {
+    const direction = key.substring(5).toLowerCase();
+    gameController[direction] = false;
+  }
+}
+
+// --- HELPER FUNCTIONS ----------------------------------------------------------------------------
 
 /**
  * Vector-based arc, to work with complex shapes (beginShape, endShape).
