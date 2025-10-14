@@ -70,7 +70,7 @@ class DebuggerView {
  * View (MVC pattern) for the Frog
  */
 class FrogView {
-  draw(fx, fy, tx, ty, angle = 0) {
+  draw(fx, fy, angle = 0) {
     push();
     translate(fx, fy);
     rotate(angle);
@@ -139,10 +139,13 @@ class FrogView {
  * Model (MVC pattern) for the Frog
  */
 class FrogModel {
-  constructor(x, y, angle = 0) {
+  constructor(x, y, angle = 0, angularVelocity = 0) {
     this.x = x;
     this.y = y;
-    this.angle = angle;
+    this.xVelocity = 0;
+    this.yVelocity = 0;
+    this.angle = angle ?? 0;
+    this.angularVelocity = angularVelocity ?? 0;
   }
 }
 
@@ -153,6 +156,16 @@ class Frog {
   constructor(x, y, angle = 0) {
     this.model = new FrogModel(x, y, angle);
     this.view = new FrogView();
+  }
+
+  update(input) {
+    if (input.up) this.model.yVelocity -= 0.04;
+    if (input.down) this.model.yVelocity += 0.04;
+    if (input.left) this.model.angularVelocity -= 0.0001;
+    if (input.right) this.model.angularVelocity += 0.0001;
+
+    this.model.y = this.model.y + this.model.yVelocity;
+    this.model.angle = this.model.angle + this.model.angularVelocity * 2 * PI;
   }
 
   draw() {
@@ -181,6 +194,7 @@ function setup() {
 
 function draw() {
   background(0);
+  frog.update(input);
   frog.draw();
   debuggerView.draw();
 }
@@ -199,8 +213,11 @@ function keyReleased() {
   }
 }
 
-function mouseClicked() {
-  input.clickAt = [mouseX, mouseY];
+function mouseClicked(event) {
+  // left click
+  if (event.button === 0) {
+    input.clickAt = [mouseX, mouseY];
+  }
 }
 
 // --- HELPER FUNCTIONS ----------------------------------------------------------------------------
