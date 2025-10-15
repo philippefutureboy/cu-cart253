@@ -265,6 +265,81 @@ class Frog {
   }
 }
 
+class FlyCounter {
+  constructor(count = 0) {
+    this.count = 0;
+  }
+
+  increment() {
+    this.count += 1;
+  }
+
+  draw(x, y) {
+    push();
+    fill("white");
+    textAlign(CENTER, CENTER);
+    text("Flies", x + 10, y);
+    textSize(20);
+    textAlign(CENTER, BOTTOM);
+    text(`${this.count}`, x + 10, y + 30);
+    pop();
+  }
+}
+
+class HungerBar {
+  constructor({ points = 100, hungerHz = 3 } = {}) {
+    this.points = points;
+    this.hungerHz = hungerHz;
+    this.lastHungerCheck = null;
+  }
+
+  update(points = 0) {
+    let result = this.points;
+    const ms = millis();
+
+    if (this.lastHungerCheck === null) {
+      this.lastHungerCheck = ms;
+    } else {
+      const deltaMs = ms - this.lastHungerCheck;
+      if (deltaMs > 1000) {
+        result -= Math.floor(deltaMs / 1000) * this.hungerHz;
+        this.lastHungerCheck = ms;
+      }
+    }
+    result += points ?? 0;
+
+    this.points = constrain(result, 0, 100);
+  }
+
+  draw(x, y, w, h) {
+    push();
+    fill("white");
+    textAlign(CENTER, CENTER);
+    text("Energy", x + w / 2, y);
+    pop();
+
+    const by = y + 12;
+    const { points } = this;
+    let fillColor;
+    if (points >= 90) fillColor = "#0f0";
+    else if (points >= 70) fillColor = "#cf0";
+    else if (points >= 50) fillColor = "#ff0";
+    else if (points >= 30) fillColor = "#ffa500";
+    else if (points >= 15) fillColor = "#f00";
+    else fillColor = "#950606";
+
+    push();
+    stroke("white");
+    strokeWeight(1.7);
+    noFill();
+    rect(x, by, w, h, 2);
+    noStroke();
+    fill(fillColor);
+    rect(x + 1, by + 1, (w - 2) * (points / 100), h - 2);
+    pop();
+  }
+}
+
 // --- RUNTIME VARIABLES ---------------------------------------------------------------------------
 
 const input = {
@@ -276,6 +351,9 @@ const input = {
   clickAt: null,
 };
 const debuggerView = new DebuggerView(input);
+let hasFly = false;
+const flyCounter = new FlyCounter();
+const hungerBar = new HungerBar();
 const frog = new Frog(300, 300);
 
 // --- P5.js RUNTIME -------------------------------------------------------------------------------
@@ -288,45 +366,69 @@ function draw() {
   // always reset frameRate to allow for step-by-step frame walk
   frameRate(FRAME_MODE_RATES[FRAME_MODE]);
   background(0);
+
+  // updates
   frog.update(input);
+  if (hasFly) {
+    flyCounter.increment();
+    hungerBar.update(10);
+    hasFly = false;
+  } else {
+    hungerBar.update(0);
+  }
+
+  // draw
   frog.draw();
+  flyCounter.draw(width - 30, 16);
+  hungerBar.draw(width - 150, 16, 100, 12);
   if (DEBUG_MODE) {
     debuggerView.draw();
   }
 }
 
 function keyPressed() {
+  // handle controls
   if (key.startsWith("Arrow")) {
     const direction = key.substring(5).toLowerCase();
     input[direction] = true;
     return;
   }
+  if (key === " ") {
+    input.space = true;
+    return;
+  }
+  // handle debug controls
   switch (key) {
-    case " ":
-      input.space = true;
-      break;
-    case "d":
+    // DEBUG_MODE toggler
+    case "1":
       DEBUG_MODE = (DEBUG_MODE + 1) % 3;
-      // resets frameMode to default if debugMode is off
+      // resets FRAME_MODE to default if DEBUG_MODE is off
       if (DEBUG_MODE === 0) {
         FRAME_MODE = 2;
         frameRate(FRAME_MODE_RATES[FRAME_MODE]);
       }
       break;
-    case "n":
-      // force refresh if in frameMode === 0
-      if (FRAME_MODE === 0) frameRate(60);
-      break;
-    case "f":
-      // enable frameMode only in debugMode is on
+    // FRAME_MODE toggler
+    case "2":
+      // enable FRAME_MODE only if DEBUG_MODE is on
       if (!DEBUG_MODE === 0) break;
       FRAME_MODE = (FRAME_MODE + 1) % 3;
-      // force refresh if previously in frameMode === 0
+      // force refresh if previously if FRAME_MODE === 0
       // otherwise p5 won't start rendering again
       if (FRAME_MODE === 1) frameRate(FRAME_MODE_RATES[FRAME_MODE]);
       break;
-    case " ":
-      input.space = true;
+    // Frame by frame stepper
+    case "3":
+      // enable stepping only if DEBUG_MODE is on
+      if (DEBUG_MODE === 0) break;
+      // force refresh if in FRAME_MODE === 0
+      if (FRAME_MODE === 0) frameRate(60);
+      break;
+    // Fly counter increment
+    case "4":
+      // enable flyCounter increment only if DEBUG_MODE is on
+      if (!DEBUG_MODE === 0) break;
+      hasFly = true;
       break;
     default:
       break;
