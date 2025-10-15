@@ -19,6 +19,8 @@ var DEBUG_MODE = 0;
  */
 var FRAME_MODE = 2;
 const FRAME_MODE_RATES = [0, 1, 60];
+var DEBUG_MESSAGE_INDEX = 0;
+var DEBUG_ALL_MESSAGES = null;
 
 // --- CLASS DECLARATIONS --------------------------------------------------------------------------
 
@@ -81,6 +83,74 @@ class DebuggerView {
       text(` (${Math.floor(mouseX)}, ${Math.floor(mouseY)})`, mouseX, mouseY);
       pop();
     }
+  }
+}
+
+/**
+ * NASASpeechSynthesizer
+ *
+ * Exposes a processed voice that gives a retro/NASA-ground-control feeling.
+ * Uses the browser's text to speech API to play some text utterance to the user.
+ *
+ * This code and the conceptualisation was authored by ChatGPT-5 (OpenAI), and then integrated
+ * by Philippe Hebert.
+ * Full conversation available at ./docs/ATTRIBUTION/chatgpt-log-speech-2025-10-14.html
+ *
+ */
+class NASASpeechSynthesizer {
+  constructor() {
+    this._initializeVoiceProcessing();
+    this.defaultVoice = this.pickRetroVoice();
+  }
+
+  _initializeVoiceProcessing() {
+    const ctx = new AudioContext();
+
+    // Speech output destination via Web Audio
+    const dest = ctx.createMediaStreamDestination();
+    const audio = new Audio();
+    audio.srcObject = dest.stream;
+    audio.play();
+
+    // Simple "radio" EQ
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 1200; // NASA-radio mid tone
+    filter.Q.value = 0.7;
+    filter.connect(ctx.destination);
+
+    // Connect stream to filter
+    const source = ctx.createMediaStreamSource(dest.stream);
+    source.connect(filter);
+  }
+
+  pickRetroVoice() {
+    const voices = this.getVoices();
+
+    // Try macOS “Fred”
+    let voice = voices.find((v) => /Fred/i.test(v.name));
+
+    // Otherwise pick the most robotic or male Google/Microsoft voice
+    if (!voice)
+      voice = voices.find((v) =>
+        /Google UK English Male|Microsoft David/i.test(v.name)
+      );
+
+    // Fallback to default
+    return voice || voices.find((v) => v.default) || voices[0];
+  }
+
+  getVoices() {
+    return window.speechSynthesis.getVoices();
+  }
+
+  speak(text, { pitch = 0.9, rate = 0.9, volume = 1, voice = null } = {}) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = voice ?? this.defaultVoice;
+    utterance.pitch = pitch;
+    utterance.rate = rate;
+    utterance.volume = volume;
+    window.speechSynthesis.speak(utterance);
   }
 }
 
@@ -242,7 +312,7 @@ class FrogBodyModel extends PhysicsObjectModel {}
  * Controller (MVC pattern) for the Frog
  */
 class Frog {
-  constructor(x, y, angle = 0) {
+  constructor({ x, y, angle = 0 } = {}) {
     this.body = {
       model: new FrogBodyModel({ x, y, angle }),
       view: new FrogBodyView(),
@@ -266,12 +336,44 @@ class Frog {
 }
 
 class FlyCounter {
-  constructor(count = 0) {
+  easterEggTexts = [
+    ["A space fly", { pitch: 0.9, rate: 0.9, volume: 1.0 }],
+    ["Did you see that?!", { pitch: 1.1, rate: 1.0, volume: 1.0 }],
+    ["Another fly bites the dust!", { pitch: 0.9, rate: 1.0, volume: 1.0 }],
+    ["RIP that fly.", { pitch: 0.9, rate: 0.8, volume: 1.0 }],
+    ["That's not gonna fly", { pitch: 0.9, rate: 1.1, volume: 1.0 }],
+    ["Ground Control to Major Tom!", { pitch: 1.4, rate: 0.8, volume: 1.0 }],
+  ];
+
+  constructor({ count = 0, synthesizer = null, easterEggTexts = null } = {}) {
     this.count = 0;
+    this.synthesizer = synthesizer;
+    this.easterEggTexts = easterEggTexts ?? this.easterEggTexts;
+    this.easterEggIndex = 0;
+    this.lastEasterEgg = null;
   }
 
   increment() {
     this.count += 1;
+    // Little UX sugar, we add a little voiceover when a fly is caught
+    if (this.synthesizer) {
+      let msgConfig;
+      // We have a few easter eggs, but gotta hide them amongst the usual counting
+      // voiceovers
+      if (
+        this.count - (this.lastEasterEgg ?? 0) > 4 &&
+        this.easterEggIndex < this.easterEggTexts.length &&
+        Math.random() > 0.4
+      ) {
+        msgConfig = this.easterEggTexts[this.easterEggIndex];
+        this.easterEggIndex += 1;
+        this.lastEasterEgg = this.count;
+        // Counts the number of flies caught verbally, uttered with default config
+      } else {
+        msgConfig = [`${this.count} ${this.count === 1 ? "fly" : "flies"}.`];
+      }
+      this.synthesizer.speak(...msgConfig);
+    }
   }
 
   draw(x, y) {
@@ -350,16 +452,23 @@ const input = {
   space: false,
   clickAt: null,
 };
-const debuggerView = new DebuggerView(input);
 let hasFly = false;
-const flyCounter = new FlyCounter();
-const hungerBar = new HungerBar();
-const frog = new Frog(300, 300);
+let debuggerView;
+let speechSynthesizer;
+let flyCounter;
+let hungerBar;
+let frog;
 
 // --- P5.js RUNTIME -------------------------------------------------------------------------------
 
 function setup() {
-  createCanvas(600, 600);
+  // FIXME: CANVAS AUTO RESIZE
+  createCanvas(window.innerWidth, window.innerHeight);
+  debuggerView = new DebuggerView(input);
+  speechSynthesizer = new NASASpeechSynthesizer();
+  flyCounter = new FlyCounter({ synthesizer: speechSynthesizer });
+  hungerBar = new HungerBar();
+  frog = new Frog({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
 }
 
 function draw() {
@@ -427,8 +536,18 @@ function keyPressed() {
     // Fly counter increment
     case "4":
       // enable flyCounter increment only if DEBUG_MODE is on
-      if (!DEBUG_MODE === 0) break;
+      if (DEBUG_MODE === 0) break;
       hasFly = true;
+      break;
+    case "0":
+      // speak all easter egg messages only if DEBUG_MODE is on
+      if (DEBUG_MODE === 0) break;
+      if (DEBUG_ALL_MESSAGES === null) {
+        DEBUG_ALL_MESSAGES = [...flyCounter.easterEggTexts];
+      }
+      speechSynthesizer.speak(...DEBUG_ALL_MESSAGES[DEBUG_MESSAGE_INDEX]);
+      DEBUG_MESSAGE_INDEX =
+        (DEBUG_MESSAGE_INDEX + 1) % DEBUG_ALL_MESSAGES.length;
       break;
     default:
       break;
