@@ -45,11 +45,12 @@ Her use of a serene/peaceful expression, of an enveloping/voluminous & velvety "
 When it comes to the code, it is well structured, and satisfies the expectations for someone who is new to coding. A few suggested improvements:
 
 - L569-577,L580-632: Could be simplified significantly using an array of dots & for-of loop;
-- L25-238: The use of objects for static display is redundant, albeit very clear.
+- L25-238: The use of top-of-file objects that are constants and used in a single spot is redundant (DRY principle); albeit it does add clarity
+  at the usage site
 
 In conclusion, I think this piece speaks to Christie's soft and bubbly personality just as much as it speaks to her design background. I was impressed by the simplicity of the shapes vs the amount they were able to convey on an emotional & visual vocabulary level.
 
-(179 words)
+(194 words)
 
 
 ## Lucas Meldrum's "MEyes Portrait"
@@ -86,7 +87,7 @@ Lucas' piece clearly demonstrates his technical knowhow as a Comp-Sci joint majo
 
 ## Word Count - Total
 
-(527 words)
+(542 words)
 
 ---
 
