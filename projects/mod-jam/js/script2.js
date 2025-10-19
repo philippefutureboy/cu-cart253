@@ -13,6 +13,11 @@ const FROG_RADIUS = 24; // approximate disk radius for inertia
 // Anchor in frog local coords (mouth offset from Center Of Mass (COM))
 const MOUTH_OFFSET_LOCAL = { x: +20, y: 0 }; // pixels in frog's body frame
 
+// Tongue params
+const N_NODES = 10; // number of tongue nodes (0..N-1)
+const TONGUE_LENGTH = 200; // total visual length (pixels)
+const SEG_REST = TONGUE_LENGTH / (N_NODES - 1); // spacing between nodes
+
 // ============================ BASE MODEL / VIEW ===============================
 
 class PhysicsObjectModel {
@@ -100,8 +105,8 @@ class FrogBodyModel extends PhysicsObjectModel {
 }
 
 class FrogBodyView extends PhysicsObjectView {
-  draw(model) {
-    const { x, y, angle } = model;
+  draw(body) {
+    const { x, y, angle } = body;
     push();
     translate(x, y);
     rotate(angle);
@@ -109,20 +114,64 @@ class FrogBodyView extends PhysicsObjectView {
       // body
       fill("#0f0");
       stroke(0);
-      ellipse(0, 0, 2 * model.radius, 2 * model.radius);
+      ellipse(0, 0, 2 * body.radius, 2 * body.radius);
       // heading line
       stroke(0);
-      line(0, 0, model.radius, 0);
+      line(0, 0, body.radius, 0);
     }
     pop();
 
     if (DEBUG_MODE === 2) {
-      this._drawDebugInfo(x + 30, y, model);
+      this._drawDebugInfo(x + 30, y, body);
     }
   }
 }
 
-// =============================== FROG MODEL ==================================
+// =============================== FROG TONGUE ===================================
+
+/**
+ * FrogTongueModel
+ * - Holds an array of PhysicsObjectModel nodes.
+ * - For Phase 4 (no physics), we’ll simply *set* node positions each frame
+ *   to lie on a straight ray from the mouth along the frog heading.
+ * - Node 0 is considered the anchor (mass 0).
+ */
+class FrogTongueModel {
+  constructor() {
+    this.nodes = [];
+    for (let i = 0; i < N_NODES; i++) {
+      const mass = i === 0 ? 0 : 0.05; // placeholder masses; physics comes later
+      this.nodes.push(new PhysicsObjectModel({ mass, x: 0, y: 0 }));
+    }
+  }
+}
+
+class FrogTongueView {
+  draw(tongue) {
+    const nodes = tongue.nodes;
+
+    // draw segments
+    stroke("#f44");
+    strokeWeight(3);
+    noFill();
+    for (let i = 0; i < nodes.length - 1; i++) {
+      const a = nodes[i],
+        b = nodes[i + 1];
+      line(a.x, a.y, b.x, b.y);
+    }
+
+    // tip as a small red rectangle
+    const tip = nodes[nodes.length - 1];
+    push();
+    rectMode(CENTER);
+    noStroke();
+    fill("#f44");
+    rect(tip.x, tip.y, 8, 6, 1);
+    pop();
+  }
+}
+
+// =============================== FROG =======================================
 // Keep ALL frog state in the model (controller stays thin)
 class FrogModel {
   constructor(x, y, angle = 0) {
@@ -133,6 +182,19 @@ class FrogModel {
       y: y + MOUTH_OFFSET_LOCAL.y,
     };
     this.mouthVel = { x: 0, y: 0 }; // will be computed from COM vel + ω×r
+    this.tongue = new FrogTongueModel();
+  }
+}
+
+class FrogView {
+  constructor() {
+    this.body = new FrogBodyView();
+    this.tongue = new FrogTongueView();
+  }
+
+  draw(model) {
+    this.body.draw(model.body);
+    this.tongue.draw(model.tongue);
   }
 }
 
@@ -141,38 +203,50 @@ class FrogModel {
 class Frog {
   constructor(x, y, angle = 0) {
     this.model = new FrogModel(x, y, angle);
-    this.view = new FrogBodyView();
+    this.view = new FrogView();
   }
 
   update(dt) {
-    const b = this.model.body;
+    const { body, mouthWorld, mouthVel, tongue } = this.model;
     // --- Linear integration (semi-implicit Euler)
     // (No forces yet, but the helpers and pattern are ready for later phases)
-    integrateSemiImplicit(b, dt);
+    integrateSemiImplicit(body, dt);
 
     // --- Angular integration (semi-implicit Euler)
-    integrateAngularSemiImplicit(b, dt);
+    integrateAngularSemiImplicit(body, dt);
 
-    clearForces(b);
-    clearTorque(b);
+    clearForces(body);
+    clearTorque(body);
 
     // --- Phase 3: Mouth kinematics (pose + velocity) -------------------------
     // r_anchor = R(θ) * MOUTH_OFFSET_LOCAL
     // r_anchor: rotated vector MOUTH_OFFSET_LOCAL at angle θ
-    const r_anchor = rot2(b.a, MOUTH_OFFSET_LOCAL);
+    const r_anchor = rot2(body.a, MOUTH_OFFSET_LOCAL);
 
     // World position of mouth: X_anchor = X_com + r_anchor
-    this.model.mouthWorld.x = b.x + r_anchor.x;
-    this.model.mouthWorld.y = b.y + r_anchor.y;
+    mouthWorld.x = body.x + r_anchor.x;
+    mouthWorld.y = body.y + r_anchor.y;
 
     // Velocity at a point on a rigid body: v = V_com + ω × r
-    const v_rot = omegaCrossR(b.av, r_anchor);
-    this.model.mouthVel.x = b.xv + v_rot.x;
-    this.model.mouthVel.y = b.yv + v_rot.y;
+    const v_rot = omegaCrossR(body.av, r_anchor);
+    mouthVel.x = body.xv + v_rot.x;
+    mouthVel.y = body.yv + v_rot.y;
+
+    // --- Phase 4: Visual straight tongue from mouth along heading --------------
+    const dir = { x: Math.cos(body.a), y: Math.sin(body.a) }; // frog’s forward direction
+    const nodes = tongue.nodes;
+    for (let i = 0; i < nodes.length; i++) {
+      nodes[i].x = mouthWorld.x + dir.x * (i * SEG_REST);
+      nodes[i].y = mouthWorld.y + dir.y * (i * SEG_REST);
+
+      // not used yet, but keep velocities coherent for future phases
+      nodes[i].xv = mouthVel.x;
+      nodes[i].yv = mouthVel.y;
+    }
   }
 
   draw() {
-    this.view.draw(this.model.body);
+    this.view.draw(this.model);
 
     // debug: draw mouth anchor
     if (DEBUG_MODE === 2) {
