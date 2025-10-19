@@ -10,7 +10,7 @@ const MAX_SUBSTEPS = 2; // cap to avoid spiral-of-death on slow frames
 // Frog params
 const FROG_MASS = 4.0;
 const FROG_RADIUS = 24; // approximate disk radius for inertia
-// Anchor in frog local coords (mouth offset from COM)
+// Anchor in frog local coords (mouth offset from Center Of Mass (COM))
 const MOUTH_OFFSET_LOCAL = { x: +20, y: 0 }; // pixels in frog's body frame
 
 // ============================ BASE MODEL / VIEW ===============================
@@ -92,7 +92,10 @@ class FrogBodyModel extends PhysicsObjectModel {
   constructor({ x, y, angle = 0 }) {
     super({ x, y, angle, mass: FROG_MASS });
     this.radius = FROG_RADIUS;
-    // (We’ll add inertia/torque usage in Phase 3+)
+    // Approximate moment of inertia for a solid disk: I ≈ 1/2 m r^2
+    this.inertia = 0.5 * this.mass * Math.pow(this.radius, 2);
+    // Optional torque accumulator for future phases
+    this.torque = 0;
   }
 }
 
@@ -110,10 +113,6 @@ class FrogBodyView extends PhysicsObjectView {
       // heading line
       stroke(0);
       line(0, 0, model.radius, 0);
-    } else {
-      // TODO: your sprite here
-      fill("#0f0");
-      ellipse(0, 0, 2 * model.radius, 2 * model.radius);
     }
     pop();
 
@@ -133,6 +132,7 @@ class FrogModel {
       x: x + MOUTH_OFFSET_LOCAL.x,
       y: y + MOUTH_OFFSET_LOCAL.y,
     };
+    this.mouthVel = { x: 0, y: 0 }; // will be computed from COM vel + ω×r
   }
 }
 
@@ -144,22 +144,31 @@ class Frog {
     this.view = new FrogBodyView();
   }
 
-  // Phase 2: deterministic step — keep this lean for now.
   update(dt) {
-    const m = this.model.body;
+    const b = this.model.body;
+    // --- Linear integration (semi-implicit Euler)
+    // (No forces yet, but the helpers and pattern are ready for later phases)
+    integrateSemiImplicit(b, dt);
 
-    // 1) Clear forces each step
-    clearForces(m);
+    // --- Angular integration (semi-implicit Euler)
+    integrateAngularSemiImplicit(b, dt);
 
-    // 2) (Optional) apply a tiny constant force to test the loop stability
-    addForce(m, 5, 0);
+    clearForces(b);
+    clearTorque(b);
 
-    // 3) Integrate linear motion (angular comes later)
-    integrateSemiImplicit(m, dt);
+    // --- Phase 3: Mouth kinematics (pose + velocity) -------------------------
+    // r_anchor = R(θ) * MOUTH_OFFSET_LOCAL
+    // r_anchor: rotated vector MOUTH_OFFSET_LOCAL at angle θ
+    const r_anchor = rot2(b.a, MOUTH_OFFSET_LOCAL);
 
-    // 4) Keep mouthWorld in sync position-wise (no rotation yet; Phase 3)
-    this.model.mouthWorld.x = m.x + MOUTH_OFFSET_LOCAL.x;
-    this.model.mouthWorld.y = m.y + MOUTH_OFFSET_LOCAL.y;
+    // World position of mouth: X_anchor = X_com + r_anchor
+    this.model.mouthWorld.x = b.x + r_anchor.x;
+    this.model.mouthWorld.y = b.y + r_anchor.y;
+
+    // Velocity at a point on a rigid body: v = V_com + ω × r
+    const v_rot = omegaCrossR(b.av, r_anchor);
+    this.model.mouthVel.x = b.xv + v_rot.x;
+    this.model.mouthVel.y = b.yv + v_rot.y;
   }
 
   draw() {
@@ -171,19 +180,55 @@ class Frog {
       stroke("#ff0");
       fill("#ff0");
       circle(this.model.mouthWorld.x, this.model.mouthWorld.y, 6);
+
+      const s = 20; // scale by a factor of s for visibility
+
+      stroke("#ff0");
+      line(
+        this.model.mouthWorld.x,
+        this.model.mouthWorld.y,
+        this.model.mouthWorld.x + (this.model.mouthVel.x * (1 / FIXED_DT)) / s,
+        this.model.mouthWorld.y + (this.model.mouthVel.y * (1 / FIXED_DT)) / s
+      );
       pop();
     }
   }
 }
 
-// =========================== PHYSICS HELPERS (Phase 2) =======================
+// ============================ SMALL VEC HELPERS ===============================
+
+// rot2(theta, v)
+// Rotates a 2D vector `v = {x, y}` by an angle `theta` (in radians) using the standard
+// 2×2 rotation matrix:
+//     [ cosθ  -sinθ ] [x]
+//     [ sinθ   cosθ ] [y]
+// Returns the rotated vector { x', y' } in world coordinates.
+function rot2(theta, v) {
+  const c = Math.cos(theta),
+    s = Math.sin(theta);
+  return { x: c * v.x - s * v.y, y: s * v.x + c * v.y };
+}
+
+// 2D "ω × r" helper: scalar ω with vector r = (x, y) → (-ω y, ω x)
+function omegaCrossR(omega, r) {
+  return { x: -omega * r.y, y: omega * r.x };
+}
+
+// =========================== PHYSICS HELPERS =======================
 
 /**
- * Clear accumulated force on an object before computing the next step.
+ * Clear accumulated force on an object.
  */
 function clearForces(o) {
   o.fx = 0;
   o.fy = 0;
+}
+
+/**
+ * Clear accumulated rotational force (torque) on an object.
+ */
+function clearTorque(o) {
+  o.torque = 0;
 }
 
 /**
@@ -210,6 +255,12 @@ function integrateSemiImplicit(o, dt) {
   o.y += o.yv * dt; // distance = velocity * time
 }
 
+function integrateAngularSemiImplicit(o, dt) {
+  const angAcc = o.inertia > 0 ? o.torque / o.inertia : 0; // ω <- ω + (τ/I) dt ; θ <- θ + ω dt
+  o.av += angAcc * dt; // ω = α * s  // angularVelocity = angularAcceleration * dt
+  o.a += o.av * dt; // θ = θ + angularAcceleration * dt
+}
+
 // ================================ P5 RUNTIME =================================
 
 let frog;
@@ -217,6 +268,9 @@ let frog;
 function setup() {
   createCanvas(800, 600);
   frog = new Frog(400, 300, 0);
+
+  // Give the frog a small initial spin to visualize mouth velocity
+  frog.model.body.av = 0.8; // rad/s
 }
 
 /**
