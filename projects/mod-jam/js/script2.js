@@ -1,10 +1,11 @@
 "use strict";
 
 // --- DEBUG VARIABLES -----------------------------------------------------------------------------
-
 var DEBUG_MODE = 2;
 
 // =============================== CONSTANTS ====================================
+const FIXED_DT = 1 / 60; // seconds per physics step (deterministic)
+const MAX_SUBSTEPS = 2; // cap to avoid spiral-of-death on slow frames
 
 // Frog params
 const FROG_MASS = 4.0;
@@ -91,6 +92,7 @@ class FrogBodyModel extends PhysicsObjectModel {
   constructor({ x, y, angle = 0 }) {
     super({ x, y, angle, mass: FROG_MASS });
     this.radius = FROG_RADIUS;
+    // (We’ll add inertia/torque usage in Phase 3+)
   }
 }
 
@@ -121,32 +123,91 @@ class FrogBodyView extends PhysicsObjectView {
   }
 }
 
-// =============================== CONTROLLER ==================================
-
-class Frog {
+// =============================== FROG MODEL ==================================
+// Keep ALL frog state in the model (controller stays thin)
+class FrogModel {
   constructor(x, y, angle = 0) {
-    this.body = {
-      model: new FrogBodyModel({ x, y, angle }),
-      view: new FrogBodyView(),
-    };
+    this.body = new FrogBodyModel({ x, y, angle });
+    // Mouth world position lives in the model (updated in later phases)
     this.mouthWorld = {
       x: x + MOUTH_OFFSET_LOCAL.x,
       y: y + MOUTH_OFFSET_LOCAL.y,
     };
   }
+}
+
+// =============================== CONTROLLER ==================================
+
+class Frog {
+  constructor(x, y, angle = 0) {
+    this.model = new FrogModel(x, y, angle);
+    this.view = new FrogBodyView();
+  }
+
+  // Phase 2: deterministic step — keep this lean for now.
+  update(dt) {
+    const m = this.model.body;
+
+    // 1) Clear forces each step
+    clearForces(m);
+
+    // 2) (Optional) apply a tiny constant force to test the loop stability
+    addForce(m, 5, 0);
+
+    // 3) Integrate linear motion (angular comes later)
+    integrateSemiImplicit(m, dt);
+
+    // 4) Keep mouthWorld in sync position-wise (no rotation yet; Phase 3)
+    this.model.mouthWorld.x = m.x + MOUTH_OFFSET_LOCAL.x;
+    this.model.mouthWorld.y = m.y + MOUTH_OFFSET_LOCAL.y;
+  }
 
   draw() {
-    this.body.view.draw(this.body.model);
+    this.view.draw(this.model.body);
 
+    // debug: draw mouth anchor
     if (DEBUG_MODE === 2) {
-      // draw mouth anchor
       push();
       stroke("#ff0");
       fill("#ff0");
-      circle(this.mouthWorld.x, this.mouthWorld.y, 6);
+      circle(this.model.mouthWorld.x, this.model.mouthWorld.y, 6);
       pop();
     }
   }
+}
+
+// =========================== PHYSICS HELPERS (Phase 2) =======================
+
+/**
+ * Clear accumulated force on an object before computing the next step.
+ */
+function clearForces(o) {
+  o.fx = 0;
+  o.fy = 0;
+}
+
+/**
+ * Add a force to an object (will be applied in the next integration).
+ */
+function addForce(o, fx, fy) {
+  o.fx += fx;
+  o.fy += fy;
+}
+
+/**
+ * Semi-implicit Euler (a.k.a. symplectic Euler) for linear motion:
+ *   v_{t+dt} = v_t + a * dt
+ *   x_{t+dt} = x_t + v_{t+dt} * dt
+ * More stable for stiff systems than explicit Euler.
+ */
+function integrateSemiImplicit(o, dt) {
+  if (o.invMass === 0) return; // kinematic object
+  const ax = o.fx * o.invMass; // F = ma; a = F/m; a = F * (1/m)
+  const ay = o.fy * o.invMass; // F = ma; a = F/m; a = F * (1/m)
+  o.xv += ax * dt; // velocity = acceleration * time
+  o.yv += ay * dt; // velocity = acceleration * time
+  o.x += o.xv * dt; // distance = velocity * time
+  o.y += o.yv * dt; // distance = velocity * time
 }
 
 // ================================ P5 RUNTIME =================================
@@ -158,7 +219,24 @@ function setup() {
   frog = new Frog(400, 300, 0);
 }
 
+/**
+ * Fixed-step loop:
+ *  - Convert frame time (deltaTime) to seconds.
+ *  - Step the simulation in FIXED_DT chunks (deterministic).
+ *  - Cap number of substeps to keep frame time bounded on slow frames.
+ *  - Draw exactly once per frame to avoid “ghosting/artifacts”.
+ */
 function draw() {
   background(10);
+
+  let dtLeft = Math.min(0.1, deltaTime / 1000); // clamp giant frame hitches
+  let steps = 0;
+  while (dtLeft > 1e-6 && steps < MAX_SUBSTEPS) {
+    const dt = Math.min(FIXED_DT, dtLeft);
+    frog.update(dt);
+    dtLeft -= dt;
+    steps++;
+  }
+
   frog.draw();
 }
