@@ -227,7 +227,15 @@ class PhysicsObjectView {
  */
 class FrogBodyView extends PhysicsObjectView {
   draw(model) {
-    const { x, y, angle } = model;
+    const { x, y, angle, angularVelocity } = model;
+    let eyesDirection;
+    if (between(angularVelocity, -0.002, 0.002)) eyesDirection = 0;
+    if (between(angularVelocity, -0.008, -0.002)) eyesDirection = -1;
+    if (between(angularVelocity, -0.015, -0.008)) eyesDirection = -2;
+    if (angularVelocity < -0.015) eyesDirection = -2;
+    if (between(angularVelocity, 0.002, 0.008)) eyesDirection = 1;
+    if (between(angularVelocity, 0.008, 0.015)) eyesDirection = 2;
+    if (angularVelocity > 0.015) eyesDirection = 3;
 
     if (DEBUG_MODE === 2) {
       push();
@@ -254,13 +262,21 @@ class FrogBodyView extends PhysicsObjectView {
       fill("#fff");
       ellipse(-12, -8, 10, 10);
       fill("black");
-      ellipse(-12, -10, 3, 3);
+      ellipse(-12 + eyesDirection, -10, 3, 3);
+      // if (Math.abs(eyesDirection) < 3) {
+      //   ellipse(-12 + eyesDirection, -10, 3, 3);
+      // } else {
+      // }
 
       // right eye
       fill("#fff");
       ellipse(12, -8, 10, 10);
       fill("black");
-      ellipse(12, -10, 3, 3);
+      ellipse(12 + eyesDirection, -10, 3, 3);
+      // if (Math.abs(eyesDirection) < 3) {
+      //   ellipse(12 + eyesDirection, -10, 3, 3);
+      // } else {
+      // }
 
       // helmet glass top contour
       push();
@@ -340,8 +356,8 @@ class FlyCounter {
     ["A space fly", { pitch: 0.9, rate: 0.9, volume: 1.0 }],
     ["Did you see that?!", { pitch: 1.1, rate: 1.0, volume: 1.0 }],
     ["Another fly bites the dust!", { pitch: 0.9, rate: 1.0, volume: 1.0 }],
-    ["RIP that fly.", { pitch: 0.9, rate: 0.8, volume: 1.0 }],
-    ["That's not gonna fly", { pitch: 0.9, rate: 1.1, volume: 1.0 }],
+    ["Are, I, Pee that fly.", { pitch: 0.9, rate: 1.0, volume: 1.0 }],
+    ["That's not gonna fly.", { pitch: 0.9, rate: 1.1, volume: 1.0 }],
     ["Ground Control to Major Tom!", { pitch: 1.4, rate: 0.8, volume: 1.0 }],
   ];
 
@@ -574,6 +590,10 @@ function mouseClicked(event) {
 }
 
 // --- HELPER FUNCTIONS ----------------------------------------------------------------------------
+
+function between(value, min, max) {
+  return value >= min && value <= max;
+}
 
 /**
  * Vector-based arc, to work with complex shapes (beginShape, endShape).
