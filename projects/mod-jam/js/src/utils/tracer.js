@@ -1,0 +1,121 @@
+export default class Tracer {
+  /**
+   * @param {str} id Identifier for this Tracer instance
+   * @param {object} opts
+   * @param {number} opts.maxFrames  cap to avoid runaway memory
+   * @param {"ring"|"stop"} opts.strategy  "ring" to drop oldest, "stop" to stop recording
+   * @param {boolean} opts.enabled   start with tracing on/off
+   * @param {number} opts.fixedDt    seconds per substep for time stamping
+   */
+  constructor(
+    id,
+    {
+      maxFrames = 120,
+      strategy = "stop",
+      enabled = true,
+      fixedDt = 1 / 60,
+    } = {}
+  ) {
+    this.id = id;
+    this.maxFrames = Math.max(1, maxFrames | 0);
+    this.strategy = strategy === "ring" ? "ring" : "stop";
+    this.enabled = !!enabled;
+    this.fixedDt = Number(fixedDt) || 1 / 60;
+
+    this.buffer = [];
+    this.frame = 0; // monotonically increasing per substep
+  }
+
+  capture(frame, data, { merge = false } = {}) {
+    if (!this.enabled) return;
+    if (!data) return;
+
+    if (this.buffer.length >= this.maxFrames) {
+      if (this.strategy === "ring") this.buffer.shift();
+      else return;
+    }
+    let snapshot;
+    if (!merge) {
+      snapshot = {
+        frame: frame,
+        time_s: frame * this.fixedDt,
+        data,
+      };
+    } else {
+      snapshot = {
+        frame: frame,
+        time_s: frame * this.fixedDt,
+        ...data,
+      };
+    }
+    this.buffer.push(snapshot);
+    this.frame += 1;
+  }
+
+  // --- controls (replacements for window.trace*) ---
+  clear() {
+    this.buffer = [];
+    this.frame = 0;
+    console.log(`[trace] id=${id} cleared`);
+  }
+
+  on() {
+    this.enabled = true;
+    console.log(`[trace] id=${id} ON`);
+  }
+
+  off() {
+    this.enabled = false;
+    console.log(`[trace] id=${id} OFF`);
+  }
+
+  export() {
+    const text = JSON.stringify(this.buffer, null, 2);
+    console.log(`[trace] exporting ${this.buffer.length} frames\n`, text);
+    return text;
+  }
+
+  download(filename) {
+    if (!filename) {
+      filename = `trace-${id}.json`;
+    }
+
+    const text = this.export();
+    const blob = new Blob([text], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+  }
+
+  setMaxFrames(n) {
+    this.maxFrames = Math.max(1, n | 0);
+    // Trim if we lowered the cap
+    while (this.buffer.length > this.maxFrames) this.buffer.shift();
+  }
+
+  setStrategy(strategy) {
+    this.strategy = strategy === "ring" ? "ring" : "stop";
+  }
+
+  setFixedDt(dt) {
+    this.fixedDt = Number(dt) || this.fixedDt;
+  }
+
+  status() {
+    return {
+      enabled: this.enabled,
+      framesCaptured: this.buffer.length,
+      frameCounter: this.frame,
+      maxFrames: this.maxFrames,
+      strategy: this.strategy,
+      fixedDt_s: this.fixedDt,
+    };
+  }
+}
