@@ -18,5 +18,13 @@ GLOBALS.COUNTER_EASTER_EGG_LINES = [
 GLOBALS.DEBUG_MODE = 2;
 GLOBALS.DEBUG_COUNTER_LINES_INDEX = 0;
 GLOBALS.AUDIT_DAMPERS = true;
+GLOBALS.INPUTS = {
+  up: false,
+  down: false,
+  left: false,
+  right: false,
+  space: false,
+  clickAt: null,
+};
 
 export default GLOBALS;

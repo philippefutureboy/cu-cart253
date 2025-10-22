@@ -3,7 +3,7 @@ import Simulation from "./src/physics/simulation.js";
 import NASASpeechSynthesizer from "./src/utils/speech-synthesizer.js";
 import Counter from "./src/ui/counter.js";
 import Frog from "./src/objects/frog.js";
-import Hud from "./src/objects/hud.js";
+import Hud from "./src/ui/hud.js";
 // import Tracer from "./src/utils/tracer.js";
 
 const SIM = new Simulation();
@@ -91,13 +91,22 @@ function draw(p5) {
 }
 
 function keyPressed(p5) {
-  if (GLOBALS.DEBUG_MODE === 2 && p5.key === "2") {
-    SIM.toggle();
-  }
-  if (GLOBALS.DEBUG_MODE === 2 && p5.key === "3") {
-    SIM.step();
-  }
   switch (p5.key) {
+    // Register arrow presses
+    case "ArrowUp":
+    case "ArrowDown":
+    case "ArrowLeft":
+    case "ArrowRight": {
+      const direction = p5.key.substring(5).toLowerCase();
+      GLOBALS.INPUTS[direction] = true;
+      break;
+    }
+
+    // Register spacebar press
+    case " ":
+      GLOBALS.INPUTS.space = true;
+      break;
+
     // DEBUG_MODE toggler
     // * 0 = debug off
     // * 1 = show debug HUD
@@ -139,8 +148,44 @@ function keyPressed(p5) {
   }
 }
 
+function keyReleased(p5) {
+  switch (p5.key) {
+    // Register arrow presses
+    case "ArrowUp":
+    case "ArrowDown":
+    case "ArrowLeft":
+    case "ArrowRight": {
+      const direction = p5.key.substring(5).toLowerCase();
+      GLOBALS.INPUTS[direction] = false;
+      break;
+    }
+
+    // Register spacebar press
+    case " ":
+      GLOBALS.INPUTS.space = false;
+      break;
+    default:
+      break;
+  }
+}
+
+function mouseClicked(p5, event) {
+  const onCanvas =
+    p5.mouseX >= 0 &&
+    p5.mouseX <= p5.width &&
+    p5.mouseY >= 0 &&
+    p5.mouseY <= p5.height;
+  // left click
+  if (event.button === 0) {
+    if (onCanvas) GLOBALS.INPUTS.clickAt = [p5.mouseX, p5.mouseY];
+    else GLOBALS.INPUTS.clickAt = null;
+  }
+}
+
 new window.p5((p5) => {
   p5.setup = () => setup(p5);
   p5.draw = () => draw(p5);
   p5.keyPressed = () => keyPressed(p5);
+  p5.keyReleased = () => keyReleased(p5);
+  p5.mouseClicked = (event) => mouseClicked(p5, event);
 });
