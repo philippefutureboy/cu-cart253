@@ -11,6 +11,7 @@ import {
   integrateAngularSemiImplicit,
   applyEdgeSpring,
 } from "../physics/functions.js";
+import { vectorArc } from "../utils/drawing.js";
 
 // === PARAMETERS ==================================================================================
 
@@ -55,17 +56,99 @@ class FrogBodyView extends PhysicsObjectView {
     p5.push();
     p5.translate(x, y);
     p5.rotate(angle);
-    if (GLOBALS.DEBUG_MODE === 2) {
-      // body
-      p5.fill("#0f0");
-      p5.stroke(0);
-      p5.ellipse(0, 0, 2 * model.radius, 2 * model.radius);
-      // heading line
-      p5.stroke(0);
-      p5.line(0, 0, model.radius, 0);
+    if (GLOBALS.DEBUG_MODE === 2) this._drawDebug(p5, model);
+    else this._drawAsset(p5, model);
+    p5.pop();
+  }
 
-      this._drawDebugInfo(p5, 30, 0, model);
-    }
+  _drawDebug(p5, model) {
+    // body
+    p5.fill("#0f0");
+    p5.stroke(0);
+    p5.ellipse(0, 0, 2 * model.radius, 2 * model.radius);
+    // heading line
+    p5.stroke(0);
+    p5.line(0, 0, model.radius, 0);
+
+    this._drawDebugInfo(p5, 30, 0, model);
+  }
+
+  _drawAsset(p5, model) {
+    const { x, y, angle, angularVelocity } = model;
+    let eyesDirection;
+    if (between(angularVelocity, -0.002, 0.002)) eyesDirection = 0;
+    if (between(angularVelocity, -0.008, -0.002)) eyesDirection = -1;
+    if (between(angularVelocity, -0.015, -0.008)) eyesDirection = -2;
+    if (angularVelocity < -0.015) eyesDirection = -2;
+    if (between(angularVelocity, 0.002, 0.008)) eyesDirection = 1;
+    if (between(angularVelocity, 0.008, 0.015)) eyesDirection = 2;
+    if (angularVelocity > 0.015) eyesDirection = 3;
+
+    p5.push();
+    // frog helmet lens
+    p5.fill(p5.color(255, 255, 255, 40));
+    p5.ellipse(0, 0, 50, 50);
+
+    // frog head
+    p5.fill("#0f0");
+    p5.ellipse(0, 5, 40, 40);
+
+    // left eye
+    p5.fill("#fff");
+    p5.ellipse(-12, -8, 10, 10);
+    p5.fill("black");
+    p5.ellipse(-12 + eyesDirection, -10, 3, 3);
+    // if (Math.abs(eyesDirection) < 3) {
+    //   ellipse(-12 + eyesDirection, -10, 3, 3);
+    // } else {
+    // }
+
+    // right eye
+    p5.fill("#fff");
+    p5.ellipse(12, -8, 10, 10);
+    p5.fill("black");
+    p5.ellipse(12 + eyesDirection, -10, 3, 3);
+    // if (Math.abs(eyesDirection) < 3) {
+    //   ellipse(12 + eyesDirection, -10, 3, 3);
+    // } else {
+    // }
+
+    // helmet glass top contour
+    p5.push();
+    p5.stroke("white");
+    p5.noFill();
+    p5.arc(0, -8, 44, 35, p5.PI, 2 * p5.PI);
+    p5.ellipse(0, 0, 50, 50);
+    p5.pop();
+
+    // helmet occlusion
+    p5.push();
+    p5.fill("#F5F7FB");
+    p5.beginShape();
+    vectorArc(p5, 0, -8, 45, 35, 0, p5.PI);
+    p5.stroke("white");
+    vectorArc(p5, 0, 0, 50, 50, p5.PI + p5.PI / 8, -p5.PI / 8);
+    p5.endShape(p5.CLOSE);
+    p5.pop();
+
+    // helmet glass bottom contour
+    p5.push();
+    p5.stroke("black");
+    p5.noFill();
+    p5.arc(0, -8, 44, 35, 0, p5.PI);
+    p5.pop();
+
+    // body
+    p5.push();
+    p5.fill("#F5F7FB");
+    p5.beginShape();
+    p5.stroke("black");
+    vectorArc(p5, 0, 30, 60, 60, -p5.PI / 4 + 0.12, (10 / 8) * p5.PI - 0.12);
+    vectorArc(p5, 0, 1.5, 50, 50, p5.PI + p5.PI / 8 - 0.95, -p5.PI / 8 + 0.95);
+    p5.endShape(p5.CLOSE);
+    p5.pop();
+
+    p5.translate(-x, -y);
     p5.pop();
   }
 }
@@ -321,6 +404,12 @@ function stepTongue(tongueModel, mouthWorld, mouthVel, frogHeading, dt) {
   nodes[0].y = mouthWorld.y;
   nodes[0].xv = mouthVel.x;
   nodes[0].yv = mouthVel.y;
+}
+
+// --- HELPER FUNCTIONS ----------------------------------------------------------------------------
+
+function between(value, min, max) {
+  return value >= min && value <= max;
 }
 
 export default Frog;
