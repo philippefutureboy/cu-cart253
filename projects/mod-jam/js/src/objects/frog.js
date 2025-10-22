@@ -122,6 +122,7 @@ class FrogTongueView {
     const nodes = model.nodes;
 
     // draw segments
+    p5.push();
     p5.stroke("#f44");
     p5.strokeWeight(3);
     p5.noFill();
@@ -130,6 +131,7 @@ class FrogTongueView {
         b = nodes[i + 1];
       p5.line(a.x, a.y, b.x, b.y);
     }
+    p5.pop();
 
     // tip as a small red rectangle
     const tip = nodes[nodes.length - 1];
