@@ -2,19 +2,27 @@ import GLOBALS from "./src/globals.js";
 import Simulation from "./src/physics/simulation.js";
 import NASASpeechSynthesizer from "./src/utils/speech-synthesizer.js";
 import Counter from "./src/ui/counter.js";
+import HungerBar from "./src/ui/hunger-bar.js";
 import Frog from "./src/objects/frog.js";
 import Hud from "./src/ui/hud.js";
 // import Tracer from "./src/utils/tracer.js";
 
+// Simulation
 const SIM = new Simulation();
+
+// UI
 const HUD = new Hud();
-/** @type {Frog} */
-let frog;
+/** @type {HungerBar} */
+let hungerBar;
+/** @type {NASASpeechSynthesizer} */
+let speechSynthesizer;
 /** @type {Counter} */
 let flyCounter;
 let hasFly = false;
-/** @type {NASASpeechSynthesizer} */
-let speechSynthesizer;
+
+// Game objects
+/** @type {Frog} */
+let frog;
 
 /**
  * @param {import('p5')} p5
@@ -22,6 +30,13 @@ let speechSynthesizer;
 function setup(p5) {
   p5.createCanvas(window.innerWidth, window.innerHeight);
   frog = new Frog(window.innerWidth / 2, window.innerHeight / 2, 0);
+  hungerBar = new HungerBar({
+    x: p5.width - 150,
+    y: 16,
+    w: 100,
+    h: 12,
+    text: "Energy",
+  });
   speechSynthesizer = new NASASpeechSynthesizer();
   flyCounter = new Counter({
     x: window.innerWidth - 30,
@@ -82,11 +97,15 @@ function draw(p5) {
 
   if (hasFly) {
     flyCounter.increment();
+    hungerBar.update(p5, 10);
     hasFly = false;
+  } else {
+    hungerBar.update(p5, 0);
   }
 
   frog.draw(p5);
   flyCounter.draw(p5);
+  hungerBar.draw(p5);
   HUD.draw(p5, SIM);
 }
 
