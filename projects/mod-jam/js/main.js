@@ -1,5 +1,6 @@
 import GLOBALS from "./src/globals.js";
 import Simulation from "./src/physics/simulation.js";
+import NASASpeechSynthesizer from "./src/utils/speech-synthesizer.js";
 import Frog from "./src/objects/frog.js";
 import Hud from "./src/objects/hud.js";
 // import Tracer from "./src/utils/tracer.js";
@@ -7,14 +8,15 @@ import Hud from "./src/objects/hud.js";
 const SIM = new Simulation();
 const HUD = new Hud();
 let frog;
+let speechSynthesizer;
 
 /**
  * @param {import('p5')} p5
  */
 function setup(p5) {
-  p5.createCanvas(800, 600);
-  frog = new Frog(400, 300, 0);
-  window.frog = frog;
+  p5.createCanvas(window.innerWidth, window.innerHeight);
+  frog = new Frog(window.innerWidth / 2, window.innerHeight / 2, 0);
+  speechSynthesizer = new NASASpeechSynthesizer();
 
   // Give the frog a small initial spin to visualize mouth velocity
   frog.model.body.av = 0.8; // rad/s
