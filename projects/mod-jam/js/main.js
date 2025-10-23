@@ -5,12 +5,14 @@ import Counter from "./src/ui/counter.js";
 import HungerBar from "./src/ui/hunger-bar.js";
 import Frog from "./src/objects/frog.js";
 import Hud from "./src/ui/hud.js";
+import TitleScreenOverlay from "./src/ui/title-screen.js";
 // import Tracer from "./src/utils/tracer.js";
 
 // Simulation
 const SIM = new Simulation();
 
 // UI
+const TITLE_SCREEN = new TitleScreenOverlay();
 const HUD = new Hud();
 /** @type {HungerBar} */
 let hungerBar;
@@ -29,7 +31,9 @@ let frog;
  */
 function setup(p5) {
   p5.createCanvas(window.innerWidth, window.innerHeight);
-  frog = new Frog(window.innerWidth / 2, window.innerHeight / 2, 0);
+
+  TITLE_SCREEN.setup(p5);
+  frog = new Frog(window.innerWidth / 2 + 200, window.innerHeight / 2 - 25, 0);
   hungerBar = new HungerBar({
     x: p5.width - 150,
     y: 16,
@@ -47,6 +51,13 @@ function setup(p5) {
     easterEggLines: [...GLOBALS.COUNTER_EASTER_EGG_LINES],
   });
 
+  // Initial check if I hard-coded the DEBUG_MODE to physics simulation debug mode
+  // Moves the SIM into debug mode as well.
+  if (GLOBALS.DEBUG_MODE === 2) {
+    SIM.DEBUG_MODE = true;
+    SIM.pause();
+  }
+
   // Give the frog a small initial spin to visualize mouth velocity
   frog.model.body.av = 0.8; // rad/s
 }
@@ -55,7 +66,37 @@ function setup(p5) {
  * @param {import('p5')} p5
  */
 function draw(p5) {
+  // UPDATE PHASE
+  updateGameState(p5);
+
+  // DRAW PHASE
   p5.background(10);
+  switch (GLOBALS.SCENE) {
+    case "title": {
+      if (!TITLE_SCREEN.ready) break;
+      frog.draw(p5);
+      TITLE_SCREEN.draw(p5);
+      HUD.draw(p5, SIM);
+      break;
+    }
+    case "main": {
+      flyCounter.draw(p5);
+      hungerBar.draw(p5);
+      frog.draw(p5);
+      HUD.draw(p5, SIM);
+      break;
+    }
+    default: {
+      HUD.draw(p5, SIM);
+      break;
+    }
+  }
+}
+
+function updateGameState(p5) {
+  if (GLOBALS.SCENE === "title" && GLOBALS.INPUTS.space) {
+    GLOBALS.SCENE = "main";
+  }
 
   /**
    * Fixed-step loop:
@@ -85,7 +126,7 @@ function draw(p5) {
     // ---------- Normal mode: deterministic fixed-step using deltaTime ----------
     let dtLeft = Math.min(0.1, p5.deltaTime / 1000);
     let steps = 0;
-    while (dtLeft > 1e-6 && steps < MAX_SUBSTEPS) {
+    while (dtLeft > 1e-6 && steps < GLOBALS.MAX_SUBSTEPS) {
       const dt = Math.min(GLOBALS.FIXED_DT, dtLeft);
       frog.update(dt);
       dtLeft -= dt;
@@ -102,11 +143,6 @@ function draw(p5) {
   } else {
     hungerBar.update(p5, 0);
   }
-
-  frog.draw(p5);
-  flyCounter.draw(p5);
-  hungerBar.draw(p5);
-  HUD.draw(p5, SIM);
 }
 
 function keyPressed(p5) {
@@ -138,7 +174,10 @@ function keyPressed(p5) {
 
     // Simulation pause toggler; only works in DEBUG_MODE = 2
     case "2":
-      if (GLOBALS.DEBUG_MODE === 2) SIM.toggle();
+      if (GLOBALS.DEBUG_MODE === 2) {
+        SIM.DEBUG_MODE = !!SIM.DEBUG_MODE;
+        SIM.toggle();
+      }
       break;
 
     // Simulation frame-by-frame stepper; only works in DEBUG_MODE = 2

@@ -1,0 +1,4 @@
+Font: Krungthep Regular  
+Designer/Publisher: Apple Inc.  
+Copyright: © 1992-2003 Apple Inc.  
+Used under the terms of the Apple End User License Agreement for system fonts.

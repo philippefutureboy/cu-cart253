@@ -1,12 +1,12 @@
 export default class Simulation {
   constructor() {
     // former globals
-    this.DEBUG_MODE = true; // when true, ignore deltaTime; run by frame count
+    this.DEBUG_MODE = false; // when true, ignore deltaTime; run by frame count
     this.SIM_HZ = 60; // fixed "displayed framerate" for debug stepping
     this.SIM_DT = 1 / this.SIM_HZ; // debug dt per physics step
 
-    this.paused = true; // paused flag (was simPaused)
-    this.runContinuous = false; // do exactly 1 physics step per draw() (was simRunContinuous)
+    this.paused = false; // paused flag (was simPaused)
+    this.runContinuous = true; // do exactly 1 physics step per draw()
     this.stepQueued = 0; // queued single steps (was simStepQueued)
     this.frame = 0; // physics steps performed (was simFrame)
     this.time = 0; // simulation time in seconds (was simTime)
