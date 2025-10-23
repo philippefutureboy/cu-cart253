@@ -1,3 +1,10 @@
+/**
+ * PhysicsObjectView
+ *
+ * An "abstract class" (acknowledging interfaces/abstract classes don't exist in Javascript)
+ * that display the physical properties of an object extending PhysicalObjectModel.
+ * Useful for debugging purposes.
+ */
 export class PhysicsObjectView {
   _drawDebugInfo(p5, x, y, model) {
     let lines = [
@@ -7,6 +14,7 @@ export class PhysicsObjectView {
       `ω: ${p5.round(model.angularVelocity, 3)}`,
     ];
     p5.push();
+    p5.rotate(-model.angle);
     p5.fill("white");
     p5.noStroke();
     p5.textSize(10);

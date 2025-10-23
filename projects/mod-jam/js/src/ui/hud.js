@@ -1,6 +1,12 @@
 import GLOBALS from "../globals.js";
 import Tracer from "../utils/tracer.js";
 
+/**
+ * Hud
+ *
+ * A Heads-up-display (HUD) class used to render important textual information to the player
+ * (or to the developer when in debug mode).
+ */
 export default class Hud {
   constructor() {
     this.frameRateTracer = new Tracer("frameRate", {

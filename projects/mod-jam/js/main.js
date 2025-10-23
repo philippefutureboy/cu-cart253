@@ -8,10 +8,14 @@ import Hud from "./src/ui/hud.js";
 import TitleScreenOverlay from "./src/ui/title-screen.js";
 // import Tracer from "./src/utils/tracer.js";
 
-// Simulation
+// === MODULE GLOBALS ==============================================================================
+// Globals which don't need to be referenced elsewhere, and whose inclusion here increases
+// readbility anyways.
+
+// --- Simulation
 const SIM = new Simulation();
 
-// UI
+// --- UI
 const TITLE_SCREEN = new TitleScreenOverlay();
 const HUD = new Hud();
 /** @type {HungerBar} */
@@ -22,11 +26,18 @@ let speechSynthesizer;
 let flyCounter;
 let hasFly = false;
 
-// Game objects
+// --- Game Objects
 /** @type {Frog} */
 let frog;
 
+// === P5.js RUNTIME ===============================================================================
 /**
+ * P5 setup phase handler
+ *
+ * Setups all of the important objects ahead of the first draw cycle.
+ *
+ * Implementation by me.
+ *
  * @param {import('p5')} p5
  */
 function setup(p5) {
@@ -63,6 +74,13 @@ function setup(p5) {
 }
 
 /**
+ * P5 draw phase handler
+ *
+ * Defers a call to update game state, then renders the various objects based on the value of
+ * GLOBALS.SCENE.
+ *
+ * Implemented by me.
+ *
  * @param {import('p5')} p5
  */
 function draw(p5) {
@@ -93,12 +111,22 @@ function draw(p5) {
   }
 }
 
+/**
+ *
+ * Game state update handler: Do I need to say more?
+ *
+ * The simulation update part is implemented by ChatGPT 5.0 Thinking.
+ *
+ * @param {*} p5
+ */
 function updateGameState(p5) {
   if (GLOBALS.SCENE === "title" && GLOBALS.INPUTS.space) {
     GLOBALS.SCENE = "main";
   }
 
   /**
+   * This if-else is 100% implemented by ChatGPT 5.0 Thinking.
+   *
    * Fixed-step loop:
    *  - Convert frame time (deltaTime) to seconds.
    *  - Step the simulation in FIXED_DT chunks (deterministic).
@@ -136,15 +164,26 @@ function updateGameState(p5) {
     }
   }
 
-  if (hasFly) {
-    flyCounter.increment();
-    hungerBar.update(p5, 10);
-    hasFly = false;
-  } else {
-    hungerBar.update(p5, 0);
+  if (GLOBALS.SCENE === "main") {
+    if (hasFly) {
+      flyCounter.increment();
+      hungerBar.update(p5, 10);
+      hasFly = false;
+    } else {
+      hungerBar.update(p5, 0);
+    }
   }
 }
 
+/**
+ * p5.keyPressed handler
+ *
+ * Captures user input (arrows, space), as well as debug commands (numbered keys).
+ *
+ * Implemented by me.
+ *
+ * @param {import('p5')} p5
+ */
 function keyPressed(p5) {
   switch (p5.key) {
     // Register arrow presses
@@ -206,6 +245,15 @@ function keyPressed(p5) {
   }
 }
 
+/**
+ * p5.keyReleased handler
+ *
+ * Releases the user inputs (updates to false in GLOBALS.INPUTS)
+ *
+ * Implemented by me.
+ *
+ * @param {import('p5')} p5
+ */
 function keyReleased(p5) {
   switch (p5.key) {
     // Register arrow presses
@@ -227,6 +275,16 @@ function keyReleased(p5) {
   }
 }
 
+/**
+ * p5.mouseClicked handler
+ *
+ * Captures clicks done on canvas; clicks outside of canvas clear state.
+ * Clicks are used primarily for debug purpose.
+ *
+ * Implemented by me.
+ *
+ * @param {import('p5')} p5
+ */
 function mouseClicked(p5, event) {
   const onCanvas =
     p5.mouseX >= 0 &&
@@ -240,6 +298,12 @@ function mouseClicked(p5, event) {
   }
 }
 
+/**
+ * P5 runtime declaration
+ *
+ * Being in instance mode, that means that p5 must be passed down everywhere (the p5 functions are not
+ * exposed on the globalThis by default).
+ */
 new window.p5((p5) => {
   p5.setup = () => setup(p5);
   p5.draw = () => draw(p5);

@@ -35,6 +35,12 @@ const GRAVITY_Y = 0.0; // keep 0 for now
 
 // === BODY ========================================================================================
 
+/**
+ * FrogBodyModel
+ *
+ * Model modelizing the Frog body's physics.
+ * Initially implemented by me, iterated upon by ChatGPT 5.0 Thinking.
+ */
 class FrogBodyModel extends PhysicsObjectModel {
   constructor({ x, y, angle = 0 }) {
     super({ x, y, angle, mass: FROG_MASS });
@@ -46,6 +52,13 @@ class FrogBodyModel extends PhysicsObjectModel {
   }
 }
 
+/**
+ * FrogBodyView
+ *
+ * View for the FrogBodyModel. Manages how the frog is rendered on screen.
+ *
+ * Entirely implemented by me.
+ */
 class FrogBodyView extends PhysicsObjectView {
   /**
    * @param {import('p5')} p5
@@ -98,20 +111,12 @@ class FrogBodyView extends PhysicsObjectView {
     p5.ellipse(-12, -8, 10, 10);
     p5.fill("black");
     p5.ellipse(-12 + eyesDirection, -10, 3, 3);
-    // if (Math.abs(eyesDirection) < 3) {
-    //   ellipse(-12 + eyesDirection, -10, 3, 3);
-    // } else {
-    // }
 
     // right eye
     p5.fill("#fff");
     p5.ellipse(12, -8, 10, 10);
     p5.fill("black");
     p5.ellipse(12 + eyesDirection, -10, 3, 3);
-    // if (Math.abs(eyesDirection) < 3) {
-    //   ellipse(12 + eyesDirection, -10, 3, 3);
-    // } else {
-    // }
 
     // helmet glass top contour
     p5.push();
@@ -157,10 +162,15 @@ class FrogBodyView extends PhysicsObjectView {
 
 /**
  * FrogTongueModel
+ *
+ * Model modelizing the Frog tongue.
+ *
  * - Holds an array of PhysicsObjectModel nodes.
  * - For Phase 4 (no physics), we’ll simply *set* node positions each frame
  *   to lie on a straight ray from the mouth along the frog heading.
  * - Node 0 is considered the anchor (mass 0).
+ *
+ * Implementation by ChatGPT 5.0 Thinking.
  *
  * Why is the anchor node set to mass 0?
  * ChatGPT answers:
@@ -196,6 +206,14 @@ class FrogTongueModel {
   }
 }
 
+/**
+ * FrogTongueView
+ *
+ * View for the FrogTongueModel. Manages how the tongue is rendered on screen.
+ *
+ * Initial structure by me; implementation by ChatGPT 5.0 Thinking.
+ * Documentation by me.
+ */
 class FrogTongueView {
   /**
    * @param {import('p5')} p5
@@ -229,7 +247,13 @@ class FrogTongueView {
 
 // === FROG ========================================================================================
 
-// Keep ALL frog state in the model (controller stays thin)
+/**
+ * FrogModel
+ *
+ * Centralized model holding the submodels for body, mouth, tongue.
+ *
+ * Initially implemented by me, iterated upon by ChatGPT 5.0 Thinking.
+ */
 class FrogModel {
   constructor(x, y, angle = 0) {
     this.body = new FrogBodyModel({ x, y, angle });
@@ -243,6 +267,13 @@ class FrogModel {
   }
 }
 
+/**
+ * FrogView
+ *
+ * Centralized view for the Frog. Manages how the frog is rendered on screen.
+ *
+ * Implemented by me.
+ */
 class FrogView {
   constructor() {
     this.body = new FrogBodyView();
@@ -326,6 +357,10 @@ class Frog {
 }
 
 /**
+ * stepTongue
+ *
+ * Function that updates the tongue segment physics properties.
+ *
  * Phase 5 step (stable):
  *  - Ensure anchor node 0 is pinned to mouth *before* force evaluation
  *  - One-time straight layout on first run
@@ -334,6 +369,8 @@ class Frog {
  *  - Edge springs/damping
  *  - Integrate free nodes
  *  - Re-pin anchor to kill any numerical creep
+ *
+ * Implemented 100% by ChatGPT 5.0 Thinking.
  */
 function stepTongue(tongueModel, mouthWorld, mouthVel, frogHeading, dt) {
   const nodes = tongueModel.nodes;
@@ -408,6 +445,12 @@ function stepTongue(tongueModel, mouthWorld, mouthVel, frogHeading, dt) {
 
 // --- HELPER FUNCTIONS ----------------------------------------------------------------------------
 
+/**
+ * between
+ *
+ * Checks whether value is between min and max. Syntactic sugar of sorts for improved readability.
+ * Implemented by me.
+ */
 function between(value, min, max) {
   return value >= min && value <= max;
 }

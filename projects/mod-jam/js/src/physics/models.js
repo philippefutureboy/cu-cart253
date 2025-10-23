@@ -1,3 +1,11 @@
+/**
+ * PhysicsObjectModel
+ *
+ * An "abstract class" (acknowledging interfaces/abstract classes don't exist in Javascript)
+ * which represents an object with physical properties.
+ * This object contains the state necessary to perform physics calculations, and is to be extended
+ * by concrete types that need the physics-related state.
+ */
 export class PhysicsObjectModel {
   constructor({
     x = 0,

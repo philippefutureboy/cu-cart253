@@ -1,3 +1,12 @@
+/**
+ * HungerBar
+ *
+ * UI element that represents how much "fuel"/"energy"/"food" the Frog still has in its belly.
+ * When update() is called, it automatically removes points according to hungerHz (hungerHz = how
+ * many points per second) unless additional points are added.
+ *
+ * Adds a layer of urgency to catching flies.
+ */
 export default class HungerBar {
   constructor({ text, x, y, w, h, points = 100, hungerHz = 3 } = {}) {
     this.x = x;
