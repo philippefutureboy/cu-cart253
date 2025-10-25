@@ -89,13 +89,13 @@ class FrogBodyView extends PhysicsObjectView {
   _drawAsset(p5, model) {
     const { x, y, angle, angularVelocity } = model;
     let eyesDirection;
-    if (between(angularVelocity, -0.002, 0.002)) eyesDirection = 0;
-    if (between(angularVelocity, -0.008, -0.002)) eyesDirection = -1;
-    if (between(angularVelocity, -0.015, -0.008)) eyesDirection = -2;
-    if (angularVelocity < -0.015) eyesDirection = -2;
-    if (between(angularVelocity, 0.002, 0.008)) eyesDirection = 1;
-    if (between(angularVelocity, 0.008, 0.015)) eyesDirection = 2;
-    if (angularVelocity > 0.015) eyesDirection = 3;
+    if (between(angularVelocity, -0.5, 0.5)) eyesDirection = 0;
+    if (between(angularVelocity, -2, -0.5)) eyesDirection = -1;
+    if (between(angularVelocity, -4, -2)) eyesDirection = -2;
+    if (angularVelocity < -4) eyesDirection = -2;
+    if (between(angularVelocity, 0.5, 2)) eyesDirection = 1;
+    if (between(angularVelocity, 2, 4)) eyesDirection = 2;
+    if (angularVelocity > 2) eyesDirection = 3;
 
     p5.push();
     // frog helmet lens
@@ -296,8 +296,16 @@ class Frog {
     this.view = new FrogView();
   }
 
-  update(dt) {
+  update(p5, dt) {
     const { body, mouthWorld, mouthVel, tongue } = this.model;
+
+    if (GLOBALS.INPUTS.up) body.fy -= 150;
+    if (GLOBALS.INPUTS.down) body.fy += 150;
+    if (GLOBALS.INPUTS.left) body.fx -= 150;
+    if (GLOBALS.INPUTS.right) body.fx += 150;
+    if (GLOBALS.INPUTS.z) body.torque -= 500;
+    if (GLOBALS.INPUTS.x) body.torque += 500;
+
     // --- Linear integration (semi-implicit Euler)
     // (No forces yet, but the helpers and pattern are ready for later phases)
     integrateSemiImplicit(body, dt);

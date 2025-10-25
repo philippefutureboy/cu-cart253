@@ -2,10 +2,10 @@ import GLOBALS from "./src/globals.js";
 import Simulation from "./src/physics/simulation.js";
 import NASASpeechSynthesizer from "./src/utils/speech-synthesizer.js";
 import Counter from "./src/ui/counter.js";
-import HungerBar from "./src/ui/hunger-bar.js";
 import Frog from "./src/objects/frog.js";
 import Hud from "./src/ui/hud.js";
 import TitleScreenOverlay from "./src/ui/title-screen.js";
+import DigitalClockCountdown from "./src/ui/digital-clock-countdown.js";
 // import Tracer from "./src/utils/tracer.js";
 
 // === MODULE GLOBALS ==============================================================================
@@ -18,8 +18,8 @@ const SIM = new Simulation();
 // --- UI
 const TITLE_SCREEN = new TitleScreenOverlay();
 const HUD = new Hud();
-/** @type {HungerBar} */
-let hungerBar;
+/** @type {DigitalClock} */
+let digitalClock;
 /** @type {NASASpeechSynthesizer} */
 let speechSynthesizer;
 /** @type {Counter} */
@@ -45,18 +45,35 @@ function setup(p5) {
 
   TITLE_SCREEN.setup(p5);
   frog = new Frog(window.innerWidth / 2 + 200, window.innerHeight / 2 - 25, 0);
-  hungerBar = new HungerBar({
+  speechSynthesizer = new NASASpeechSynthesizer();
+  digitalClock = new DigitalClockCountdown({
     x: p5.width - 150,
     y: 16,
-    w: 100,
-    h: 12,
-    text: "Energy",
+    h: 24,
+    label: "OXYGEN",
+    seconds: GLOBALS.GAME_DURATION,
+    updateCallback: (secondsLeft) => {
+      if (secondsLeft <= 10 && secondsLeft % 2 === 0 && secondsLeft !== 0) {
+        speechSynthesizer.speak("LOW OXYGEN!", {
+          pitch: 0.8,
+          rate: 0.8,
+          volume: 1.0,
+        });
+      } else if (secondsLeft === 0) {
+        return speechSynthesizer.speak("OXYGEN DEPLETED.", {
+          pitch: 0.8,
+          rate: 0.7,
+          volume: 1.0,
+        });
+      }
+      return null;
+    },
   });
-  speechSynthesizer = new NASASpeechSynthesizer();
+  digitalClock.setup(p5);
   flyCounter = new Counter({
     x: window.innerWidth - 30,
     y: 16,
-    text: "Flies",
+    text: "FLIES",
     what: ["fly", "flies"],
     synthesizer: speechSynthesizer,
     easterEggLines: [...GLOBALS.COUNTER_EASTER_EGG_LINES],
@@ -99,7 +116,7 @@ function draw(p5) {
     }
     case "main": {
       flyCounter.draw(p5);
-      hungerBar.draw(p5);
+      digitalClock.draw(p5);
       frog.draw(p5);
       HUD.draw(p5, SIM);
       break;
@@ -122,6 +139,7 @@ function draw(p5) {
 function updateGameState(p5) {
   if (GLOBALS.SCENE === "title" && GLOBALS.INPUTS.space) {
     GLOBALS.SCENE = "main";
+    digitalClock.start();
   }
 
   /**
@@ -146,7 +164,7 @@ function updateGameState(p5) {
     }
 
     for (let i = 0; i < steps; i++) {
-      frog.update(SIM.SIM_DT);
+      frog.update(p5, SIM.SIM_DT);
       SIM.frame += 1;
       SIM.time += SIM.SIM_DT;
     }
@@ -156,7 +174,7 @@ function updateGameState(p5) {
     let steps = 0;
     while (dtLeft > 1e-6 && steps < GLOBALS.MAX_SUBSTEPS) {
       const dt = Math.min(GLOBALS.FIXED_DT, dtLeft);
-      frog.update(dt);
+      frog.update(p5, dt);
       dtLeft -= dt;
       steps++;
       SIM.frame += 1;
@@ -165,12 +183,14 @@ function updateGameState(p5) {
   }
 
   if (GLOBALS.SCENE === "main") {
+    digitalClock.update();
+    if (digitalClock.leftSeconds === 0) {
+      digitalClock.stop();
+      GLOBALS.SCENE === "game-over";
+    }
     if (hasFly) {
       flyCounter.increment();
-      hungerBar.update(p5, 10);
       hasFly = false;
-    } else {
-      hungerBar.update(p5, 0);
     }
   }
 }
@@ -195,6 +215,16 @@ function keyPressed(p5) {
       GLOBALS.INPUTS[direction] = true;
       break;
     }
+    case "z":
+    case "Z": {
+      GLOBALS.INPUTS.z = true;
+      break;
+    }
+    case "x":
+    case "X": {
+      GLOBALS.INPUTS.x = true;
+      break;
+    }
 
     // Register spacebar press
     case " ":
@@ -214,7 +244,7 @@ function keyPressed(p5) {
     // Simulation pause toggler; only works in DEBUG_MODE = 2
     case "2":
       if (GLOBALS.DEBUG_MODE === 2) {
-        SIM.DEBUG_MODE = !!SIM.DEBUG_MODE;
+        SIM.DEBUG_MODE = !SIM.DEBUG_MODE;
         SIM.toggle();
       }
       break;
@@ -263,6 +293,16 @@ function keyReleased(p5) {
     case "ArrowRight": {
       const direction = p5.key.substring(5).toLowerCase();
       GLOBALS.INPUTS[direction] = false;
+      break;
+    }
+    case "z":
+    case "Z": {
+      GLOBALS.INPUTS.z = false;
+      break;
+    }
+    case "x":
+    case "X": {
+      GLOBALS.INPUTS.x = false;
       break;
     }
 

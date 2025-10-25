@@ -59,7 +59,7 @@ GLOBALS.SCENE = "title";
  *  - 1 = show debug HUD
  *  - 2 = move into physics simulation debug mode
  */
-GLOBALS.DEBUG_MODE = 0;
+GLOBALS.DEBUG_MODE = 2;
 
 /**
  * GLOBALS.DEBUG_COUNTER_LINES_INDEX
@@ -86,8 +86,18 @@ GLOBALS.INPUTS = {
   down: false,
   left: false,
   right: false,
+  z: false,
+  x: false,
   space: false,
   clickAt: null,
 };
+
+/**
+ * GLOBALS.GAME_DURATION
+ *
+ * Duration of a game; sets how much oxygen time is left in the
+ * tank (in seconds)
+ */
+GLOBALS.GAME_DURATION = 3 * 60;
 
 export default GLOBALS;
