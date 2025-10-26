@@ -59,7 +59,7 @@ GLOBALS.SCENE = "title";
  *  - 1 = show debug HUD
  *  - 2 = move into physics simulation debug mode
  */
-GLOBALS.DEBUG_MODE = 2;
+GLOBALS.DEBUG_MODE = 1;
 
 /**
  * GLOBALS.DEBUG_COUNTER_LINES_INDEX

@@ -71,6 +71,7 @@ class FrogBodyView extends PhysicsObjectView {
     p5.rotate(angle);
     if (GLOBALS.DEBUG_MODE === 2) this._drawDebug(p5, model);
     else this._drawAsset(p5, model);
+    p5.translate(-x, -y);
     p5.pop();
   }
 
@@ -86,7 +87,39 @@ class FrogBodyView extends PhysicsObjectView {
     this._drawDebugInfo(p5, 30, 0, model);
   }
 
+  /**
+   *
+   * @param {import('p5')} p5
+   * @param {*} model
+   */
   _drawAsset(p5, model) {
+    // legs
+    // left hind leg
+    this._drawFrogFrontLeg(p5, true);
+    // right hind leg
+    this._drawFrogFrontLeg(p5, false);
+    // left hind leg
+    this._drawFrogHindLeg(p5, true);
+    // right hind leg
+    this._drawFrogHindLeg(p5, false);
+
+    // head
+    this._drawFrogHead(p5, model);
+    // body
+    this._drawFrogBody(p5);
+
+    if (GLOBALS.DEBUG_MODE === 1) {
+      p5.push();
+      {
+        p5.fill("#f00");
+        p5.stroke(0);
+        p5.circle(0, 0, 4, 4);
+      }
+      p5.pop();
+    }
+  }
+
+  _drawFrogHead(p5, model) {
     const { x, y, angle, angularVelocity } = model;
     let eyesDirection;
     if (between(angularVelocity, -0.5, 0.5)) eyesDirection = 0;
@@ -97,63 +130,182 @@ class FrogBodyView extends PhysicsObjectView {
     if (between(angularVelocity, 2, 4)) eyesDirection = 2;
     if (angularVelocity > 2) eyesDirection = 3;
 
-    p5.push();
     // frog helmet lens
-    p5.fill(p5.color(255, 255, 255, 40));
-    p5.ellipse(0, 0, 50, 50);
+    p5.push();
+    {
+      p5.fill(p5.color(255, 255, 255, 40));
+      p5.ellipse(0, -25, 50, 50);
+    }
+    p5.pop();
 
     // frog head
-    p5.fill("#0f0");
-    p5.ellipse(0, 5, 40, 40);
+    p5.push();
+    {
+      p5.fill("#0f0");
+      p5.ellipse(0, -20, 40, 40);
+    }
+    p5.pop();
 
     // left eye
-    p5.fill("#fff");
-    p5.ellipse(-12, -8, 10, 10);
-    p5.fill("black");
-    p5.ellipse(-12 + eyesDirection, -10, 3, 3);
+    p5.push();
+    {
+      p5.fill("#fff");
+      p5.ellipse(-12, -33, 10, 10);
+      p5.fill("black");
+      p5.ellipse(-12 + eyesDirection, -35, 3, 3);
+    }
+    p5.pop();
 
     // right eye
-    p5.fill("#fff");
-    p5.ellipse(12, -8, 10, 10);
-    p5.fill("black");
-    p5.ellipse(12 + eyesDirection, -10, 3, 3);
+    p5.push();
+    {
+      p5.fill("#fff");
+      p5.ellipse(12, -33, 10, 10);
+      p5.fill("black");
+      p5.ellipse(12 + eyesDirection, -35, 3, 3);
+    }
+    p5.pop();
 
     // helmet glass top contour
     p5.push();
-    p5.stroke("white");
-    p5.noFill();
-    p5.arc(0, -8, 44, 35, p5.PI, 2 * p5.PI);
-    p5.ellipse(0, 0, 50, 50);
+    {
+      p5.stroke("white");
+      p5.noFill();
+      p5.arc(0, -33, 44, 35, p5.PI, 2 * p5.PI);
+      p5.ellipse(0, -25, 50, 50);
+    }
     p5.pop();
 
     // helmet occlusion
     p5.push();
-    p5.fill("#F5F7FB");
-    p5.beginShape();
-    vectorArc(p5, 0, -8, 45, 35, 0, p5.PI);
-    p5.stroke("white");
-    vectorArc(p5, 0, 0, 50, 50, p5.PI + p5.PI / 8, -p5.PI / 8);
-    p5.endShape(p5.CLOSE);
+    {
+      p5.fill("#F5F7FB");
+      p5.beginShape();
+      vectorArc(p5, 0, -33, 45, 35, 0, p5.PI);
+      p5.stroke("white");
+      vectorArc(p5, 0, -25, 50, 50, p5.PI + p5.PI / 8, -p5.PI / 8);
+      p5.endShape(p5.CLOSE);
+    }
     p5.pop();
 
     // helmet glass bottom contour
     p5.push();
-    p5.stroke("black");
-    p5.noFill();
-    p5.arc(0, -8, 44, 35, 0, p5.PI);
+    {
+      p5.stroke("black");
+      p5.noFill();
+      p5.arc(0, -33, 44, 35, 0, p5.PI);
+    }
     p5.pop();
+  }
 
-    // body
+  _drawFrogBody(p5) {
     p5.push();
-    p5.fill("#F5F7FB");
-    p5.beginShape();
-    p5.stroke("black");
-    vectorArc(p5, 0, 30, 60, 60, -p5.PI / 4 + 0.12, (10 / 8) * p5.PI - 0.12);
-    vectorArc(p5, 0, 1.5, 50, 50, p5.PI + p5.PI / 8 - 0.95, -p5.PI / 8 + 0.95);
-    p5.endShape(p5.CLOSE);
+    {
+      p5.fill("#F5F7FB");
+      p5.stroke("black");
+      p5.beginShape();
+      vectorArc(p5, 0, 20, 52, 85, -p5.PI / 4 + 0.12, (10 / 8) * p5.PI - 0.12);
+      vectorArc(
+        p5,
+        0,
+        -23.5,
+        50,
+        50,
+        p5.PI + p5.PI / 8 - 0.95,
+        -p5.PI / 8 + 0.95
+      );
+      p5.endShape(p5.CLOSE);
+    }
     p5.pop();
+  }
 
-    p5.translate(-x, -y);
+  _drawFrogFrontLeg(p5, flip) {
+    const xflip = (x) => (flip ? -1 * x : 1 * x);
+    const aflip = (a) => (flip ? -a : a);
+
+    p5.push();
+    {
+      p5.stroke("black");
+      p5.angleMode(p5.DEGREE);
+
+      p5.push();
+      {
+        p5.fill("#a5a7aB");
+        p5.stroke("black");
+        p5.translate(xflip(53), -6);
+        p5.rotate(aflip(137));
+        p5.ellipse(xflip(0), 0, 22, 8);
+        p5.strokeWeight(0.1);
+        p5.triangle(xflip(8), 0, xflip(13), 0, xflip(17), -10);
+        p5.circle(xflip(16), -10, 4.5);
+        // ------- p5.triangle(xflip(15), 0, xflip(20), 0, xflip(24), -10);
+        p5.triangle(xflip(9), 2, xflip(9), -2, xflip(23), -3);
+        p5.circle(xflip(23), -3, 4.5);
+        p5.triangle(xflip(9), 0, xflip(5), 3, xflip(25), 7);
+        p5.circle(xflip(22), 6, 4.5);
+      }
+      p5.pop();
+
+      // front foot
+      p5.push();
+      {
+        p5.fill("#D5D7DB");
+        p5.translate(xflip(32), -4);
+        p5.rotate(aflip(9.8));
+        p5.ellipse(xflip(0), 0, 38, 9);
+      }
+      p5.pop();
+    }
+    p5.pop();
+  }
+
+  _drawFrogHindLeg(p5, flip) {
+    const xflip = (x) => (flip ? -1 * x : 1 * x);
+    const aflip = (a) => (flip ? -a : a);
+
+    p5.push();
+    {
+      p5.stroke("black");
+      p5.angleMode(p5.DEGREE);
+
+      // hind foot
+      p5.push();
+      {
+        p5.fill("#a5a7aB");
+        p5.stroke("black");
+        p5.translate(xflip(45), 38);
+        p5.rotate(aflip(137.4));
+        p5.ellipse(xflip(0), 0, 34, 10);
+        p5.strokeWeight(0.1);
+        p5.triangle(xflip(15), 0, xflip(20), 0, xflip(24), -10);
+        p5.circle(xflip(23), -10, 4.5);
+        p5.triangle(xflip(16), 2, xflip(16), -2, xflip(30), -3);
+        p5.circle(xflip(29), -3, 4.5);
+        p5.triangle(xflip(16), 0, xflip(12), 3, xflip(32), 7);
+        p5.circle(xflip(29), 6, 4.5);
+      }
+      p5.pop();
+
+      // hind lower leg
+      p5.push();
+      {
+        p5.fill("#D5D7DB");
+        p5.translate(xflip(39), 36);
+        p5.rotate(aflip(149.4));
+        p5.ellipse(xflip(0), 0, 34, 10);
+      }
+      p5.pop();
+
+      // hind upper leg
+      p5.push();
+      {
+        p5.fill("#F5F7FB");
+        p5.translate(xflip(28), 38);
+        p5.rotate(aflip(149.9));
+        p5.ellipse(xflip(0), 0, 50, 15);
+      }
+      p5.pop();
+    }
     p5.pop();
   }
 }
