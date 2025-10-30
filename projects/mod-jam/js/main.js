@@ -2,10 +2,11 @@ import GLOBALS from "./src/globals.js";
 import Simulation from "./src/physics/simulation.js";
 import NASASpeechSynthesizer from "./src/utils/speech-synthesizer.js";
 import Counter from "./src/ui/counter.js";
+import DigitalClockCountdown from "./src/ui/digital-clock-countdown.js";
 import Frog from "./src/objects/frog.js";
 import Hud from "./src/ui/hud.js";
+import StarrySky from "./src/environments/starry-sky.js";
 import TitleScreenOverlay from "./src/ui/title-screen.js";
-import DigitalClockCountdown from "./src/ui/digital-clock-countdown.js";
 // import Tracer from "./src/utils/tracer.js";
 
 // === MODULE GLOBALS ==============================================================================
@@ -26,6 +27,10 @@ let speechSynthesizer;
 let flyCounter;
 let hasFly = false;
 
+// --- Environments
+/** @type {StarrySky} */
+let starrySky;
+
 // --- Game Objects
 /** @type {Frog} */
 let frog;
@@ -42,9 +47,27 @@ let frog;
  */
 function setup(p5) {
   p5.createCanvas(window.innerWidth, window.innerHeight);
+  p5.pixelDensity(1);
+  p5.noSmooth();
 
+  // TITLE SCREEN
   TITLE_SCREEN.setup(p5);
-  frog = new Frog(window.innerWidth / 2 + 200, window.innerHeight / 2 - 25, 0);
+
+  // ENVIRONMENTS
+  starrySky = new StarrySky({ width: p5.width, height: p5.height });
+  starrySky.setup(p5);
+
+  // OBJECTS
+  // We center the frog in the viewport (camera) of the
+  // starry sky
+  const [vcx, vcy] = starrySky.getViewportCenter();
+  frog = new Frog(
+    vcx + 200, // offset to right of title logo
+    vcy - 25, // offset to center with title logo
+    0
+  );
+
+  // HUD
   speechSynthesizer = new NASASpeechSynthesizer();
   digitalClock = new DigitalClockCountdown({
     x: p5.width - 150,
@@ -105,19 +128,37 @@ function draw(p5) {
   updateGameState(p5);
 
   // DRAW PHASE
-  p5.background(10);
   switch (GLOBALS.SCENE) {
     case "title": {
       if (!TITLE_SCREEN.ready) break;
-      frog.draw(p5);
+      p5.push();
+      {
+        // apply viewbox scaling
+        p5.scale(starrySky.getScaleFactor(p5));
+        p5.translate(...starrySky.getTranslationOffset(p5));
+
+        starrySky.draw(p5);
+        frog.draw(p5);
+      }
+      p5.pop();
       TITLE_SCREEN.draw(p5);
       HUD.draw(p5, SIM);
       break;
     }
     case "main": {
+      p5.push();
+      {
+        // apply viewbox scaling
+        p5.scale(starrySky.getScaleFactor(p5));
+        p5.translate(...starrySky.getTranslationOffset(p5));
+
+        starrySky.draw(p5);
+        frog.draw(p5);
+      }
+      p5.pop();
+
       flyCounter.draw(p5);
       digitalClock.draw(p5);
-      frog.draw(p5);
       HUD.draw(p5, SIM);
       break;
     }
@@ -184,6 +225,7 @@ function updateGameState(p5) {
 
   if (GLOBALS.SCENE === "main") {
     digitalClock.update();
+    starrySky.update(p5, frog.model.body);
     if (digitalClock.leftSeconds === 0) {
       digitalClock.stop();
       GLOBALS.SCENE === "game-over";
