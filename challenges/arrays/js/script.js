@@ -11,7 +11,6 @@
 
 "use strict";
 
-let ball1 = undefined; // Will create it with createBall()
 let balls = []
 /**
  * Create the canvas and the ball
@@ -20,7 +19,8 @@ function setup() {
   // Create the canvas
   createCanvas(400, 400);
   // Create the ball
-  ball1 = createBall();
+  // const ballx = createBall();
+  // balls.push(ballx)
 }
 
 /**
@@ -50,9 +50,12 @@ function createBall() {
 function draw() {
   background("#87ceeb");
   
-  moveBall(ball1);
-  bounceBall(ball1);
-  drawBall(ball1);
+  for (let ball of balls){
+    moveBall(ball);
+    bounceBall(ball);
+    drawBall(ball);
+  }
+  
 }
 
 /**
@@ -74,11 +77,11 @@ function bounceBall(ball) {
   
   // Handle bouncing horizontally
   if (bounceX) {
-    ball1.velocity.x *= -1;
+    ball.velocity.x *= -1;
   }
   // Handle bouncing vertically
   if (bounceY) {
-    ball1.velocity.y *= -1;
+    ball.velocity.y *= -1;
   }
 }
 
