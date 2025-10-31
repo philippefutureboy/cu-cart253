@@ -448,6 +448,12 @@ class Frog {
     this.view = new FrogView();
   }
 
+  /**
+   * Updates the Frog physics based on input
+   *
+   * @param {import('p5')} p5
+   * @param {number} dt Delta (time) since last update call
+   */
   update(p5, dt) {
     const { body, mouthWorld, mouthVel, tongue } = this.model;
 

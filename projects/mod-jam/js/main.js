@@ -4,6 +4,7 @@ import NASASpeechSynthesizer from "./src/utils/speech-synthesizer.js";
 import Counter from "./src/ui/counter.js";
 import DigitalClockCountdown from "./src/ui/digital-clock-countdown.js";
 import Frog from "./src/objects/frog.js";
+import Fly from "./src/objects/fly.js";
 import Hud from "./src/ui/hud.js";
 import StarrySky from "./src/environments/starry-sky.js";
 import TitleScreenOverlay from "./src/ui/title-screen.js";
@@ -34,6 +35,8 @@ let starrySky;
 // --- Game Objects
 /** @type {Frog} */
 let frog;
+/** @type {Array<Fly>} */
+let flies;
 
 // === P5.js RUNTIME ===============================================================================
 /**
@@ -66,6 +69,40 @@ function setup(p5) {
     vcy - 25, // offset to center with title logo
     0
   );
+  // Instantiate the flies;
+  // N (tileFliesCount) flies per sky tile - where
+  // N in [median - deviation, median + deviation]
+  flies = [];
+  for (const tile of starrySky.iterateTiles()) {
+    const tileFliesCount = p5.random(
+      Math.max(
+        GLOBALS.FLY_MEDIAN_COUNT_PER_SKY_TILE -
+          GLOBALS.FLY_MAX_DEV_COUNT_PER_SKY_TILE,
+        0
+      ),
+      GLOBALS.FLY_MEDIAN_COUNT_PER_SKY_TILE +
+        GLOBALS.FLY_MAX_DEV_COUNT_PER_SKY_TILE
+    );
+
+    for (let i = 0; i < tileFliesCount; i++) {
+      // randomize the acceleration per step and the reorient frequency
+      // to have flies with different behaviours
+      // - reorient frequency: How often in seconds the fly change direction)
+      // - acceleration per step: How fast the fly accelerate each step
+      let reorientFrequency = p5.random(0.2, 1.5); // seconds
+      let accelerationPerStep = Math.round(p5.random(4, 8)) / SIM.SIM_HZ;
+
+      flies.push(
+        new Fly({
+          x: p5.random(tile.xMin + 15, tile.xMax - 15),
+          y: p5.random(tile.yMin + 15, tile.yMax - 15),
+          angle: p5.random(0, 2 * p5.PI),
+          reorientFrequency,
+          accelerationPerStep,
+        })
+      );
+    }
+  }
 
   // HUD
   speechSynthesizer = new NASASpeechSynthesizer();
@@ -109,7 +146,7 @@ function setup(p5) {
     SIM.pause();
   }
 
-  // Give the frog a small initial spin to visualize mouth velocity
+  // Give the frog a small initial spin
   frog.model.body.av = 0.8; // rad/s
 }
 
@@ -154,6 +191,12 @@ function draw(p5) {
 
         starrySky.draw(p5);
         frog.draw(p5);
+        for (const fly of flies) {
+          // perf: only spend cpu cycles if the fly is within viewport
+          if (fly.isInView(p5, starrySky.viewport)) {
+            fly.draw(p5);
+          }
+        }
       }
       p5.pop();
 
@@ -184,7 +227,9 @@ function updateGameState(p5) {
   }
 
   /**
-   * This if-else is 100% implemented by ChatGPT 5.0 Thinking.
+   * This if-else is partially implemented by ChatGPT 5.0 Thinking.
+   * Specifically, the simulation update code is implemented by ChatGPT.
+   * The switch statements are not however.
    *
    * Fixed-step loop:
    *  - Convert frame time (deltaTime) to seconds.
@@ -205,7 +250,22 @@ function updateGameState(p5) {
     }
 
     for (let i = 0; i < steps; i++) {
-      frog.update(p5, SIM.SIM_DT);
+      switch (GLOBALS.SCENE) {
+        case "title": {
+          frog.update(p5, dt);
+          break;
+        }
+        case "main": {
+          frog.update(p5, dt);
+          for (const fly of flies) {
+            fly.update(p5, SIM.time);
+          }
+          break;
+        }
+        default:
+          break;
+      }
+
       SIM.frame += 1;
       SIM.time += SIM.SIM_DT;
     }
@@ -215,7 +275,23 @@ function updateGameState(p5) {
     let steps = 0;
     while (dtLeft > 1e-6 && steps < GLOBALS.MAX_SUBSTEPS) {
       const dt = Math.min(GLOBALS.FIXED_DT, dtLeft);
-      frog.update(p5, dt);
+
+      switch (GLOBALS.SCENE) {
+        case "title": {
+          frog.update(p5, dt);
+          break;
+        }
+        case "main": {
+          frog.update(p5, dt);
+          for (const fly of flies) {
+            fly.update(p5, SIM.time);
+          }
+          break;
+        }
+        default:
+          break;
+      }
+
       dtLeft -= dt;
       steps++;
       SIM.frame += 1;

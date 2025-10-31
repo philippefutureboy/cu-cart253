@@ -1,5 +1,5 @@
 /**
- * Starry sky class
+ * Starry sky
  *
  * Does two things:
  *
@@ -16,120 +16,30 @@
  * calculate the scale based on the viewport size (duh lol).
  *
  */
+
+import { CoordinatesBox, CoordinatesPoint } from "../utils/coordinates.js";
+
 // === CONFIG ======================================================================================
 const NOISE_SEED = 1234567; // one global seed so tiles stitch seamlessly
 
-// === HELPER CLASSES ==============================================================================
+// === MAIN CLASSES ================================================================================
 
-/**
- * CoordinatesBox class
- *
- * The CoordinatesBox class is a simple rectangle with min/max x and y coordinates,
- * defining a bounded region in the "world" of the 2D game.
- *
- * I had to create that box so that I could map the box to the canvas; essentially
- * this is an "in-world" coordinate system, separate from the canvas pixels.
- */
-class CoordinatesBox {
-  constructor({ xMin, xMax, yMin, yMax }) {
-    this.xMin = xMin;
-    this.xMax = xMax;
-    this.yMin = yMin;
-    this.yMax = yMax;
-  }
-  get width() {
-    return this.xMax - this.xMin;
-  }
-  get height() {
-    return this.yMax - this.yMin;
-  }
-  get center() {
-    return [(this.xMin + this.xMax) / 2, (this.yMin + this.yMax) / 2];
+export class StarrySkyTile extends CoordinatesBox {
+  constructor({ tx, ty, xMin, xMax, yMin, yMax } = {}) {
+    super({ xMin, xMax, yMin, yMax });
+    this.tx = tx;
+    this.ty = ty;
+    this.background = null;
   }
 
   /**
-   * Offsets and scales the CoordinatesBox to be centered around the given
-   * (cx, cy) point, with, width `w` and height `h`.
-   * The point of this method is to handle expansion of the viewport
-   * centered around its center.
-   * @param {number} cx New center-x of the box
-   * @param {number} cy New center-y of the box
-   * @param {number} w New width of the box
-   * @param {number} h New height of the box
+   *
+   * @param {import('p5')} p5
    */
-  setFromCenterAndSize(cx, cy, w, h) {
-    this.xMin = cx - w / 2;
-    this.xMax = cx + w / 2;
-    this.yMin = cy - h / 2;
-    this.yMax = cy + h / 2;
-  }
-
-  /**
-   * Constrains the Box to the width/height provided.
-   * The point of this method is to constrain the Box to the World min/max coordinates.
-   * @param {*} w
-   * @param {*} h
-   */
-  clampTo(p5, w, h) {
-    this.xMin = p5.constrain(this.xMin, 0, w - this.width);
-    this.xMax = this.xMin + this.width;
-    this.yMin = p5.constrain(this.yMin, 0, h - this.height);
-    this.yMax = this.yMin + this.height;
-  }
-
-  toObject() {
-    return {
-      xMin: this.xMin,
-      xMax: this.xMax,
-      yMin: this.yMin,
-      yMax: this.yMax,
-      width: this.width,
-      height: this.height,
-      center: this.center,
-    };
+  setup(p5) {
+    this.background = renderSky(p5, this.tx, this.ty, this.width, this.height);
   }
 }
-
-/**
- * CoordinatesPoint class
- *
- * A coordinate (x,y) within a CoordinateBox
- * The class provides quality of life functions to position a point
- * within a bounding box (CoordinateBox).
- */
-class CoordinatesPoint {
-  constructor(x, y, box) {
-    this.x = x;
-    this.y = y;
-    this.boundingBox = box; // used only for percent helpers
-  }
-  get xRel() {
-    return this.x - this.boundingBox.xMin;
-  }
-  get yRel() {
-    return this.y - this.boundingBox.yMin;
-  }
-  get xPercent() {
-    return this.xRel / this.boundingBox.width;
-  }
-  get yPercent() {
-    return this.yRel / this.boundingBox.height;
-  }
-
-  // for debug
-  toObject() {
-    return {
-      x: this.x,
-      y: this.y,
-      xRel: this.xRel,
-      yRel: this.yRel,
-      xPercent: this.xPercent,
-      yPercent: this.yPercent,
-    };
-  }
-}
-
-// === MAIN CLASS ==================================================================================
 
 class StarrySky {
   /**
@@ -168,6 +78,7 @@ class StarrySky {
     this.CENTER_TILE = gridSize.map((v) => Math.floor(v / 2));
     this.WORLD_W = this.GRID_SIZE[0] * this.TILE_W; // max width of all tiles
     this.WORLD_H = this.GRID_SIZE[1] * this.TILE_H; // max height of all tiles
+    /** @type {Array<Array<StarrySkyTile>>} */
     this.grid = []; // 2D array of { tx, ty, box: Box, background: p5.Graphics }
     this.viewport = new CoordinatesBox({
       xMin: this.CENTER_TILE[0] * this.TILE_W,
@@ -189,17 +100,16 @@ class StarrySky {
     for (let i = 0; i < this.GRID_SIZE[1]; i++) {
       const row = [];
       for (let j = 0; j < this.GRID_SIZE[0]; j++) {
-        row.push({
+        const tile = new StarrySkyTile({
           tx: j,
           ty: i,
-          box: new CoordinatesBox({
-            xMin: j * this.TILE_W,
-            xMax: (j + 1) * this.TILE_W,
-            yMin: i * this.TILE_H,
-            yMax: (i + 1) * this.TILE_H,
-          }),
-          background: renderSky(p5, j, i, this.TILE_W, this.TILE_H, false),
+          xMin: j * this.TILE_W,
+          xMax: (j + 1) * this.TILE_W,
+          yMin: i * this.TILE_H,
+          yMax: (i + 1) * this.TILE_H,
         });
+        tile.setup(p5);
+        row.push(tile);
       }
       this.grid.push(row);
     }
@@ -240,7 +150,7 @@ class StarrySky {
       for (let i = yi0; i <= yi1; i++) {
         for (let j = xi0; j <= xi1; j++) {
           const tile = this.grid[i][j];
-          p5.image(tile.background, tile.box.xMin, tile.box.yMin);
+          p5.image(tile.background, tile.xMin, tile.yMin);
         }
       }
     }
@@ -275,6 +185,18 @@ class StarrySky {
 
   getViewportCenter(p5) {
     return this.viewport.center;
+  }
+
+  /**
+   *
+   * @yields {StarrySkyTile} One of the tiles in this.grid
+   */
+  *iterateTiles() {
+    for (let i = 0; i < this.grid.length; i++) {
+      for (let j = 0; j < this.grid[i].length; j++) {
+        yield this.grid[i][j];
+      }
+    }
   }
 
   // === VIEWPORT HELPERS ==========================================================================
