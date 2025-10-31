@@ -9,8 +9,14 @@ const GLOBALS = {};
  *  - 0 = debug off
  *  - 1 = show debug HUD
  *  - 2 = move into physics simulation debug mode
+ *
+ * Uses the hostname to determine whether to automatically move into debug mode or not
  */
-GLOBALS.DEBUG_MODE = 1;
+GLOBALS.DEBUG_MODE = ["localhost", "127.0.0.1"].includes(
+  window.location.hostname
+)
+  ? 1
+  : 0;
 
 /**
  * GLOBALS.DEBUG_COUNTER_LINES_INDEX

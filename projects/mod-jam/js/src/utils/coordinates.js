@@ -1,4 +1,6 @@
 /**
+ * src/utils/coordinates.js
+ *
  * A set of helper classes that can be used to represent a position/bounding rectangle in x,y space.
  * Used by the StarrySky (src/environments/starry-sky.js), and by the flies (to determine if should
  * be drawn or not).

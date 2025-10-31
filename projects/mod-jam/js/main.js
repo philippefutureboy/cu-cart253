@@ -6,6 +6,7 @@ import DigitalClockCountdown from "./src/ui/digital-clock-countdown.js";
 import Frog from "./src/objects/frog.js";
 import Fly from "./src/objects/fly.js";
 import Hud from "./src/ui/hud.js";
+import ControlsHud from "./src/ui/controls-hud.js";
 import StarrySky from "./src/environments/starry-sky.js";
 import TitleScreenOverlay from "./src/ui/title-screen.js";
 // import Tracer from "./src/utils/tracer.js";
@@ -20,6 +21,7 @@ const SIM = new Simulation();
 // --- UI
 const TITLE_SCREEN = new TitleScreenOverlay();
 const HUD = new Hud();
+const CONTROLS_HUD = new ControlsHud();
 /** @type {DigitalClock} */
 let digitalClock;
 /** @type {NASASpeechSynthesizer} */
@@ -202,6 +204,7 @@ function draw(p5) {
 
       flyCounter.draw(p5);
       digitalClock.draw(p5);
+      CONTROLS_HUD.draw(p5);
       HUD.draw(p5, SIM);
       break;
     }

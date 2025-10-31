@@ -1,3 +1,11 @@
+/**
+ * src/utils/drawing.js
+ *
+ * A set of convenience utilities (functions, classes) used to ease
+ * drawing more complex assets.
+ *
+ */
+
 export class ConvenientImage {
   /**
    * ConvenientImage
