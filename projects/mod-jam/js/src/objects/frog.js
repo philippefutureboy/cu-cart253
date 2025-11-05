@@ -43,7 +43,7 @@ const GRAVITY_Y = 0.0; // keep 0 for now
  */
 class FrogBodyModel extends PhysicsObjectModel {
   constructor({ x, y, angle = 0 }) {
-    super({ x, y, angle, mass: FROG_MASS });
+    super({ id: "frog.body", x, y, angle, mass: FROG_MASS });
     this.radius = FROG_RADIUS;
     // Approximate moment of inertia for a solid disk: I ≈ 1/2 m r^2
     this.inertia = 0.5 * this.mass * Math.pow(this.radius, 2);
@@ -62,15 +62,16 @@ class FrogBodyModel extends PhysicsObjectModel {
 class FrogBodyView extends PhysicsObjectView {
   /**
    * @param {import('p5')} p5
-   * @param {FrogBodyModel} model
+   * @param {FrogBodyModel} model The frog body PhysicsObjectModel
+   * @param {boolean} dead Whether or not the frog is dead
    */
-  draw(p5, model) {
+  draw(p5, model, dead) {
     const { x, y, angle } = model;
     p5.push();
     p5.translate(x, y);
     p5.rotate(angle);
     if (GLOBALS.DEBUG_MODE === 2) this._drawDebug(p5, model);
-    else this._drawAsset(p5, model);
+    else this._drawAsset(p5, model, dead);
     p5.translate(-x, -y);
     p5.pop();
   }
@@ -90,9 +91,10 @@ class FrogBodyView extends PhysicsObjectView {
   /**
    *
    * @param {import('p5')} p5
-   * @param {*} model
+   * @param {FrogBodyModel} model The frog body PhysicsObjectModel
+   * @param {boolean} dead Whether or not the frog is dead
    */
-  _drawAsset(p5, model) {
+  _drawAsset(p5, model, dead) {
     // legs
     // left hind leg
     this._drawFrogFrontLeg(p5, true);
@@ -104,7 +106,7 @@ class FrogBodyView extends PhysicsObjectView {
     this._drawFrogHindLeg(p5, false);
 
     // head
-    this._drawFrogHead(p5, model);
+    this._drawFrogHead(p5, model, dead);
     // body
     this._drawFrogBody(p5);
 
@@ -119,16 +121,16 @@ class FrogBodyView extends PhysicsObjectView {
     }
   }
 
-  _drawFrogHead(p5, model) {
-    const { x, y, angle, angularVelocity } = model;
+  _drawFrogHead(p5, model, dead) {
+    const { av } = model;
     let eyesDirection;
-    if (between(angularVelocity, -0.5, 0.5)) eyesDirection = 0;
-    if (between(angularVelocity, -2, -0.5)) eyesDirection = -1;
-    if (between(angularVelocity, -4, -2)) eyesDirection = -2;
-    if (angularVelocity < -4) eyesDirection = -2;
-    if (between(angularVelocity, 0.5, 2)) eyesDirection = 1;
-    if (between(angularVelocity, 2, 4)) eyesDirection = 2;
-    if (angularVelocity > 2) eyesDirection = 3;
+    if (between(av, -0.5, 0.5)) eyesDirection = 0;
+    if (between(av, -2, -0.5)) eyesDirection = -1;
+    if (between(av, -4, -2)) eyesDirection = -2;
+    if (av < -4) eyesDirection = -2;
+    if (between(av, 0.5, 2)) eyesDirection = 1;
+    if (between(av, 2, 4)) eyesDirection = 2;
+    if (av > 2) eyesDirection = 3;
 
     // frog helmet lens
     p5.push();
@@ -141,7 +143,11 @@ class FrogBodyView extends PhysicsObjectView {
     // frog head
     p5.push();
     {
-      p5.fill("#0f0");
+      if (!dead) {
+        p5.fill("#0f0");
+      } else {
+        p5.fill("#72ede7");
+      }
       p5.ellipse(0, -20, 40, 40);
     }
     p5.pop();
@@ -151,8 +157,16 @@ class FrogBodyView extends PhysicsObjectView {
     {
       p5.fill("#fff");
       p5.ellipse(-12, -33, 10, 10);
-      p5.fill("black");
-      p5.ellipse(-12 + eyesDirection, -35, 3, 3);
+
+      if (!dead) {
+        p5.fill("black");
+        p5.ellipse(-12 + eyesDirection, -35, 3, 3);
+      } else {
+        p5.stroke("red");
+        p5.strokeWeight(2);
+        p5.line(-14, -35, -10, -31);
+        p5.line(-10, -35, -14, -31);
+      }
     }
     p5.pop();
 
@@ -161,8 +175,15 @@ class FrogBodyView extends PhysicsObjectView {
     {
       p5.fill("#fff");
       p5.ellipse(12, -33, 10, 10);
-      p5.fill("black");
-      p5.ellipse(12 + eyesDirection, -35, 3, 3);
+      if (!dead) {
+        p5.fill("black");
+        p5.ellipse(12 + eyesDirection, -35, 3, 3);
+      } else {
+        p5.stroke("red");
+        p5.strokeWeight(2);
+        p5.line(14, -35, 10, -31);
+        p5.line(10, -35, 14, -31);
+      }
     }
     p5.pop();
 
@@ -353,7 +374,24 @@ class FrogTongueModel {
       const isAnchor = i === 0;
       const isTip = i === N_NODES - 1;
       const mass = isAnchor ? 0 : isTip ? TIP_MASS : SEG_MASS;
-      this.nodes.push(new PhysicsObjectModel({ mass, x: 0, y: 0 }));
+      this.nodes.push(
+        new PhysicsObjectModel({ id: `tongue.nodes.${i}`, mass, x: 0, y: 0 })
+      );
+    }
+  }
+
+  /**
+   * Calls scaleVelocities on each of the nodes of the tongue
+   *
+   * @param {number} factor Scaling factor, expected (not enforced) to be [0, Infinity]
+   * @param {boolean} scaleLinearV Whether or not to scale this.xv, this.yv. Defaults to true.
+   * @param {boolean} scaleAngularV Whether or not to scale this.av. Defaults to true.
+   *
+   * @see PhysicsObjectModel.scaleVelocities
+   */
+  scaleVelocities(factor, scaleLinearV = true, scaleAngularV = true) {
+    for (const node of this.nodes) {
+      node.scaleVelocities(factor, scaleLinearV, scaleAngularV);
     }
   }
 }
@@ -416,6 +454,21 @@ class FrogModel {
     };
     this.mouthVel = { x: 0, y: 0 }; // will be computed from COM vel + ω×r
     this.tongue = new FrogTongueModel();
+    this.dead = false;
+  }
+
+  /**
+   * Calls scaleVelocities on children models
+   *
+   * @param {number} factor Scaling factor, expected (not enforced) to be [0, Infinity]
+   * @param {boolean} scaleLinearV Whether or not to scale this.xv, this.yv. Defaults to true.
+   * @param {boolean} scaleAngularV Whether or not to scale this.av. Defaults to true.
+   *
+   * @see PhysicsObjectModel.scaleVelocities
+   */
+  scaleVelocities(factor, scaleLinearV = true, scaleAngularV = true) {
+    this.body.scaleVelocities(factor, scaleLinearV, scaleAngularV);
+    this.tongue.scaleVelocities(factor, scaleLinearV, scaleAngularV);
   }
 }
 
@@ -437,7 +490,7 @@ class FrogView {
    * @param {FrogTongueModel} model
    */
   draw(p5, model) {
-    this.body.draw(p5, model.body);
+    this.body.draw(p5, model.body, model.dead);
     this.tongue.draw(p5, model.tongue);
   }
 }
@@ -455,14 +508,17 @@ class Frog {
    * @param {number} dt Delta (time) since last update call
    */
   update(p5, dt) {
-    const { body, mouthWorld, mouthVel, tongue } = this.model;
+    const { body, mouthWorld, mouthVel, tongue, dead } = this.model;
 
-    if (GLOBALS.INPUTS.up) body.fy -= 150;
-    if (GLOBALS.INPUTS.down) body.fy += 150;
-    if (GLOBALS.INPUTS.left) body.fx -= 150;
-    if (GLOBALS.INPUTS.right) body.fx += 150;
-    if (GLOBALS.INPUTS.z) body.torque -= 500;
-    if (GLOBALS.INPUTS.x) body.torque += 500;
+    // Only process inputs if the frog is not dead
+    if (!dead) {
+      if (GLOBALS.INPUTS.up) body.fy -= 150;
+      if (GLOBALS.INPUTS.down) body.fy += 150;
+      if (GLOBALS.INPUTS.left) body.fx -= 150;
+      if (GLOBALS.INPUTS.right) body.fx += 150;
+      if (GLOBALS.INPUTS.z) body.torque -= 500;
+      if (GLOBALS.INPUTS.x) body.torque += 500;
+    }
 
     // --- Linear integration (semi-implicit Euler)
     // (No forces yet, but the helpers and pattern are ready for later phases)
@@ -491,6 +547,17 @@ class Frog {
     // --- Phase 5: Physical rope (edge springs + axial damping) -------------------
     const heading = { x: Math.cos(body.a), y: Math.sin(body.a) };
     stepTongue(tongue, mouthWorld, mouthVel, heading, dt);
+  }
+
+  /**
+   * Scales the movement of the frog using `factor`.
+   * Facade that calls model.scaleVelocities
+   * Used when game moves to game-over state to slow down the movements and give a "slow motion" feel.
+   *
+   * @param {number} factor Scaling factor, expected (not enforced) to be [0, Infinity]
+   */
+  scaleMovement(factor) {
+    this.model.scaleVelocities(factor, true, true);
   }
 
   /**

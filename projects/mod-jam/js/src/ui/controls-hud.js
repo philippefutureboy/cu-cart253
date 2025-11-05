@@ -3,7 +3,8 @@
  */
 export default class ControlsHud {
   /**
-   * Setup function, left as part of class for uniform API
+   * Setup function to be called during the setup phase.
+   * Currently a no-op. Kept to keep a standard API for drawable objects.
    *
    * @param {import('p5')} p5
    */
@@ -21,12 +22,12 @@ export default class ControlsHud {
     {
       p5.fill(255);
       p5.noStroke();
-      p5.textSize(11);
+      p5.textSize(16);
       p5.textAlign(p5.CENTER, p5.TOP);
       p5.text(
         "(← , ↑ , ↓ , →) to move the frog      (z , x) to add angular velocity",
         p5.width / 2,
-        p5.height - 12
+        p5.height - 18
       );
     }
     p5.pop();

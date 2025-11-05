@@ -80,6 +80,16 @@ GLOBALS.MAX_SUBSTEPS = 2;
 GLOBALS.SCENE = "title";
 
 /**
+ * GLOBALS.GAME_OVER_AT
+ *
+ * Epoch timestamp of when the game was marked as over.
+ * Defaults to null
+ *
+ * @type {number|null}
+ */
+GLOBALS.GAME_OVER_AT = null;
+
+/**
  * GLOBALS.GAME_DURATION
  *
  * Duration of a game; sets how much oxygen time is left in the

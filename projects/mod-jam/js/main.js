@@ -9,7 +9,7 @@ import Hud from "./src/ui/hud.js";
 import ControlsHud from "./src/ui/controls-hud.js";
 import StarrySky from "./src/environments/starry-sky.js";
 import TitleScreenOverlay from "./src/ui/title-screen.js";
-// import Tracer from "./src/utils/tracer.js";
+import GameOverScreenOverlay from "./src/ui/game-over-screen.js";
 
 // === MODULE GLOBALS ==============================================================================
 // Globals which don't need to be referenced elsewhere, and whose inclusion here increases
@@ -20,6 +20,7 @@ const SIM = new Simulation();
 
 // --- UI
 const TITLE_SCREEN = new TitleScreenOverlay();
+const GAME_OVER_SCREEN = new GameOverScreenOverlay();
 const HUD = new Hud();
 const CONTROLS_HUD = new ControlsHud();
 /** @type {DigitalClock} */
@@ -54,9 +55,6 @@ function setup(p5) {
   p5.createCanvas(window.innerWidth, window.innerHeight);
   p5.pixelDensity(1);
   p5.noSmooth();
-
-  // TITLE SCREEN
-  TITLE_SCREEN.setup(p5);
 
   // ENVIRONMENTS
   starrySky = new StarrySky({ width: p5.width, height: p5.height });
@@ -96,6 +94,7 @@ function setup(p5) {
 
       flies.push(
         new Fly({
+          id: `fly.${tile.tx}-${tile.ty}.${i}`,
           x: p5.random(tile.xMin + 15, tile.xMax - 15),
           y: p5.random(tile.yMin + 15, tile.yMax - 15),
           angle: p5.random(0, 2 * p5.PI),
@@ -140,6 +139,12 @@ function setup(p5) {
     synthesizer: speechSynthesizer,
     easterEggLines: [...GLOBALS.COUNTER_EASTER_EGG_LINES],
   });
+
+  // SCREENS
+  TITLE_SCREEN.setup(p5);
+  GAME_OVER_SCREEN.setup(p5, () =>
+    speechSynthesizer.speak("GAME OVER.", { pitch: 0.8, rate: 0.025 })
+  );
 
   // Initial check if I hard-coded the DEBUG_MODE to physics simulation debug mode
   // Moves the SIM into debug mode as well.
@@ -208,6 +213,25 @@ function draw(p5) {
       HUD.draw(p5, SIM);
       break;
     }
+    case "game-over": {
+      p5.push();
+      {
+        // apply viewbox scaling
+        p5.scale(starrySky.getScaleFactor(p5));
+        p5.translate(...starrySky.getTranslationOffset(p5));
+
+        starrySky.draw(p5);
+        frog.draw(p5);
+        for (const fly of flies) {
+          // perf: only spend cpu cycles if the fly is within viewport
+          if (fly.isInView(p5, starrySky.viewport)) {
+            fly.draw(p5);
+          }
+        }
+      }
+      p5.pop();
+      GAME_OVER_SCREEN.draw(p5);
+    }
     default: {
       HUD.draw(p5, SIM);
       break;
@@ -258,7 +282,8 @@ function updateGameState(p5) {
           frog.update(p5, dt);
           break;
         }
-        case "main": {
+        case "main":
+        case "game-over": {
           frog.update(p5, dt);
           for (const fly of flies) {
             fly.update(p5, SIM.time);
@@ -284,7 +309,8 @@ function updateGameState(p5) {
           frog.update(p5, dt);
           break;
         }
-        case "main": {
+        case "main":
+        case "game-over": {
           frog.update(p5, dt);
           for (const fly of flies) {
             fly.update(p5, SIM.time);
@@ -305,13 +331,19 @@ function updateGameState(p5) {
   if (GLOBALS.SCENE === "main") {
     digitalClock.update();
     starrySky.update(p5, frog.model.body);
-    if (digitalClock.leftSeconds === 0) {
-      digitalClock.stop();
-      GLOBALS.SCENE === "game-over";
-    }
-    if (hasFly) {
+    if (hasFly && digitalClock.leftSeconds !== 0) {
       flyCounter.increment();
       hasFly = false;
+    }
+    if (digitalClock.leftSeconds === 0) {
+      digitalClock.stop();
+      frog.model.dead = true;
+      frog.scaleMovement(0.8);
+      for (const fly of flies) {
+        fly.scaleMovement(0.8);
+      }
+      GLOBALS.SCENE = "game-over";
+      GLOBALS.GAME_OVER_AT = Date.now();
     }
   }
 }
@@ -373,6 +405,17 @@ function keyPressed(p5) {
     // Simulation frame-by-frame stepper; only works in DEBUG_MODE = 2
     case "3":
       if (GLOBALS.DEBUG_MODE === 2) SIM.step();
+      break;
+
+    // Remove 10s from the timer: For easy testing of the end-of-game sequence
+    case "7":
+      if (GLOBALS.DEBUG_MODE === 1)
+        digitalClock.leftSeconds = Math.max(digitalClock.leftSeconds - 10, 0);
+      break;
+
+    // Sets the counter to zero: For easy testing of the Game Over screen & effects
+    case "8":
+      if (GLOBALS.DEBUG_MODE === 1) digitalClock.leftSeconds = 0;
       break;
 
     // Fly Counter increment; only works if DEBUG_MODE is enabled

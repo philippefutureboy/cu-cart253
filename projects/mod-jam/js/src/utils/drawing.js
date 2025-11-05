@@ -125,21 +125,21 @@ export class ConvenientImage {
       height = this._img.height;
     }
 
-    console.log(this.id, {
-      img: this._img,
-      aspectRatio: this.aspectRatio,
-      maxWidth: this._maxWidth,
-      maxHeight: this._maxHeight,
-      width,
-      height,
-    });
+    // console.log(this.id, {
+    //   img: this._img,
+    //   aspectRatio: this.aspectRatio,
+    //   maxWidth: this._maxWidth,
+    //   maxHeight: this._maxHeight,
+    //   width,
+    //   height,
+    // });
 
     // now save the results in cache
     if (this._dimCache[this._maxWidth] === undefined) {
       this._dimCache[this._maxWidth] = {};
     }
     this._dimCache[this._maxWidth][this._maxHeight] = { width, height };
-    console.log(this.id, this.height);
+    // console.log(this.id, this.height);
   }
 
   /**

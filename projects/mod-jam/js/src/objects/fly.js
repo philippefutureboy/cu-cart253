@@ -3,19 +3,33 @@ import { CoordinatesBox } from "../utils/coordinates.js";
 import { vectorArc } from "../utils/drawing.js";
 
 export default class Fly {
-  constructor({ x, y, angle, reorientFrequency, accelerationPerStep } = {}) {
+  constructor({
+    id,
+    x,
+    y,
+    angle,
+    reorientFrequency,
+    accelerationPerStep,
+  } = {}) {
+    this.id = id;
     this.box = new CoordinatesBox({
       xMin: x - 15,
       xMax: x + 15,
       yMin: y - 15,
       yMax: y + 15,
     });
-    this.model = new PhysicsObjectModel({ x, y, angle });
+    this.model = new PhysicsObjectModel({ id, x, y, angle });
     this.reorientFrequency = reorientFrequency;
     this.lastReorient = null;
     this.accelerationPerStep = accelerationPerStep;
   }
 
+  /**
+   * Setup function to be called during the setup phase.
+   * Currently a no-op. Kept to keep a standard API for drawable objects.
+   *
+   * @param {import('p5')} p5
+   */
   setup(p5) {
     // NO-OP
   }
@@ -59,6 +73,19 @@ export default class Fly {
       this.model.yv = 0;
       this.lastReorient = time;
     }
+  }
+
+  /**
+   * Scales the movement of the fly using `factor`.
+   * Used when game moves to game-over state to slow down the movements and give a "slow motion" feel.
+   *
+   * @param {number} factor Scaling factor, expected (not enforced) to be [0, Infinity]
+   */
+  scaleMovement(factor) {
+    this.model.scaleVelocities(factor);
+    // adjust reorientFrequency, otherwise the fly keeps changing the orientation at the same
+    // pace, while the velocities are adjusted, giving a weird kind of effect
+    this.reorientFrequency = this.reorientFrequency / factor;
   }
 
   /**

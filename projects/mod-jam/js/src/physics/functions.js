@@ -61,7 +61,7 @@ export function integrateSemiImplicit(o, dt) {
 export function integrateAngularSemiImplicit(o, dt) {
   const angAcc = o.inertia > 0 ? o.torque / o.inertia : 0; // ω <- ω + (τ/I) dt ; θ <- θ + ω dt
   o.av += angAcc * dt; // ω = α * s  // angularVelocity = angularAcceleration * dt
-  o.a += o.av * dt; // θ = θ + angularAcceleration * dt
+  o.angle += o.av * dt; // θ = θ + angularAcceleration * dt
 }
 
 /**
