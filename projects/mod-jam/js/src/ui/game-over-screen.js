@@ -30,7 +30,7 @@ export default class GameOverScreenOverlay {
    * @param {Function} callback To support using speech synthesizer without having to pass the object
    */
   setup(p5, callback) {
-    this.font = p5.loadFont("../../assets/fonts/Excluded/Excluded-z8XrX.ttf");
+    this.font = p5.loadFont("assets/fonts/Excluded/Excluded-z8XrX.ttf");
     this.callback = callback;
   }
 

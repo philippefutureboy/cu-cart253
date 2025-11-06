@@ -76,9 +76,7 @@ export default class DigitalClockCountdown {
     // Using mono to be able to compute the length of the clock ahead of time.
     // Monospaced = each character has the same width, thus I can do
     // string.length * size of one character = width of counter
-    this.font = p5.loadFont(
-      "../../../assets/fonts/Digital-7/digital-7-mono.ttf"
-    );
+    this.font = p5.loadFont("assets/fonts/Digital-7/digital-7-mono.ttf");
     this.charWidth = (this.h - 2) / 2; // approx
   }
 
