@@ -1,3 +1,18 @@
+/**
+ * src/objects/frog.js
+ *
+ * Frog drawing, simulation & control
+ *
+ * The file contains many classes:
+ *
+ * - FrogBodyModel: PhysicsObjectModel for the body of the frog
+ * - FrogBodyView: View (MVC) that draws the body of the frog
+ * - FrogTongueView: View (MVC) that draws the tongue of the frog
+ * - FrogModel: Model (MVC) that acts as a facade for the parts
+ * - FrogView: View (MVC) that acts as a facade for the parts
+ * - Frog: Actual public API for the Frog object
+ *
+ */
 import GLOBALS from "../globals.js";
 import { PhysicsObjectModel } from "../physics/models.js";
 import { PhysicsObjectView } from "../physics/views.js";

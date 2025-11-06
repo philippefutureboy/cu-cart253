@@ -1,3 +1,15 @@
+/**
+ * src/ui/game-over-screen.js
+ *
+ * Implements the Game Over screen.
+ * The screen does a few things:
+ *
+ * 1) It's an overlay - the simulation still runs in the background
+ * 2) It adds a grayscale/sepia-ish tint on top to do that "loss of color" effect we often see in games
+ * 3) It prints (and say) GAME OVER in a stylish way
+ * 4) It displays a button that can be clicked to reset the game
+ *
+ */
 import GLOBALS from "../globals.js";
 import { CoordinatesBox } from "../utils/coordinates.js";
 

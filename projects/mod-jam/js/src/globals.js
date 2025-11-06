@@ -94,8 +94,11 @@ GLOBALS.GAME_OVER_AT = null;
  *
  * Duration of a game; sets how much oxygen time is left in the
  * tank (in seconds)
+ * Game duration set-able via the query params, so that other students can play a shorter game
+ * during the vernissage.
  */
-GLOBALS.GAME_DURATION = 3 * 60;
+const params = new URLSearchParams(window.location.search);
+GLOBALS.GAME_DURATION = params.get("t") ? parseInt(params.get("t")) : 3 * 60;
 
 GLOBALS.COUNTER_EASTER_EGG_LINES = [
   ["A space fly", { pitch: 0.9, rate: 0.9, volume: 1.0 }],

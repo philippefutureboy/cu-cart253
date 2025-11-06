@@ -19,7 +19,10 @@
  *   step(dt, mouthPos, mouthVel, mouthOmega)
  *   tip(): {x,y}, isIdle(): boolean
  *   attachTip(), detachTip()
- *   popMouthVelocityKick(dt): {x:number,y:number}  // NEW
+ *   popMouthVelocityKick(dt): {x:number,y:number}
+ *
+ * Implemented using ChatGPT 5.0 Thinking.
+ * Full conversation available at docs/ATTRIBUTION/PBD-rope-frog-tongue-2025-11-06.html
  */
 
 /** @typedef {{x:number,y:number}} Vec2 */

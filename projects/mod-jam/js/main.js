@@ -1,3 +1,17 @@
+/**
+ * main.js
+ *
+ * Entrypoint for the Frog Frog Frog game.
+ *
+ * Noteworthy responsibilities:
+ * - Coordinates all of the separate functionalities together
+ * - Creates a p5 object in instance mode (bottom of the file)
+ * - Setups the various objects/types
+ * - Draws the various objects/types, but "virtualizes" the time increments using the Simulation class
+ *   which allows debugging/stopping/stepping
+ * - Updates the game state
+ * - Handles input events
+ */
 import GLOBALS from "./src/globals.js";
 import Simulation from "./src/physics/simulation.js";
 import NASASpeechSynthesizer from "./src/utils/speech-synthesizer.js";
@@ -225,6 +239,8 @@ function draw(p5) {
       }
       p5.pop();
       GAME_OVER_SCREEN.draw(p5);
+      HUD.draw(p5, SIM);
+      break;
     }
     default: {
       HUD.draw(p5, SIM);
@@ -323,21 +339,13 @@ function physicsStep(p5, dt) {
     case "main":
     case "game-over": {
       frog.update(p5, dt);
-      // for (const fly of flies) {
-      //   const prevSticky = fly.sticky;
-      //   frog.handleFlyCollision(fly, 12);
-      //   if (prevSticky && !fly.sticky) {
-      //     // was sticky and got released => counted as caught & delivered
-      //     hasFly = true;
-      //   }
-      // }
 
       // Tongue tip ↔ Fly sticky handling (during active rope states)
       // If a fly gets collected (sticky→released after retract), raise flag for counter.
       for (let i = flies.length - 1; i >= 0; i--) {
         const fly = flies[i];
 
-        // 1) advance the fly as you already do
+        // 1) advance the fly
         fly.update(p5, SIM.time);
 
         // 2) ask frog if the fly is consumed at the mouth
@@ -345,8 +353,8 @@ function physicsStep(p5, dt) {
 
         // 3) if consumed, flip hasFly and delete the fly
         if (consumed) {
-          hasFly = true; // <-- your existing counter logic should react to this
-          flies.splice(i, 1); // remove the caught fly so it can't be teleported later
+          hasFly = true;
+          flies.splice(i, 1); // remove the caught fly
         }
       }
 

@@ -1,3 +1,8 @@
+/**
+ * src/object/fly.js
+ *
+ * Handles the fly drawing, movement, & sticky catching by the frog tongue.
+ */
 import { PhysicsObjectModel } from "../physics/models.js";
 import { CoordinatesBox } from "../utils/coordinates.js";
 import { vectorArc } from "../utils/drawing.js";
