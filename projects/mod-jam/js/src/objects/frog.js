@@ -19,6 +19,16 @@ const FROG_MASS = 4.0;
 const FROG_RADIUS = 24; // approximate disk radius for inertia
 // Anchor in frog local coords (mouth offset from Center Of Mass (COM))
 const MOUTH_OFFSET_LOCAL = { x: 0, y: -40 }; // pixels in frog's body frame
+// --- Launch aim selection -------------------------------------------------------
+// Choose how to compute the initial aim direction at launch:
+//   "forward"        -> use the frog's facing direction (cos(a), sin(a))
+//   "bodyLinearVel"  -> use the frog body's linear velocity (xv, yv)
+//   "blend"          -> normalized blend of forward and body linear velocity
+const LAUNCH_AIM_MODE = "blend";
+/** Weight of the forward direction in blend mode (0..1). */
+const BLEND_FORWARD_WEIGHT = 0.7;
+/** If body linear speed is below this (px/s), fallback to forward even in velocity modes. */
+const LINEAR_SPEED_MIN = 10.0;
 
 // PBD rope defaults
 const ROPE_OPTS = {
@@ -56,18 +66,23 @@ const ROPE_OPTS = {
   spinVelClamp: 0.25,
 
   // Anti-overspin
-  omegaMaxFactor: 1.2,
-  angularFriction: 0.18,
+  omegaMaxFactor: 0.8,
+  angularFriction: 0.3,
 
   // Stretch soft cap
   maxExtraStretchPerBone: 5,
 
   // Mouth mass & optional anchor
-  mouthMass: 8.0,
+  mouthMass: 16.0,
   useAnchor: false,
   mouthAnchor: { x: 0, y: 0 },
   mouthAnchorK: 0.25,
   mouthAnchorC: 0.65,
+  keepCollapsedLocked: true,
+
+  // Reaction → body coupling
+  mouthKickGain: 0.15,
+  mouthKickClamp: 60.0,
 };
 
 // === BODY ========================================================================================
@@ -479,8 +494,8 @@ class FrogView {
    * @param {FrogTongueModel} model
    */
   draw(p5, model) {
-    this.body.draw(p5, model.body, model.dead);
     this.tongue.draw(p5, model.rope);
+    this.body.draw(p5, model.body, model.dead);
   }
 }
 
@@ -493,7 +508,9 @@ class Frog {
 
   /**
    * Updates the Frog physics based on input and steps the rope with Simulation dt.
-   * Rope Simulation stepping implemented using ChatGPT 5.0 Thinking.
+   * Also applies reaction from the rope back into the body (linear & angular).
+   *
+   * Rope Simulation stepping & kickback implemented using ChatGPT 5.0 Thinking.
    *
    * @param {import('p5')} p5
    * @param {number} dt Delta (time) since last update call
@@ -514,8 +531,32 @@ class Frog {
       const spaceDown = !!GLOBALS.INPUTS.space;
       if (spaceDown && !this._spaceLatch) {
         if (!rope.shooting && !rope.retracting) {
+          // Aim based on body angle or blended with body *linear* velocity.
+          const rLaunch = rot2(body.a, MOUTH_OFFSET_LOCAL); // world-space mouth offset
+          const fwd = norm2(rLaunch); // unit forward along the tongue opening
+          const vlin = { x: body.xv, y: body.yv };
+          const vlinMag = Math.hypot(vlin.x, vlin.y);
+
+          let aim;
+          if (LAUNCH_AIM_MODE === "forward") {
+            aim = fwd;
+          } else if (LAUNCH_AIM_MODE === "bodyLinearVel") {
+            aim = vlinMag > LINEAR_SPEED_MIN ? norm2(vlin) : fwd;
+          } else {
+            // "blend"
+            const w = BLEND_FORWARD_WEIGHT;
+            const blended =
+              vlinMag > LINEAR_SPEED_MIN
+                ? {
+                    x: w * fwd.x + (1 - w) * (vlin.x / vlinMag),
+                    y: w * fwd.y + (1 - w) * (vlin.y / vlinMag),
+                  }
+                : fwd;
+            aim = norm2(blended);
+          }
+
+          rope.setLaunchDirection(aim);
           rope.unpinTip();
-          rope.setLaunchFromAngle(body.a);
           rope.launch();
         } else if (rope.shooting) {
           rope.startRetract();
@@ -547,6 +588,34 @@ class Frog {
     // If we *just* launched, capture angle (already done above)
     // Step rope with dt and current mouth angular velocity
     rope.step(dt, mouthWorld, { xv: mouthVel.x, yv: mouthVel.y }, body.av);
+
+    // apply rope reaction to the frog body
+    // We treat the rope's accumulated correction as a velocity kick for the mouth point.
+    const dv = rope.popMouthVelocityKick(dt); // px/s
+
+    // Soft-couple the linear kick
+    const LINEAR_COUPLE = 0.25; // 0..1, smaller = softer
+    const DV_CLAMP = 80; // px/s
+    let dvx = dv.x * LINEAR_COUPLE;
+    let dvy = dv.y * LINEAR_COUPLE;
+    const dvmag = Math.hypot(dvx, dvy);
+    if (dvmag > DV_CLAMP) {
+      const k = DV_CLAMP / (dvmag + 1e-9);
+      dvx *= k;
+      dvy *= k;
+    }
+    body.xv += dvx;
+    body.yv += dvy;
+
+    // Soft-couple the angular kick
+    const ANGULAR_COUPLE = 0.15; // 0..1
+    const DOMEGA_CLAMP = 0.8; // rad/s
+    const Jx = dvx * body.mass;
+    const Jy = dvy * body.mass;
+    const tau = r_anchor.x * Jy - r_anchor.y * Jx;
+    let domega = (tau / body.inertia) * ANGULAR_COUPLE;
+    domega = Math.max(-DOMEGA_CLAMP, Math.min(DOMEGA_CLAMP, domega));
+    body.av += domega;
   }
 
   /**
@@ -632,6 +701,12 @@ class Frog {
  */
 function between(value, min, max) {
   return value >= min && value <= max;
+}
+
+// Small utility: normalize a 2D vector (safe)
+function norm2(v) {
+  const m = Math.hypot(v.x, v.y) || 1.0;
+  return { x: v.x / m, y: v.y / m };
 }
 
 export default Frog;

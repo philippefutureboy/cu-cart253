@@ -7,16 +7,19 @@
  * - Alignment motor during expansion toward captured launch direction.
  * - Spin advection from a rotating mouth with angular friction & clamp.
  * - Tip attach/pin & timed retract logic.
+ * - NEW: accumulate reaction from constraints at the mouth and expose as a velocity kick.
  *
  * Public API:
  *   new RopePBD(opts)
  *   initializeAt(mouthPos: {x,y})
  *   setMouthAnchor(v: {x,y})
  *   setLaunchFromAngle(theta: number)
+ *   setLaunchDirection(dir: {x:number,y:number})
  *   launch(), startRetract(), unpinTip()
  *   step(dt, mouthPos, mouthVel, mouthOmega)
  *   tip(): {x,y}, isIdle(): boolean
  *   attachTip(), detachTip()
+ *   popMouthVelocityKick(dt): {x:number,y:number}  // NEW
  */
 
 /** @typedef {{x:number,y:number}} Vec2 */
@@ -30,9 +33,9 @@
  * @property {Vec2} gravity
  * @property {number} airDrag
  * @property {number} maxScale
- * @property {number} extendSpeed              // interpreted per-frame by default (legacy semantics)
- * @property {number} retractSpeed             // interpreted per-frame by default (legacy semantics)
- * @property {boolean} speedsArePerSecond      // if true, multiply speeds by dt
+ * @property {number} extendSpeed
+ * @property {number} retractSpeed
+ * @property {boolean} speedsArePerSecond
  * @property {number} epsilonScale
  * @property {number} minShootScale
  * @property {number} alignK
@@ -50,7 +53,9 @@
  * @property {Vec2} mouthAnchor
  * @property {number} mouthAnchorK
  * @property {number} mouthAnchorC
- * @property {boolean} keepCollapsedLocked     // when idle+collapsed, hard-lock all points to mouth each step
+ * @property {boolean} keepCollapsedLocked
+ * @property {number} mouthKickGain        // NEW: converts accumulated correction into velocity kick
+ * @property {number} mouthKickClamp       // NEW: clamp on velocity kick magnitude (px/s)
  */
 
 export default class RopePBD {
@@ -67,9 +72,9 @@ export default class RopePBD {
       gravity: { x: 0, y: 0 },
       airDrag: 0.1,
       maxScale: 3.2,
-      extendSpeed: 0.14, // legacy: per frame
-      retractSpeed: 0.035, // legacy: per frame
-      speedsArePerSecond: false, // IMPORTANT: keep legacy behaviour by default
+      extendSpeed: 0.14, // legacy per-frame
+      retractSpeed: 0.035, // legacy per-frame
+      speedsArePerSecond: false, // keep legacy semantics unless you flip this
       epsilonScale: 0.02,
       minShootScale: 0.2,
       alignK: 0.3,
@@ -88,6 +93,8 @@ export default class RopePBD {
       mouthAnchorK: 0.25,
       mouthAnchorC: 0.65,
       keepCollapsedLocked: true,
+      mouthKickGain: 1.0, // scales correction/time → velocity
+      mouthKickClamp: 300.0, // px/s cap for stability
       ...opts,
     };
 
@@ -111,21 +118,18 @@ export default class RopePBD {
     this.aimDir = { x: 0, y: -1 };
     this._alignGain = 0;
 
-    // For parity with the standalone file (debug only; not used by solver)
+    // For parity/debug
     this.virtualTargetDir = { x: 0, y: -1 };
 
     this.tipAttached = false;
     this.stickFrames = 0;
     this.maxStickFrames = 30;
 
-    // mouth angular velocity (rad/s) supplied by caller each step
-    this.mouthOmega = 0;
-
-    // pin “mouth” (index 0) with mass
+    this.mouthOmega = 0; // rad/s
     this.invMass[0] = this.mouthMass > 0 ? 1 / this.mouthMass : 0;
 
-    // spinner HUD phase (optional)
-    this._theta = 0;
+    this._theta = 0; // HUD phase
+    this._mouthCorr = { x: 0, y: 0 }; // NEW: accumulated position-correction “reaction”
   }
 
   /** @returns {number} */ get tipIndex() {
@@ -155,6 +159,16 @@ export default class RopePBD {
   /** @param {number} theta */
   setLaunchFromAngle(theta) {
     this.aimDir = { x: Math.cos(theta), y: Math.sin(theta) };
+    this.virtualTargetDir = { ...this.aimDir };
+  }
+
+  /**
+   * Set launch direction directly (normalized internally).
+   * @param {{x:number,y:number}} dir
+   */
+  setLaunchDirection(dir) {
+    const n = Math.hypot(dir.x, dir.y) || 1.0;
+    this.aimDir = { x: dir.x / n, y: dir.y / n };
     this.virtualTargetDir = { ...this.aimDir };
   }
 
@@ -188,16 +202,40 @@ export default class RopePBD {
   }
 
   /**
+   * Pop the accumulated mouth velocity kick (px/s) and reset accumulator.
+   * @param {number} dt
+   * @returns {{x:number,y:number}}
+   */
+  popMouthVelocityKick(dt) {
+    const invDt = 1 / Math.max(1e-6, dt);
+    let vx = this._mouthCorr.x * this.mouthKickGain * invDt;
+    let vy = this._mouthCorr.y * this.mouthKickGain * invDt;
+    const mag = Math.hypot(vx, vy);
+    if (mag > this.mouthKickClamp) {
+      const k = this.mouthKickClamp / (mag + 1e-9);
+      vx *= k;
+      vy *= k;
+    }
+    // reset accumulator
+    this._mouthCorr.x = 0;
+    this._mouthCorr.y = 0;
+    return { x: vx, y: vy };
+  }
+
+  /**
    * @param {number} dt
    * @param {Vec2} mouthPos
    * @param {{xv:number,yv:number}} mouthVel
    * @param {number} mouthOmega
    */
   step(dt, mouthPos, mouthVel, mouthOmega) {
-    // Drive scale once per *frame* using legacy semantics (or per-second if opted in)
+    this._mouthCorr.x = 0;
+    this._mouthCorr.y = 0; // reset reaction accumulator
+
+    // Drive scale once per frame (or per second if opted in)
     this._driveScale(this.speedsArePerSecond ? dt : 1.0);
 
-    // If fully collapsed & idle, keep rope hard-locked to mouth (prevents tiny drift)
+    // If fully collapsed & idle, keep rope hard-locked to mouth
     if (this.keepCollapsedLocked && this.isIdle()) {
       this._pinMouth(mouthPos, mouthVel);
       const x0 = this.x[0];
@@ -228,7 +266,7 @@ export default class RopePBD {
       this._solveConstraints(h);
     }
 
-    // spinner HUD phase
+    // HUD phase
     this._theta += this.mouthOmega * dt;
   }
 
@@ -395,7 +433,7 @@ export default class RopePBD {
     }
   }
 
-  /** @param {number} _dt (unused but kept for parity if you later want time-based fades) */
+  /** @param {number} _dt */
   _solveConstraints(_dt) {
     const segRest = Math.max(0, this.restSegLen * this.scale);
     const iters = this.iterations;
@@ -457,13 +495,23 @@ export default class RopePBD {
     }
   }
 
+  /**
+   * Distance constraint with mouth reaction accumulation.
+   * We keep the mouth effectively fixed during solves (no movement of index 0),
+   * but accumulate the equal-and-opposite correction as a "reaction" to convert
+   * into a velocity kick for the caller.
+   */
   _enforceDistance(i, j, restLen, stiffness) {
     const xi = this.x[i],
       xj = this.x[j];
     const w1 = this.invMass[i],
       w2 = this.invMass[j];
-    const wsum = w1 + w2;
-    if (wsum === 0) return;
+
+    // Treat mouth as fixed during solves:
+    const w1eff = i === 0 ? 0 : w1;
+    const w2eff = j === 0 ? 0 : w2;
+    const wsumEff = w1eff + w2eff;
+    if (wsumEff === 0) return;
 
     const dx = xj.x - xi.x,
       dy = xj.y - xi.y;
@@ -474,13 +522,25 @@ export default class RopePBD {
     const corrX = stiffness * diff * dx;
     const corrY = stiffness * diff * dy;
 
-    if (w1 > 0) {
-      xi.x += corrX * (w1 / wsum);
-      xi.y += corrY * (w1 / wsum);
+    // Apply to movable end(s)
+    if (w1eff > 0) {
+      xi.x += corrX * (w1eff / wsumEff);
+      xi.y += corrY * (w1eff / wsumEff);
     }
-    if (w2 > 0) {
-      xj.x -= corrX * (w2 / wsum);
-      xj.y -= corrY * (w2 / wsum);
+    if (w2eff > 0) {
+      xj.x -= corrX * (w2eff / wsumEff);
+      xj.y -= corrY * (w2eff / wsumEff);
+    }
+
+    // Accumulate reaction for mouth if it participated as fixed
+    if (i === 0 && w2eff > 0) {
+      const alpha = w2eff / wsumEff;
+      this._mouthCorr.x += corrX * alpha;
+      this._mouthCorr.y += corrY * alpha;
+    } else if (j === 0 && w1eff > 0) {
+      const beta = w1eff / wsumEff;
+      this._mouthCorr.x += -corrX * beta;
+      this._mouthCorr.y += -corrY * beta;
     }
   }
 
@@ -489,8 +549,11 @@ export default class RopePBD {
       xj = this.x[j];
     const w1 = this.invMass[i],
       w2 = this.invMass[j];
-    const wsum = w1 + w2;
-    if (wsum === 0) return;
+
+    const w1eff = i === 0 ? 0 : w1;
+    const w2eff = j === 0 ? 0 : w2;
+    const wsumEff = w1eff + w2eff;
+    if (wsumEff === 0) return;
 
     const dx = xj.x - xi.x,
       dy = xj.y - xi.y;
@@ -505,13 +568,23 @@ export default class RopePBD {
     const corrX = stiffness * excess * dx;
     const corrY = stiffness * excess * dy;
 
-    if (w1 > 0) {
-      xi.x += corrX * (w1 / wsum);
-      xi.y += corrY * (w1 / wsum);
+    if (w1eff > 0) {
+      xi.x += corrX * (w1eff / wsumEff);
+      xi.y += corrY * (w1eff / wsumEff);
     }
-    if (w2 > 0) {
-      xj.x -= corrX * (w2 / wsum);
-      xj.y -= corrY * (w2 / wsum);
+    if (w2eff > 0) {
+      xj.x -= corrX * (w2eff / wsumEff);
+      xj.y -= corrY * (w2eff / wsumEff);
+    }
+
+    if (i === 0 && w2eff > 0) {
+      const alpha = w2eff / wsumEff;
+      this._mouthCorr.x += corrX * alpha;
+      this._mouthCorr.y += corrY * alpha;
+    } else if (j === 0 && w1eff > 0) {
+      const beta = w1eff / wsumEff;
+      this._mouthCorr.x += -corrX * beta;
+      this._mouthCorr.y += -corrY * beta;
     }
   }
 }
