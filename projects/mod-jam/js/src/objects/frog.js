@@ -1,15 +1,14 @@
 import GLOBALS from "../globals.js";
 import { PhysicsObjectModel } from "../physics/models.js";
 import { PhysicsObjectView } from "../physics/views.js";
+import RopePBD from "../physics/rope-pbd.js";
 import {
   rot2,
   omegaCrossR,
   clearForces,
   clearTorque,
-  addForce,
   integrateSemiImplicit,
   integrateAngularSemiImplicit,
-  applyEdgeSpring,
 } from "../physics/functions.js";
 import { vectorArc } from "../utils/drawing.js";
 
@@ -19,19 +18,57 @@ import { vectorArc } from "../utils/drawing.js";
 const FROG_MASS = 4.0;
 const FROG_RADIUS = 24; // approximate disk radius for inertia
 // Anchor in frog local coords (mouth offset from Center Of Mass (COM))
-const MOUTH_OFFSET_LOCAL = { x: +20, y: 0 }; // pixels in frog's body frame
+const MOUTH_OFFSET_LOCAL = { x: 0, y: -40 }; // pixels in frog's body frame
 
-// Tongue params (Phase 4)
-const N_NODES = 10; // number of tongue nodes (0..N-1)
-const TONGUE_LENGTH = 200; // total visual length (pixels)
-const SEG_REST = TONGUE_LENGTH / (N_NODES - 1); // spacing between nodes
+// PBD rope defaults
+const ROPE_OPTS = {
+  // Dense rope
+  numPoints: 60,
+  restSegLen: 2,
 
-// Tongue physics (Phase 5) ------------------------------------------------
-const SEG_MASS = 0.05; // mass of internal nodes
-const TIP_MASS = 0.6; // heavier tip gives nice “whip” feel
-const EDGE_K = 300; // was 600
-const EDGE_C = 2 * Math.sqrt(EDGE_K * SEG_MASS); // ~critical damping (per-edge)
-const GRAVITY_Y = 0.0; // keep 0 for now
+  iterations: 8,
+  substeps: 2,
+
+  // Rope “material”
+  stretchStiffness: 0.9,
+  bendStiffness: 0.25,
+
+  // Deep space with a bit of damping
+  gravity: { x: 0, y: 0 },
+  airDrag: 0.1,
+
+  // Length driver
+  maxScale: 3.2,
+  extendSpeed: 0.14,
+  retractSpeed: 0.035,
+  epsilonScale: 0.02,
+  minShootScale: 0.2,
+
+  // Alignment motor
+  alignK: 0.3,
+  alignFade: 0.86,
+  alignWhileSpinningFactor: 0.5,
+
+  // Angular coupling
+  spinAdvection: 1.0,
+  spinImpulseGain: 0.05,
+  spinFalloff: 0.6,
+  spinVelClamp: 0.25,
+
+  // Anti-overspin
+  omegaMaxFactor: 1.2,
+  angularFriction: 0.18,
+
+  // Stretch soft cap
+  maxExtraStretchPerBone: 5,
+
+  // Mouth mass & optional anchor
+  mouthMass: 8.0,
+  useAnchor: false,
+  mouthAnchor: { x: 0, y: 0 },
+  mouthAnchorK: 0.25,
+  mouthAnchorC: 0.65,
+};
 
 // === BODY ========================================================================================
 
@@ -47,7 +84,6 @@ class FrogBodyModel extends PhysicsObjectModel {
     this.radius = FROG_RADIUS;
     // Approximate moment of inertia for a solid disk: I ≈ 1/2 m r^2
     this.inertia = 0.5 * this.mass * Math.pow(this.radius, 2);
-    // Optional torque accumulator for future phases
     this.torque = 0;
   }
 }
@@ -259,7 +295,6 @@ class FrogBodyView extends PhysicsObjectView {
         p5.strokeWeight(0.1);
         p5.triangle(xflip(8), 0, xflip(13), 0, xflip(17), -10);
         p5.circle(xflip(16), -10, 4.5);
-        // ------- p5.triangle(xflip(15), 0, xflip(20), 0, xflip(24), -10);
         p5.triangle(xflip(9), 2, xflip(9), -2, xflip(23), -3);
         p5.circle(xflip(23), -3, 4.5);
         p5.triangle(xflip(9), 0, xflip(5), 3, xflip(25), 7);
@@ -334,107 +369,58 @@ class FrogBodyView extends PhysicsObjectView {
 // === TONGUE ======================================================================================
 
 /**
- * FrogTongueModel
- *
- * Model modelizing the Frog tongue.
- *
- * - Holds an array of PhysicsObjectModel nodes.
- * - For Phase 4 (no physics), we’ll simply *set* node positions each frame
- *   to lie on a straight ray from the mouth along the frog heading.
- * - Node 0 is considered the anchor (mass 0).
- *
- * Implementation by ChatGPT 5.0 Thinking.
- *
- * Why is the anchor node set to mass 0?
- * ChatGPT answers:
- *
- * > Setting the anchor node (node 0) to mass = 0 makes it a kinematic point, not affected by
- * > simulation forces. In practice:
- * >
- * >  * **It’s pinned to the frog’s mouth:** The tongue’s first node must exactly follow the frog’s
- * >    mouth each frame — position and velocity are directly copied from the frog. Giving it
- * >    mass = 0 prevents the physics solver from trying to move it due to springs, gravity, or inertia.
- * >
- * >  * **It acts as a fixed boundary condition:** Springs can apply tension to it, but it won’t
- * >    accelerate or drift. This creates the correct physical constraint: the tongue can swing
- * >    and stretch, but the attachment point stays at the mouth.
- * >
- * >  * **Simplifies the solver:** You don’t have to compute reaction forces on that node, nor
- * >    integrate it — you just overwrite its state after stepping the rest of the rope.
- * >
- * > If we later want bidirectional coupling (where the tongue pulls on the frog, as in Phase 6),
- * > we’ll still treat the anchor as kinematic but read the net spring force on it to apply an equal
- * > and opposite reaction to the frog’s body.
- */
-class FrogTongueModel {
-  constructor() {
-    this.nodes = [];
-    this.initialized = false; // we’ll lay out once from the mouth on first update
-    for (let i = 0; i < N_NODES; i++) {
-      const isAnchor = i === 0;
-      const isTip = i === N_NODES - 1;
-      const mass = isAnchor ? 0 : isTip ? TIP_MASS : SEG_MASS;
-      this.nodes.push(
-        new PhysicsObjectModel({ id: `tongue.nodes.${i}`, mass, x: 0, y: 0 })
-      );
-    }
-  }
-
-  /**
-   * Calls scaleVelocities on each of the nodes of the tongue
-   *
-   * @param {number} factor Scaling factor, expected (not enforced) to be [0, Infinity]
-   * @param {boolean} scaleLinearV Whether or not to scale this.xv, this.yv. Defaults to true.
-   * @param {boolean} scaleAngularV Whether or not to scale this.av. Defaults to true.
-   *
-   * @see PhysicsObjectModel.scaleVelocities
-   */
-  scaleVelocities(factor, scaleLinearV = true, scaleAngularV = true) {
-    for (const node of this.nodes) {
-      node.scaleVelocities(factor, scaleLinearV, scaleAngularV);
-    }
-  }
-}
-
-/**
  * FrogTongueView
  *
- * View for the FrogTongueModel. Manages how the tongue is rendered on screen.
+ * View for the tongue (RopePBD instance).
+ * Manages how the tongue is rendered on screen.
  *
  * Initial structure by me; implementation by ChatGPT 5.0 Thinking.
- * Documentation by me.
  */
 class FrogTongueView {
   /**
    * @param {import('p5')} p5
-   * @param {FrogTongueModel} model
+   * @param {RopePBD} rope
    */
-  draw(p5, model) {
-    const nodes = model.nodes;
-
-    // draw segments
+  draw(p5, rope) {
+    // segments
     p5.push();
-    p5.stroke("#f44");
-    p5.strokeWeight(3);
-    p5.noFill();
-    for (let i = 0; i < nodes.length - 1; i++) {
-      const a = nodes[i],
-        b = nodes[i + 1];
-      p5.line(a.x, a.y, b.x, b.y);
+    {
+      p5.noFill();
+      for (let i = 0; i < rope.numPoints - 1; i++) {
+        const a = rope.x[i],
+          b = rope.x[i + 1];
+        const t = i / (rope.numPoints - 1);
+        // const hue = p5.lerp(350, 5, t);
+        p5.stroke("red");
+        p5.strokeWeight(3);
+        p5.line(a.x, a.y, b.x, b.y);
+      }
     }
     p5.pop();
 
-    // tip as a small red rectangle
-    const tip = nodes[nodes.length - 1];
+    // tip
+    const tip = rope.x[rope.tipIndex];
     p5.push();
-    p5.rectMode(p5.CENTER);
-    p5.noStroke();
-    p5.fill("#f44");
-    p5.rect(tip.x, tip.y, 8, 6, 1);
+    {
+      p5.noStroke();
+      p5.fill("red");
+      p5.circle(tip.x, tip.y, 10);
+    }
+    p5.pop();
+
+    // mouth spinner dot
+    const m = rope.x[0];
+    const r = 10;
+    const theta = rope._theta % (2 * Math.PI);
+    p5.push();
+    {
+      p5.translate(m.x, m.y);
+      p5.fill(40, 20, 90);
+      p5.circle(Math.cos(theta) * r, Math.sin(theta) * r, 3);
+    }
     p5.pop();
   }
 }
-
 // === FROG ========================================================================================
 
 /**
@@ -453,7 +439,10 @@ class FrogModel {
       y: y + MOUTH_OFFSET_LOCAL.y,
     };
     this.mouthVel = { x: 0, y: 0 }; // will be computed from COM vel + ω×r
-    this.tongue = new FrogTongueModel();
+
+    this.rope = new RopePBD(ROPE_OPTS);
+    this.rope.initializeAt(this.mouthWorld);
+
     this.dead = false;
   }
 
@@ -468,7 +457,7 @@ class FrogModel {
    */
   scaleVelocities(factor, scaleLinearV = true, scaleAngularV = true) {
     this.body.scaleVelocities(factor, scaleLinearV, scaleAngularV);
-    this.tongue.scaleVelocities(factor, scaleLinearV, scaleAngularV);
+    // Rope uses verlet; no velocities to scale directly — damping already applied visually.
   }
 }
 
@@ -491,7 +480,7 @@ class FrogView {
    */
   draw(p5, model) {
     this.body.draw(p5, model.body, model.dead);
-    this.tongue.draw(p5, model.tongue);
+    this.tongue.draw(p5, model.rope);
   }
 }
 
@@ -499,16 +488,18 @@ class Frog {
   constructor(x, y, angle = 0) {
     this.model = new FrogModel(x, y, angle);
     this.view = new FrogView();
+    this._spaceLatch = false; // edge-detect space press
   }
 
   /**
-   * Updates the Frog physics based on input
+   * Updates the Frog physics based on input and steps the rope with Simulation dt.
+   * Rope Simulation stepping implemented using ChatGPT 5.0 Thinking.
    *
    * @param {import('p5')} p5
    * @param {number} dt Delta (time) since last update call
    */
   update(p5, dt) {
-    const { body, mouthWorld, mouthVel, tongue, dead } = this.model;
+    const { body, mouthWorld, mouthVel, rope, dead } = this.model;
 
     // Only process inputs if the frog is not dead
     if (!dead) {
@@ -518,35 +509,77 @@ class Frog {
       if (GLOBALS.INPUTS.right) body.fx += 150;
       if (GLOBALS.INPUTS.z) body.torque -= 500;
       if (GLOBALS.INPUTS.x) body.torque += 500;
+
+      // Space: Launch → Space: Retract (edge detected)
+      const spaceDown = !!GLOBALS.INPUTS.space;
+      if (spaceDown && !this._spaceLatch) {
+        if (!rope.shooting && !rope.retracting) {
+          rope.unpinTip();
+          rope.setLaunchFromAngle(body.a);
+          rope.launch();
+        } else if (rope.shooting) {
+          rope.startRetract();
+        }
+      }
+      this._spaceLatch = spaceDown;
     }
 
-    // --- Linear integration (semi-implicit Euler)
-    // (No forces yet, but the helpers and pattern are ready for later phases)
+    // linear & angular integration
     integrateSemiImplicit(body, dt);
-
-    // --- Angular integration (semi-implicit Euler)
     integrateAngularSemiImplicit(body, dt);
-
     clearForces(body);
     clearTorque(body);
 
-    // --- Phase 3: Mouth kinematics (pose + velocity) -------------------------
+    // Mouth kinematics (pose + velocity)
     // r_anchor = R(θ) * MOUTH_OFFSET_LOCAL
     // r_anchor: rotated vector MOUTH_OFFSET_LOCAL at angle θ
     const r_anchor = rot2(body.a, MOUTH_OFFSET_LOCAL);
-
     // World position of mouth: X_anchor = X_com + r_anchor
     mouthWorld.x = body.x + r_anchor.x;
     mouthWorld.y = body.y + r_anchor.y;
-
     // Velocity at a point on a rigid body: v = V_com + ω × r
     const v_rot = omegaCrossR(body.av, r_anchor);
     mouthVel.x = body.xv + v_rot.x;
     mouthVel.y = body.yv + v_rot.y;
 
-    // --- Phase 5: Physical rope (edge springs + axial damping) -------------------
-    const heading = { x: Math.cos(body.a), y: Math.sin(body.a) };
-    stepTongue(tongue, mouthWorld, mouthVel, heading, dt);
+    // Make rope mouth anchor follow world anchor when collapsed
+    rope.setMouthAnchor({ x: mouthWorld.x, y: mouthWorld.y });
+    // If we *just* launched, capture angle (already done above)
+    // Step rope with dt and current mouth angular velocity
+    rope.step(dt, mouthWorld, { xv: mouthVel.x, yv: mouthVel.y }, body.av);
+  }
+
+  /**
+   * Called by the main loop to perform tongue tip ↔ fly hit tests and manage stickiness.
+   * @param {Fly} fly
+   * @param {number} catchRadius
+   */
+  handleFlyCollision(fly, catchRadius = 12) {
+    const rope = this.model.rope;
+    // Only sticky while expanding or retracting
+    if (!(rope.shooting || rope.retracting)) return;
+
+    const tip = rope.tip();
+    const dx = tip.x - fly.model.x;
+    const dy = tip.y - fly.model.y;
+    if (
+      !fly.sticky &&
+      dx * dx + dy * dy <= (catchRadius + 4) * (catchRadius + 4)
+    ) {
+      // attach
+      fly.sticky = true;
+      rope.attachTip();
+      rope.startRetract(); // stop expansion and pull back
+      fly.setStickyPosition(tip);
+    } else if (fly.sticky) {
+      // keep fly on tip while retracting
+      fly.setStickyPosition(tip);
+      // release when rope collapses
+      if (rope.isIdle()) {
+        fly.releaseSticky();
+        rope.detachTip();
+      }
+    }
   }
 
   /**
@@ -587,93 +620,6 @@ class Frog {
       p5.pop();
     }
   }
-}
-
-/**
- * stepTongue
- *
- * Function that updates the tongue segment physics properties.
- *
- * Phase 5 step (stable):
- *  - Ensure anchor node 0 is pinned to mouth *before* force evaluation
- *  - One-time straight layout on first run
- *  - Clear forces
- *  - Gravity (optional) + light isotropic drag
- *  - Edge springs/damping
- *  - Integrate free nodes
- *  - Re-pin anchor to kill any numerical creep
- *
- * Implemented 100% by ChatGPT 5.0 Thinking.
- */
-function stepTongue(tongueModel, mouthWorld, mouthVel, frogHeading, dt) {
-  const nodes = tongueModel.nodes;
-
-  // ALWAYS pin anchor first — this prevents huge fake stretch when frog moves.
-  nodes[0].x = mouthWorld.x;
-  nodes[0].y = mouthWorld.y;
-  nodes[0].xv = mouthVel.x;
-  nodes[0].yv = mouthVel.y;
-
-  // One-time straight layout from the *current* anchor
-  if (!tongueModel.initialized) {
-    for (let i = 0; i < nodes.length; i++) {
-      nodes[i].x = mouthWorld.x + frogHeading.x * (i * SEG_REST);
-      nodes[i].y = mouthWorld.y + frogHeading.y * (i * SEG_REST);
-      nodes[i].xv = mouthVel.x;
-      nodes[i].yv = mouthVel.y;
-    }
-    tongueModel.initialized = true;
-  }
-
-  // Clear forces on all nodes (including the anchor so reaction is fresh if you read it later)
-  for (let i = 0; i < nodes.length; i++) clearForces(nodes[i]);
-
-  // Mild world drag (helps kill transverse jitter). Tune or set to 0.
-  const DRAG = 0.5; // N·s/m-ish in our pixel units; small but helpful
-  for (let i = 1; i < nodes.length; i++) {
-    // Optional gravity
-    if (GRAVITY_Y !== 0) addForce(nodes[i], 0, nodes[i].mass * GRAVITY_Y);
-    // Isotropic linear drag
-    addForce(nodes[i], -DRAG * nodes[i].xv, -DRAG * nodes[i].yv);
-  }
-
-  // --- Audit init (one per substep) ---
-  const audit = {
-    springPower: 0,
-    damperPower: 0,
-    maxAbsSv: 0,
-    maxAbsElong: 0,
-    edges: 0,
-  };
-
-  // Edge springs + axial damping
-  for (let i = 0; i < nodes.length - 1; i++) {
-    applyEdgeSpring(nodes[i], nodes[i + 1], SEG_REST, EDGE_K, EDGE_C, audit);
-  }
-
-  if (GLOBALS.AUDIT_DAMPERS) {
-    // Damper must never add net energy: damperPower <= 0
-    // Spring power can be ±. Large positive spring power with large elongation
-    // is expected when you "pull"; the key is damperPower must stay ≤ 0.
-    console.log(
-      `[audit frame=${typeof simFrame !== "undefined" ? simFrame : "?"}] ` +
-        `P_spring=${audit.springPower.toFixed(3)} ` +
-        `P_damper=${audit.damperPower.toFixed(3)} (<=0 ok) ` +
-        `|s|max=${audit.maxAbsSv.toFixed(3)} ` +
-        `|elong|max=${audit.maxAbsElong.toFixed(3)} edges=${audit.edges}`
-    );
-  }
-
-  // Integrate free nodes
-  for (let i = 1; i < nodes.length; i++) {
-    integrateSemiImplicit(nodes[i], dt);
-  }
-
-  // Re-pin anchor after integration to remove any numerical drift
-  nodes[0].x = mouthWorld.x;
-  nodes[0].y = mouthWorld.y;
-  nodes[0].xv = mouthVel.x;
-  nodes[0].yv = mouthVel.y;
 }
 
 // --- HELPER FUNCTIONS ----------------------------------------------------------------------------

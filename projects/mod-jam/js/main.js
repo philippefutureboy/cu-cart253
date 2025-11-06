@@ -23,23 +23,17 @@ const TITLE_SCREEN = new TitleScreenOverlay();
 const GAME_OVER_SCREEN = new GameOverScreenOverlay();
 const HUD = new Hud();
 const CONTROLS_HUD = new ControlsHud();
-/** @type {DigitalClock} */
-let digitalClock;
-/** @type {NASASpeechSynthesizer} */
-let speechSynthesizer;
-/** @type {Counter} */
-let flyCounter;
+/** @type {DigitalClock} */ let digitalClock;
+/** @type {NASASpeechSynthesizer} */ let speechSynthesizer;
+/** @type {Counter} */ let flyCounter;
 let hasFly = false;
 
 // --- Environments
-/** @type {StarrySky} */
-let starrySky;
+/** @type {StarrySky} */ let starrySky;
 
 // --- Game Objects
-/** @type {Frog} */
-let frog;
-/** @type {Array<Fly>} */
-let flies;
+/** @type {Frog} */ let frog;
+/** @type {Array<Fly>} */ let flies;
 
 // === P5.js RUNTIME ===============================================================================
 /**
@@ -277,23 +271,7 @@ function updateGameState(p5) {
     }
 
     for (let i = 0; i < steps; i++) {
-      switch (GLOBALS.SCENE) {
-        case "title": {
-          frog.update(p5, dt);
-          break;
-        }
-        case "main":
-        case "game-over": {
-          frog.update(p5, dt);
-          for (const fly of flies) {
-            fly.update(p5, SIM.time);
-          }
-          break;
-        }
-        default:
-          break;
-      }
-
+      physicsStep(p5, GLOBALS.FIXED_DT);
       SIM.frame += 1;
       SIM.time += SIM.SIM_DT;
     }
@@ -303,24 +281,7 @@ function updateGameState(p5) {
     let steps = 0;
     while (dtLeft > 1e-6 && steps < GLOBALS.MAX_SUBSTEPS) {
       const dt = Math.min(GLOBALS.FIXED_DT, dtLeft);
-
-      switch (GLOBALS.SCENE) {
-        case "title": {
-          frog.update(p5, dt);
-          break;
-        }
-        case "main":
-        case "game-over": {
-          frog.update(p5, dt);
-          for (const fly of flies) {
-            fly.update(p5, SIM.time);
-          }
-          break;
-        }
-        default:
-          break;
-      }
-
+      physicsStep(p5, GLOBALS.FIXED_DT);
       dtLeft -= dt;
       steps++;
       SIM.frame += 1;
@@ -345,6 +306,41 @@ function updateGameState(p5) {
       GLOBALS.SCENE = "game-over";
       GLOBALS.GAME_OVER_AT = Date.now();
     }
+  }
+}
+
+/**
+ * One deterministic physics step of size dt.
+ * @param {import('p5')} p5
+ * @param {number} dt
+ */
+function physicsStep(p5, dt) {
+  switch (GLOBALS.SCENE) {
+    case "title": {
+      frog.update(p5, dt);
+      break;
+    }
+    case "main":
+    case "game-over": {
+      frog.update(p5, dt);
+      for (const fly of flies) {
+        fly.update(p5, SIM.time);
+      }
+
+      // Tongue tip ↔ Fly sticky handling (during active rope states)
+      // If a fly gets collected (sticky→released after retract), raise flag for counter.
+      for (const fly of flies) {
+        const prevSticky = fly.sticky;
+        frog.handleFlyCollision(fly, 12);
+        if (prevSticky && !fly.sticky) {
+          // was sticky and got released => counted as caught & delivered
+          hasFly = true;
+        }
+      }
+      break;
+    }
+    default:
+      break;
   }
 }
 

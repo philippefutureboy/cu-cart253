@@ -25,7 +25,7 @@ export default class ControlsHud {
       p5.textSize(16);
       p5.textAlign(p5.CENTER, p5.TOP);
       p5.text(
-        "(← , ↑ , ↓ , →) to move the frog      (z , x) to add angular velocity",
+        "(space) to launch/retract tongue     (← , ↑ , ↓ , →) to move the frog     (z , x) to add angular velocity",
         p5.width / 2,
         p5.height - 18
       );
