@@ -323,20 +323,33 @@ function physicsStep(p5, dt) {
     case "main":
     case "game-over": {
       frog.update(p5, dt);
-      for (const fly of flies) {
-        fly.update(p5, SIM.time);
-      }
+      // for (const fly of flies) {
+      //   const prevSticky = fly.sticky;
+      //   frog.handleFlyCollision(fly, 12);
+      //   if (prevSticky && !fly.sticky) {
+      //     // was sticky and got released => counted as caught & delivered
+      //     hasFly = true;
+      //   }
+      // }
 
       // Tongue tip ↔ Fly sticky handling (during active rope states)
       // If a fly gets collected (sticky→released after retract), raise flag for counter.
-      for (const fly of flies) {
-        const prevSticky = fly.sticky;
-        frog.handleFlyCollision(fly, 12);
-        if (prevSticky && !fly.sticky) {
-          // was sticky and got released => counted as caught & delivered
-          hasFly = true;
+      for (let i = flies.length - 1; i >= 0; i--) {
+        const fly = flies[i];
+
+        // 1) advance the fly as you already do
+        fly.update(p5, SIM.time);
+
+        // 2) ask frog if the fly is consumed at the mouth
+        const consumed = frog.handleFlyCollision(fly, 12);
+
+        // 3) if consumed, flip hasFly and delete the fly
+        if (consumed) {
+          hasFly = true; // <-- your existing counter logic should react to this
+          flies.splice(i, 1); // remove the caught fly so it can't be teleported later
         }
       }
+
       break;
     }
     default:

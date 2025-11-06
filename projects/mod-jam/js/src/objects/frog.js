@@ -625,30 +625,46 @@ class Frog {
    */
   handleFlyCollision(fly, catchRadius = 12) {
     const rope = this.model.rope;
-    // Only sticky while expanding or retracting
-    if (!(rope.shooting || rope.retracting)) return;
+    if (!(rope.shooting || rope.retracting)) return false;
 
     const tip = rope.tip();
     const dx = tip.x - fly.model.x;
     const dy = tip.y - fly.model.y;
+
+    // Initial stick: tip hits fly during launch/retract
     if (
       !fly.sticky &&
       dx * dx + dy * dy <= (catchRadius + 4) * (catchRadius + 4)
     ) {
-      // attach
       fly.sticky = true;
       rope.attachTip();
-      rope.startRetract(); // stop expansion and pull back
+      rope.startRetract();
       fly.setStickyPosition(tip);
-    } else if (fly.sticky) {
-      // keep fly on tip while retracting
+      return false; // not consumed yet
+    }
+
+    // While stuck, keep fly at tip; when at mouth, CONSUME
+    if (fly.sticky) {
       fly.setStickyPosition(tip);
-      // release when rope collapses
-      if (rope.isIdle()) {
+
+      // Consider "at mouth" either when rope is fully collapsed,
+      // or when tip is within a small radius of mouth.
+      const mouth = rope.x[0];
+      const mx = tip.x - mouth.x;
+      const my = tip.y - mouth.y;
+      const MOUTH_CATCH_RADIUS = 14; // px
+      const atMouth =
+        rope.isIdle() ||
+        mx * mx + my * my <= MOUTH_CATCH_RADIUS * MOUTH_CATCH_RADIUS;
+
+      if (atMouth) {
         fly.releaseSticky();
         rope.detachTip();
+        return true; // <-- SIGNAL: fly consumed at mouth
       }
     }
+
+    return false;
   }
 
   /**
