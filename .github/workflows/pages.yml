@@ -155,6 +155,16 @@ jobs:
             echo "No projects/mod-jam directory — skipping."
           fi
 
+      - name: Collect static templates/scenes -> site/templates/scenes
+        run: |
+          set -eux
+          if [ -d templates/scenes ]; then
+            mkdir -p site/templates/scenes
+            cp -r templates/scenes/* site/templates/scenes
+          else
+            echo "No templates/scenes directory — skipping."
+          fi
+
       - name: Collect static fun/** -> site/fun/**
         run: |
           set -eux
