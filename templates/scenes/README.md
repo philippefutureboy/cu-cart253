@@ -1,6 +1,6 @@
 # Scene Manager Demo
 
-[View this project online](URL)
+[View this project online](https://philippefutureboy.github.io/cu-cart253/templates/scenes)
 
 ## Description
 
