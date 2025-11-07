@@ -9,17 +9,26 @@ import BlueScene from "./scenes/blue.js";
  */
 const RUNTIME = new P5Runtime({
   frameRate: 60,
-  width: window.innerWidth,
-  height: window.innerHeight,
+  width: 800,
+  height: 800,
+});
+// Scenes
+const RED = new RedScene();
+const GREEN = new GreenScene();
+const BLUE = new BlueScene();
+const MENU = new MenuScene({
+  [RED.key]: RED.label,
+  [GREEN.key]: GREEN.label,
+  [BLUE.key]: BLUE.label,
 });
 
 /**
  * Register scenes, with MenuScene as current scene
  */
-RUNTIME.registerScene(new MenuScene(), { current: true });
-RUNTIME.registerScene(new BlueScene());
-RUNTIME.registerScene(new RedScene());
-RUNTIME.registerScene(new GreenScene());
+RUNTIME.registerScene(MENU, { current: true });
+RUNTIME.registerScene(RED);
+RUNTIME.registerScene(GREEN);
+RUNTIME.registerScene(BLUE);
 
 /**
  * Create a p5 sketch in instance mode, and register the P5Runtime (SceneManager)

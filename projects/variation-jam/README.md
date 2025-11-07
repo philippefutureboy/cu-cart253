@@ -1,10 +1,10 @@
-# Scene Manager Demo
+# Variation Jam
 
-[View this project online](https://philippefutureboy.github.io/cu-cart253/templates/scenes)
+[View this project online](URL)
 
 ## Description
 
-A demo of an Object Oriented approach to scene management.
+
 
 ## Attribution
 

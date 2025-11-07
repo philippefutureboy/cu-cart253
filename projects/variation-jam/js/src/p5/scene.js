@@ -28,23 +28,25 @@ export class SceneRequest {
  * or a SceneRequest.
  */
 export class BaseScene extends IP5Lifecycle {
-  /**
-   * @param {string} name
-   */
   constructor() {
     // dynamic type check
-    if (!new.target.hasOwnProperty("name") || !new.target.name) {
+    if (!new.target.hasOwnProperty("key") || !new.target.key) {
       throw new Error(
         `Scene class '${
-          new.target.constructor.name
-        }' should have a non-empty static 'name' property`
+          new.target.constructor.key
+        }' should have a non-empty static 'key' property`
+      );
+    }
+    if (!new.target.hasOwnProperty("label") || !new.target.label) {
+      throw new Error(
+        `Scene class '${
+          new.target.constructor.label
+        }' should have a non-empty static 'label' property`
       );
     }
     if (!new.target.hasOwnProperty("instance")) {
       throw new Error(
-        `Scene class '${
-          new.target.constructor.name
-        }' static 'instance' property`
+        `Scene class '${new.target.constructor.key}' static 'instance' property`
       );
     }
 
@@ -54,7 +56,8 @@ export class BaseScene extends IP5Lifecycle {
     } else {
       super();
       new.target.instance = this;
-      this.name = this.constructor.name; // convenience alias
+      this.key = this.constructor.key; // convenience alias
+      this.label = this.constructor.label; // convenience alias
     }
   }
 
@@ -188,46 +191,46 @@ export class SceneManager extends IP5Lifecycle {
    * @param {Scene} scene
    */
   registerScene(scene, { current = false } = {}) {
-    const name = scene.constructor.name;
-    if (SceneManager.scenes.has(name)) {
-      throw new Error(`SceneManager already has a scene named '${name}'`);
+    const key = scene.constructor.key;
+    if (SceneManager.scenes.has(key)) {
+      throw new Error(`SceneManager already has a scene keyed '${key}'`);
     }
     if (scene.constructor === BaseScene) {
       throw new Error(`Cannot register instance of abstract class BaseScene`);
     }
-    SceneManager.scenes.set(name, scene);
+    SceneManager.scenes.set(key, scene);
     if (current) {
-      this.setCurrentScene(name);
+      this.setCurrentScene(key);
     }
   }
 
   /**
    * Removes a scene from the SceneManager
-   * @param {string} name
+   * @param {string} key
    */
-  unregisterScene(name) {
-    if (SceneManager.scenes.has(name)) {
+  unregisterScene(key) {
+    if (SceneManager.scenes.has(key)) {
       return;
     }
   }
 
   /**
    * Checks for existence of a scene
-   * @param {string} name
+   * @param {string} key
    */
-  hasScene(name) {
-    return SceneManager.scenes.has(name);
+  hasScene(key) {
+    return SceneManager.scenes.has(key);
   }
 
   /**
    * Getter for a scene
-   * @param {string} name
+   * @param {string} key
    */
-  getScene(name) {
-    if (!SceneManager.scenes.has(name)) {
-      throw new Error(`Unknown scene '${name}'`);
+  getScene(key) {
+    if (!SceneManager.scenes.has(key)) {
+      throw new Error(`Unknown scene '${key}'`);
     }
-    return SceneManager.scenes.get(name);
+    return SceneManager.scenes.get(key);
   }
 
   /**
@@ -240,14 +243,14 @@ export class SceneManager extends IP5Lifecycle {
   }
 
   /**
-   * Sets current scene to a scene registered under 'name'
-   * @param {string} name
+   * Sets current scene to a scene registered under 'key'
+   * @param {string} key
    */
-  setCurrentScene(name) {
-    if (!SceneManager.scenes.has(name)) {
-      throw new Error(`Unknown scene '${name}'`);
+  setCurrentScene(key) {
+    if (!SceneManager.scenes.has(key)) {
+      throw new Error(`Unknown scene '${key}'`);
     }
-    this.current = SceneManager.scenes.get(name);
+    this.current = SceneManager.scenes.get(key);
   }
 
   // P5 LIFECYCLE METHODS ==========================================================================
@@ -274,6 +277,7 @@ export class SceneManager extends IP5Lifecycle {
             if (hasInstanceMethod(nextScene, "setup")) nextScene.setup(p5);
             break;
           case "switch":
+            if (hasInstanceMethod(nextScene, "setup")) nextScene.setup(p5);
             if (hasInstanceMethod(scene, "onExit")) scene.onExit(p5, nextScene);
             if (hasInstanceMethod(nextScene, "onEnter"))
               nextScene.onEnter(p5, scene);

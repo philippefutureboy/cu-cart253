@@ -8,7 +8,8 @@ import { BaseScene, SceneRequest } from "../p5/scene.js";
  * Logs enter & exit of scene
  */
 export default class GreenScene extends BaseScene {
-  static name = "green";
+  static key = "green";
+  static label = "Green Game";
   static instance = null;
 
   /**
@@ -17,7 +18,7 @@ export default class GreenScene extends BaseScene {
    * @param {Scene} prevScene
    */
   onEnter(p5, prevScene) {
-    console.log(`Entering '${this.name}' from '${prevScene.name}'`);
+    console.log(`Entering '${this.key}' from '${prevScene.key}'`);
   }
 
   /**
@@ -26,7 +27,7 @@ export default class GreenScene extends BaseScene {
    * @param {Scene} nextScene
    */
   onExit(p5, nextScene) {
-    console.log(`Exiting '${this.name}' to '${nextScene.name}'`);
+    console.log(`Exiting '${this.key}' to '${nextScene.key}'`);
   }
 
   /**
