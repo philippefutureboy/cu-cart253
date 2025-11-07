@@ -1,5 +1,13 @@
 import IP5Lifecycle from "./lifecycle.js";
 
+/**
+ * A simple message to pass from a Scene to a SceneManager
+ * telling it we are requesting to preload a scene / switch to another scene.
+ *
+ * SceneManager interprets returns from P5 lifecycle methods; if a SceneRequest
+ * is returned from any lifecycle method, it executes the requested Scene effect
+ * (preload / switch).
+ */
 export class SceneRequest {
   /**
    * @param {string} scene
@@ -11,6 +19,14 @@ export class SceneRequest {
   }
 }
 
+/**
+ * Abstract base class for Scenes
+ *
+ * Extends the IP5Lifecycle while enforcing static (class) attributes at runtime.
+ * Also implements the Singleton pattern.
+ * Updates the return type of the lifecycle method to support returning either nothing
+ * or a SceneRequest.
+ */
 export class BaseScene extends IP5Lifecycle {
   /**
    * @param {string} name
@@ -130,6 +146,19 @@ export class BaseScene extends IP5Lifecycle {
   }
 }
 
+/**
+ * SceneManager
+ *
+ * An engine that manages scenes & scene transitions.
+ * To use it, create a SceneManager instance (singleton),
+ * then register scenes using the registerScene method.
+ *
+ * It can technically be used directly as a p5 sketch, but does not create a canvas
+ * in the setup method. For that, see P5Runtime, a convenience class that
+ * creates the canvas with a set size & frame rate.
+ *
+ * @see ./runtime.js:P5Runtime
+ */
 export class SceneManager extends IP5Lifecycle {
   /**
    * @template {BaseScene} Scene

@@ -1,5 +1,11 @@
 import { SceneManager } from "./scene.js";
 
+/**
+ * P5Runtime
+ *
+ * A convenience class that extends SceneManager
+ * to create the canvas and set the frame rate at setup time.
+ */
 export default class P5Runtime extends SceneManager {
   constructor({
     frameRate = 60,

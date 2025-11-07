@@ -1,5 +1,12 @@
 import { BaseScene, SceneRequest } from "../p5/scene.js";
 
+/**
+ * MenuScene
+ *
+ * A scene that sets the background black and requests Red/Green/Blue-Scene on
+ * R/G/B keypress.
+ * Logs enter & exit of scene.
+ */
 export default class MenuScene extends BaseScene {
   static name = "menu";
   static instance = null;

@@ -1,3 +1,11 @@
+/**
+ * IP5Lifecycle
+ *
+ * An interface that exposes most of P5's lifecycle methods.
+ * As an interface, all methods are abstract and unimplemented.
+ * This is meant to be extended by a subclass that provides concrete implementation
+ * for each method.
+ */
 export default class IP5Lifecycle {
   /**
    *

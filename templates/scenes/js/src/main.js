@@ -1,20 +1,30 @@
 import P5Runtime from "./p5/runtime.js";
 import MenuScene from "./scenes/menu.js";
-import VariationRedScene from "./scenes/red.js";
-import VariationGreenScene from "./scenes/green.js";
-import VariationBlueScene from "./scenes/blue.js";
+import RedScene from "./scenes/red.js";
+import GreenScene from "./scenes/green.js";
+import BlueScene from "./scenes/blue.js";
 
+/**
+ * Instantiate the runtime
+ */
 const RUNTIME = new P5Runtime({
   frameRate: 60,
   width: window.innerWidth,
   height: window.innerHeight,
 });
 
+/**
+ * Register scenes, with MenuScene as current scene
+ */
 RUNTIME.registerScene(new MenuScene(), { current: true });
-RUNTIME.registerScene(new VariationBlueScene());
-RUNTIME.registerScene(new VariationRedScene());
-RUNTIME.registerScene(new VariationGreenScene());
+RUNTIME.registerScene(new BlueScene());
+RUNTIME.registerScene(new RedScene());
+RUNTIME.registerScene(new GreenScene());
 
+/**
+ * Create a p5 sketch in instance mode, and register the P5Runtime (SceneManager)
+ * methods as handlers for the p5 lifecycle methods
+ */
 new window.p5(
   /**
    * @param {import('p5')} p5

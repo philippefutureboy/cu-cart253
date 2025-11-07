@@ -1,6 +1,13 @@
 import { BaseScene, SceneRequest } from "../p5/scene.js";
 
-export default class VariationBlueScene extends BaseScene {
+/**
+ * BlueScene
+ *
+ * A scene that sets the background blue and requests MenuScene on
+ * 'backspace' keypress.
+ * Logs enter & exit of scene
+ */
+export default class BlueScene extends BaseScene {
   static name = "blue";
   static instance = null;
 
