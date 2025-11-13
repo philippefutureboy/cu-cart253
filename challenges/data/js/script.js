@@ -14,7 +14,7 @@
 let carData = undefined;
 let dinosaurData = undefined;
 let langData = undefined;
-let lang = "fr";
+let lang = (new URLSearchParams(window.location.search)).get('lang') ?? 'fr';
 
 // Starts with the instruction
 let carName = ""
@@ -34,7 +34,7 @@ function preload() {
 function setup() {
     createCanvas(600, 400);
 
-    carName = langData.translations.instructions.en;
+    carName = langData.translations.instructions[lang];
     console.log("carData", carData)
     console.log("dinosaurData", dinosaurData)
 }
