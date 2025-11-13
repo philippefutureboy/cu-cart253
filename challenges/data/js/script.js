@@ -23,7 +23,8 @@ let carName = "Click to generate a car name.";
  * Load the car and dinosaur data
  */
 function preload() {
-
+    carData = loadJSON("assets/data/cars.json")
+    dinosaurData = loadJSON("assets/data/dinosaurs.json")
 }
 
 /**
@@ -31,6 +32,8 @@ function preload() {
 */
 function setup() {
     createCanvas(600, 400);
+    console.log("carData", carData)
+    console.log("dinosaurData", dinosaurData)
 }
 
 /**
