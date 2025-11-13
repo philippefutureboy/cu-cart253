@@ -17,14 +17,15 @@ let langData = undefined;
 let lang = "fr";
 
 // Starts with the instruction
-let carName = "Click to generate a car name.";
+let carName = ""
 
 /**
  * Load the car and dinosaur data
  */
 function preload() {
-    carData = loadJSON("assets/data/cars.json")
-    dinosaurData = loadJSON("assets/data/dinosaurs.json")
+    carData = loadJSON("assets/data/cars.json");
+    dinosaurData = loadJSON("assets/data/dinosaurs.json");
+    langData = loadJSON("assets/data/lang.json");
 }
 
 /**
@@ -32,6 +33,8 @@ function preload() {
 */
 function setup() {
     createCanvas(600, 400);
+
+    carName = langData.translations.instructions.en;
     console.log("carData", carData)
     console.log("dinosaurData", dinosaurData)
 }
@@ -54,8 +57,10 @@ function draw() {
  * Generate a new car name
  */
 function mousePressed() {
-    const car = round(random(0, carData.cars.length - 1));
-    const dino = round(random(0, dinosaurData.dinosaurs.length - 1));
+    const carIndex = round(random(0, carData.cars.length - 1));
+    const dinoIndex = round(random(0, dinosaurData.dinosaurs.length - 1));
+    const car = carData.cars[carIndex];
+    const dino = dinosaurData.dinosaurs[dinoIndex];
 
-    carName = carData.cars[car] + " " + dinosaurData.dinosaurs[dino];
+    carName = `${car} ${dino}`;
 }
