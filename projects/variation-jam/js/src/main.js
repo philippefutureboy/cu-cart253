@@ -1,8 +1,8 @@
 import P5Runtime from "./p5/runtime.js";
-import MenuScene from "./scenes/menu.js";
-import RedScene from "./scenes/red.js";
-import GreenScene from "./scenes/green.js";
-import BlueScene from "./scenes/blue.js";
+import MenuScene from "./menu.js";
+import RedScene from "./variations/red.js";
+import GreenScene from "./variations/green.js";
+import BlueScene from "./variations/blue.js";
 
 /**
  * Instantiate the runtime

@@ -1,10 +1,15 @@
-import { BaseScene, SceneRequest } from "../p5/scene.js";
-import { CoordinatesBox } from "../utils/coordinates.js";
-import { throttle } from "../utils/functions.js";
+import { BaseScene, SceneRequest } from "./p5/scene.js";
+import { CoordinatesBox } from "./utils/coordinates.js";
+import { throttle } from "./utils/functions.js";
 
 /**
  * MenuScene
  *
+ * Displays the menu on screen, including title & variation games.
+ * Given a game Mapping<string, string>, displays the name of the games
+ * on screen & supports game selection using keyboard (arrows + enter) and mouse (pointer + click).
+ * Returns a ScreenRequest from the draw method if one of the games is selected,
+ * which is then handled by the SceneManager to transition to the selected game.
  */
 export default class MenuScene extends BaseScene {
   static key = "menu";
@@ -74,6 +79,8 @@ export default class MenuScene extends BaseScene {
     }
     p5.pop();
     this._setupped = true;
+
+    // Preload assets for games
   }
 
   /**
