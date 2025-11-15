@@ -10,6 +10,15 @@ import { throttle } from "./utils/functions.js";
  * on screen & supports game selection using keyboard (arrows + enter) and mouse (pointer + click).
  * Returns a ScreenRequest from the draw method if one of the games is selected,
  * which is then handled by the SceneManager to transition to the selected game.
+ *
+ * Originally, I made the style of the menu very reminescent of old-school gaming (think like Pippin's PONGS)
+ * with a pixeled font, white on purple background.
+ * But given the theme of the games, "tag", I thought it would be more on theme to use a font that
+ * brings mischievousness, fun, and play to the table.
+ * I thought of the Impossible Quiz, and decided to find a font that was similar to the impossible
+ * quiz.
+ * Following the same aesthetic, I switched the background back to white-ish, and used very basic
+ * colors.
  */
 export default class MenuScene extends BaseScene {
   static key = "menu";
@@ -43,7 +52,7 @@ export default class MenuScene extends BaseScene {
       return;
     }
 
-    this.font = p5.loadFont("assets/fonts/ARCADECLASSIC/ARCADECLASSIC.ttf");
+    this.font = p5.loadFont("assets/fonts/Mayas_Script/Mayas_Script.ttf");
 
     // Compute the bounding boxes for each of the menu items to be able to
     // track clicks.
@@ -123,7 +132,7 @@ export default class MenuScene extends BaseScene {
   }
 
   _drawBackground(p5) {
-    p5.background("#301934");
+    p5.background("#f0f0ff");
     p5.push();
     {
       p5.noFill();
@@ -147,12 +156,14 @@ export default class MenuScene extends BaseScene {
       p5.textFont(this.font);
       p5.textAlign(p5.CENTER, p5.TOP);
       p5.textSize(textSize);
-      p5.fill("white");
+      p5.fill("#f00");
       p5.text(title, textX, textY);
 
       p5.rectMode(p5.LEFT);
+      p5.noStroke();
       p5.rect(16, textY + lineHeight, p5.width - 32, 6);
 
+      p5.fill("#00f");
       p5.textSize(40);
       p5.text(
         "SELECT YOUR VARIANT",
@@ -174,14 +185,14 @@ export default class MenuScene extends BaseScene {
   _drawGameSelection(p5) {
     p5.push();
     {
-      const textSize = 32;
+      const textSize = 36;
       const cursorPos = { x: p5.mouseX, y: p5.mouseY };
 
       p5.textFont(this.font);
       p5.textAlign(p5.LEFT, p5.TOP);
       p5.textSize(textSize);
       p5.noStroke();
-      p5.fill("white");
+      p5.fill("#00f");
 
       for (let i = 0; i < this.items.length; i += 1) {
         const item = this.items[i];
@@ -194,20 +205,15 @@ export default class MenuScene extends BaseScene {
           this._cursorIndexChangedAt = Date.now();
         }
 
-        const label = `${i + 1}    ${item.label}`;
+        const label = `${i + 1}. ${item.label}`;
         const [textX, textY] = [item.bbox.xMin, item.bbox.yMin];
-        // If cursor is currently on this item, blink the text
+        // If cursor is currently on this item, add emphasis
         if (this._cursorIndex === i) {
-          const quarterSecSinceChange = Math.floor(
-            (Date.now() - this._cursorIndexChangedAt) / 400
-          );
-          const blink = !!(quarterSecSinceChange % 2);
-          if (!blink) {
-            p5.push();
-            p5.stroke("#d0d0d0");
-            p5.text(label, textX, textY);
-            p5.pop();
-          }
+          p5.push();
+          p5.strokeWeight(0.75);
+          p5.stroke("#00f");
+          p5.text(label, textX, textY);
+          p5.pop();
         }
         // Else just display normally
         else {

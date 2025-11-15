@@ -1,4 +1,4 @@
-import IP5Lifecycle from "./lifecycle.js";
+import { IP5Lifecycle } from "./interfaces.js";
 
 /**
  * A simple message to pass from a Scene to a SceneManager
@@ -88,7 +88,7 @@ export class BaseScene extends IP5Lifecycle {
   /**
    *
    * @param {import('p5')} p5
-   * @returns {SceneRequest|void}
+   * @returns {SceneRequest|Array<SceneRequest>|void}
    */
   setup(p5) {
     throw new TypeError("Abstract method 'setup' must be implemented");
@@ -97,7 +97,7 @@ export class BaseScene extends IP5Lifecycle {
   /**
    *
    * @param {import('p5')} p5
-   * @returns {SceneRequest|void}
+   * @returns {SceneRequest|Array<SceneRequest>|void}
    */
   draw(p5) {
     throw new TypeError("Abstract method 'draw' must be implemented");
@@ -106,7 +106,7 @@ export class BaseScene extends IP5Lifecycle {
   /**
    * @param {import('p5')} p5
    * @param {KeyboardEvent} event
-   * @returns {SceneRequest|void}
+   * @returns {SceneRequest|Array<SceneRequest>|void}
    */
   keyPressed(p5, event) {
     throw new TypeError("Abstract method 'keyPressed' must be implemented");
@@ -115,7 +115,7 @@ export class BaseScene extends IP5Lifecycle {
   /**
    * @param {import('p5')} p5
    * @param {KeyboardEvent} event
-   * @returns {SceneRequest|void}
+   * @returns {SceneRequest|Array<SceneRequest>|void}
    */
   keyReleased(p5, event) {
     throw new TypeError("Abstract method 'keyReleased' must be implemented");
@@ -124,7 +124,7 @@ export class BaseScene extends IP5Lifecycle {
   /**
    * @param {import('p5')} p5
    * @param {MouseEvent} event
-   * @returns {SceneRequest|void}
+   * @returns {SceneRequest|Array<SceneRequest>|void}
    */
   mouseClicked(p5, event) {
     throw new TypeError("Abstract method 'mouseClicked' must be implemented");
@@ -133,7 +133,7 @@ export class BaseScene extends IP5Lifecycle {
   /**
    * @param {import('p5')} p5
    * @param {MouseEvent} event
-   * @returns {SceneRequest|void}
+   * @returns {SceneRequest|Array<SceneRequest>|void}
    */
   mousePressed(p5, event) {
     throw new TypeError("Abstract method 'mousePressed' must be implemented");
@@ -142,7 +142,7 @@ export class BaseScene extends IP5Lifecycle {
   /**
    * @param {import('p5')} p5
    * @param {MouseEvent} event
-   * @returns {SceneRequest|void}
+   * @returns {SceneRequest|Array<SceneRequest>|void}
    */
   mouseReleased(p5, event) {
     throw new TypeError("Abstract method 'mouseReleased' must be implemented");
@@ -258,6 +258,7 @@ export class SceneManager extends IP5Lifecycle {
   /**
    * Delegates the execution of the lifecycle method to the current scene
    * and switches scene if the returned value is a SceneRequest instance.
+   * Supports receiving multiple SceneRequest to be able to preload multiple scenes in parallel.
    *
    * @param {string} method Lifecycle method
    * @param {import('p5')} p5
@@ -267,24 +268,36 @@ export class SceneManager extends IP5Lifecycle {
     const scene = this.getCurrentScene();
     // only run if the method exists on scene class
     if (hasInstanceMethod(scene, method)) {
-      const result = scene[method](p5, ...args);
+      let result = scene[method](p5, ...args);
       if (result instanceof SceneRequest) {
-        const request = result;
-        const nextScene = this.getScene(request.scene);
+        result = [result];
+      }
 
-        switch (request.type) {
-          case "preload":
-            if (hasInstanceMethod(nextScene, "setup")) nextScene.setup(p5);
-            break;
-          case "switch":
-            if (hasInstanceMethod(nextScene, "setup")) nextScene.setup(p5);
-            if (hasInstanceMethod(scene, "onExit")) scene.onExit(p5, nextScene);
-            if (hasInstanceMethod(nextScene, "onEnter"))
-              nextScene.onEnter(p5, scene);
-            this.setCurrentScene(request.scene);
-            break;
-          default:
-            break;
+      if (
+        Array.isArray(result) &&
+        result.every((e) => e instanceof SceneRequest)
+      ) {
+        for (const request of result) {
+          const requestedScene = this.getScene(request.scene);
+          console.log(request);
+
+          switch (request.type) {
+            case "preload":
+              if (hasInstanceMethod(requestedScene, "setup"))
+                requestedScene.setup(p5);
+              break;
+            case "switch":
+              if (hasInstanceMethod(requestedScene, "setup"))
+                requestedScene.setup(p5);
+              if (hasInstanceMethod(scene, "onExit"))
+                scene.onExit(p5, requestedScene);
+              if (hasInstanceMethod(requestedScene, "onEnter"))
+                requestedScene.onEnter(p5, scene);
+              this.setCurrentScene(request.scene);
+              break;
+            default:
+              break;
+          }
         }
       }
     }
