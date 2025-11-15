@@ -5,6 +5,8 @@ import GreenScene from "./variations/green.js";
 import BlueScene from "./variations/blue.js";
 import MultiSceneGame from "./variations/multi-scene/game.js";
 
+import FontBook from "./utils/fonts.js";
+
 /**
  * Instantiate the runtime
  */
@@ -12,12 +14,24 @@ const RUNTIME = new P5Runtime({
   frameRate: 60,
   width: 800,
   height: 800,
+
+  setup(p5) {
+    // Load fonts ahead of time.
+    FontBook.load(
+      p5,
+      "mayas-script",
+      "assets/fonts/Mayas_Script/Mayas_Script.ttf"
+    );
+  },
 });
-// Scenes
+
+// Games
 const MULTI = new MultiSceneGame();
 const RED = new RedScene();
 const GREEN = new GreenScene();
 const BLUE = new BlueScene();
+
+// Menu
 const MENU = new MenuScene({
   [MULTI.key]: MULTI.label,
   [RED.key]: RED.label,

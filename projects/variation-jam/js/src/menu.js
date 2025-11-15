@@ -1,6 +1,7 @@
 import { BaseScene, SceneRequest } from "./p5/scene.js";
 import { CoordinatesBox } from "./utils/coordinates.js";
 import { throttle } from "./utils/functions.js";
+import FontBook from "./utils/fonts.js";
 
 /**
  * MenuScene
@@ -51,11 +52,29 @@ export default class MenuScene extends BaseScene {
     if (this._setupped) {
       return;
     }
+    // Load the font Maya's Script
+    const fontPromise = FontBook.getPromise("mayas-script");
 
-    this.font = p5.loadFont("assets/fonts/Mayas_Script/Mayas_Script.ttf");
+    // Once the font is loaded, compute the bounding boxes for each of the menu items
+    // to be able to track hovers and clicks.
+    fontPromise.then((font) =>
+      this._computeGameSelectionBBoxes(p5, font, undefined)
+    );
+    fontPromise.catch((err) =>
+      this._computeGameSelectionBBoxes(p5, undefined, err)
+    );
+    this._setupped = true;
+  }
 
-    // Compute the bounding boxes for each of the menu items to be able to
-    // track clicks.
+  /**
+   * Computes the bounding boxes for each of the menu items
+   * to be able to track hovers and clicks.
+   *
+   * @param {import('p5')} p5
+   * @param {import('p5').Font|undefined} font
+   * @param {Error|undefined} err
+   */
+  _computeGameSelectionBBoxes(p5, font, err) {
     p5.push();
     {
       const topY = 200;
@@ -63,7 +82,9 @@ export default class MenuScene extends BaseScene {
       const textSize = 32;
       const lineHeight = 42;
 
-      p5.textFont(this.font);
+      // only set to custom font if the font successfully loaded
+      if (font !== undefined) p5.textFont(font);
+
       p5.textAlign(p5.LEFT, p5.TOP);
       p5.textSize(textSize);
       p5.noStroke();
@@ -87,15 +108,16 @@ export default class MenuScene extends BaseScene {
       }
     }
     p5.pop();
-    this._setupped = true;
-
-    // Preload assets for games
   }
 
   /**
    * @param {import('p5')} p5
    */
   draw(p5) {
+    const font = FontBook.get("mayas-script");
+    if (font === FontBook.LoadingSentinel) {
+      return;
+    }
     this._drawBackground(p5);
     this._drawTitle(p5);
     this._drawGameSelection(p5);
@@ -145,6 +167,7 @@ export default class MenuScene extends BaseScene {
    * @param {import('p5')} p5
    */
   _drawTitle(p5) {
+    const font = FontBook.get("mayas-script");
     const title = "A GAME OF TAG";
     const textSize = 64;
     const textX = p5.width / 2;
@@ -153,7 +176,9 @@ export default class MenuScene extends BaseScene {
     const betweenLines = 16;
     p5.push();
     {
-      p5.textFont(this.font);
+      // only set to custom font if the font successfully loaded
+      if (font !== FontBook.ErrorSentinel) p5.textFont(font);
+
       p5.textAlign(p5.CENTER, p5.TOP);
       p5.textSize(textSize);
       p5.fill("#f00");
@@ -185,10 +210,13 @@ export default class MenuScene extends BaseScene {
   _drawGameSelection(p5) {
     p5.push();
     {
+      const font = FontBook.get("mayas-script");
       const textSize = 36;
       const cursorPos = { x: p5.mouseX, y: p5.mouseY };
 
-      p5.textFont(this.font);
+      // only set to custom font if the font successfully loaded
+      if (font !== FontBook.ErrorSentinel) p5.textFont(font);
+
       p5.textAlign(p5.LEFT, p5.TOP);
       p5.textSize(textSize);
       p5.noStroke();
