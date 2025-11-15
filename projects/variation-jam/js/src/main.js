@@ -3,6 +3,7 @@ import MenuScene from "./menu.js";
 import RedScene from "./variations/red.js";
 import GreenScene from "./variations/green.js";
 import BlueScene from "./variations/blue.js";
+import MultiSceneGame from "./variations/multi-scene/game.js";
 
 /**
  * Instantiate the runtime
@@ -13,10 +14,12 @@ const RUNTIME = new P5Runtime({
   height: 800,
 });
 // Scenes
+const MULTI = new MultiSceneGame();
 const RED = new RedScene();
 const GREEN = new GreenScene();
 const BLUE = new BlueScene();
 const MENU = new MenuScene({
+  [MULTI.key]: MULTI.label,
   [RED.key]: RED.label,
   [GREEN.key]: GREEN.label,
   [BLUE.key]: BLUE.label,
@@ -26,6 +29,7 @@ const MENU = new MenuScene({
  * Register scenes, with MenuScene as current scene
  */
 RUNTIME.registerScene(MENU, { current: true });
+RUNTIME.registerScene(MULTI);
 RUNTIME.registerScene(RED);
 RUNTIME.registerScene(GREEN);
 RUNTIME.registerScene(BLUE);

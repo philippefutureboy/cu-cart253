@@ -44,25 +44,9 @@ export class BaseScene extends IP5Lifecycle {
         }' should have a non-empty static 'label' property`
       );
     }
-    if (!new.target.hasOwnProperty("instance")) {
-      throw new Error(
-        `Scene class '${new.target.constructor.key}' static 'instance' property`
-      );
-    }
-
-    // singleton pattern
-    if (new.target.instance) {
-      return new.target.instance;
-    } else {
-      super();
-      new.target.instance = this;
-      this.key = this.constructor.key; // convenience alias
-      this.label = this.constructor.label; // convenience alias
-    }
-  }
-
-  static getInstance() {
-    return this.instance ?? new this.constructor();
+    super();
+    this.key = this.constructor.key; // convenience alias
+    this.label = this.constructor.label; // convenience alias
   }
 
   /**
@@ -153,34 +137,35 @@ export class BaseScene extends IP5Lifecycle {
  * SceneManager
  *
  * An engine that manages scenes & scene transitions.
- * To use it, create a SceneManager instance (singleton),
+ * To use it, create a SceneManager instance,
  * then register scenes using the registerScene method.
  *
  * It can technically be used directly as a p5 sketch, but does not create a canvas
  * in the setup method. For that, see P5Runtime, a convenience class that
  * creates the canvas with a set size & frame rate.
  *
+ * Previously a singleton, but then I realized that I prefered to have
+ * each game be a SceneManager because it would allow me to have a "Game" extends SceneManager
+ * and have start, middle, end scenes for each game.
+ *
  * @see ./runtime.js:P5Runtime
  */
-export class SceneManager extends IP5Lifecycle {
-  /**
-   * @template {BaseScene} Scene
-   * @type {Map<string, Scene>}
-   */
-  static scenes = new Map();
-  static instance = null;
-
-  static getInstance() {
-    return SceneManager.instance ?? new SceneManager();
-  }
-
-  constructor() {
-    if (SceneManager.instance) {
-      return SceneManager.instance;
-    }
+export class BaseSceneManager extends IP5Lifecycle {
+  constructor({ root = true } = {}) {
     super();
+    /**
+     * @template {BaseScene} Scene
+     * @template {BaseSceneManager} SceneManager
+     * @type {Scene|SceneManager|null}
+     */
     this.current = null;
-    SceneManager.instance = this;
+    /**
+     * @template {BaseScene} Scene
+     * @template {BaseSceneManager} SceneManager
+     * @type {Map<string, Scene|SceneManager>}
+     */
+    this.scenes = new Map();
+    this.root = root ?? true;
   }
 
   // SCENE REGISTRY ================================================================================
@@ -188,17 +173,18 @@ export class SceneManager extends IP5Lifecycle {
   /**
    * Adds a scene to the SceneManager
    * @template {BaseScene} Scene
-   * @param {Scene} scene
+   * @template {BaseSceneManager} SceneManager
+   * @param {Scene|SceneManager} scene
    */
   registerScene(scene, { current = false } = {}) {
-    const key = scene.constructor.key;
-    if (SceneManager.scenes.has(key)) {
+    const key = scene.key ?? scene.constructor.key;
+    if (this.scenes.has(key)) {
       throw new Error(`SceneManager already has a scene keyed '${key}'`);
     }
     if (scene.constructor === BaseScene) {
       throw new Error(`Cannot register instance of abstract class BaseScene`);
     }
-    SceneManager.scenes.set(key, scene);
+    this.scenes.set(key, scene);
     if (current) {
       this.setCurrentScene(key);
     }
@@ -209,7 +195,8 @@ export class SceneManager extends IP5Lifecycle {
    * @param {string} key
    */
   unregisterScene(key) {
-    if (SceneManager.scenes.has(key)) {
+    if (this.scenes.has(key)) {
+      this.scenes.remove(key);
       return;
     }
   }
@@ -219,24 +206,28 @@ export class SceneManager extends IP5Lifecycle {
    * @param {string} key
    */
   hasScene(key) {
-    return SceneManager.scenes.has(key);
+    return this.scenes.has(key);
   }
 
   /**
    * Getter for a scene
+   * @template {BaseScene} Scene
+   * @template {BaseSceneManager} SceneManager
    * @param {string} key
+   * @returns {Scene|SceneManager} Scene|SceneManager matching key
    */
   getScene(key) {
-    if (!SceneManager.scenes.has(key)) {
+    if (!this.scenes.has(key)) {
       throw new Error(`Unknown scene '${key}'`);
     }
-    return SceneManager.scenes.get(key);
+    return this.scenes.get(key);
   }
 
   /**
    * Getter for current scene
    * @template {BaseScene} Scene
-   * @returns {Scene|null} Current scene if set, else null
+   * @template {BaseSceneManager} SceneManager
+   * @returns {Scene|SceneManager|null} Current scene if set, else null
    */
   getCurrentScene() {
     return this.current;
@@ -247,10 +238,10 @@ export class SceneManager extends IP5Lifecycle {
    * @param {string} key
    */
   setCurrentScene(key) {
-    if (!SceneManager.scenes.has(key)) {
+    if (!this.scenes.has(key)) {
       throw new Error(`Unknown scene '${key}'`);
     }
-    this.current = SceneManager.scenes.get(key);
+    this.current = this.scenes.get(key);
   }
 
   // P5 LIFECYCLE METHODS ==========================================================================
@@ -263,51 +254,103 @@ export class SceneManager extends IP5Lifecycle {
    * @param {string} method Lifecycle method
    * @param {import('p5')} p5
    * @param {...any} args
+   * @returns {SceneRequest|null}
    */
   _lifecycle(method, p5, ...args) {
-    const scene = this.getCurrentScene();
+    const currentScene = this.getCurrentScene();
+    const currentIsManager = currentScene instanceof BaseSceneManager;
     // only run if the method exists on scene class
-    if (hasInstanceMethod(scene, method)) {
-      let result = scene[method](p5, ...args);
+    if (currentIsManager || hasInstanceMethod(currentScene, method)) {
+      let result = currentScene[method](p5, ...args);
       if (result instanceof SceneRequest) {
         result = [result];
       }
+
+      const unknownRequests = [];
 
       if (
         Array.isArray(result) &&
         result.every((e) => e instanceof SceneRequest)
       ) {
         for (const request of result) {
-          const requestedScene = this.getScene(request.scene);
-          console.log(request);
+          // This block enables returning a SceneRequest to a parent
+          // BaseSceneManager if the current SceneManager does not
+          // have any scene of the name request.scene registered.
+          // This allows for Games to extend BaseSceneManager and delegate
+          // to the global BaseSceneManager if one of the scene requests
+          // a Scene out of the Game.
+          let requestedScene;
+          let requestedIsManager;
+          try {
+            requestedScene = this.getScene(request.scene);
+            requestedIsManager = requestedScene instanceof BaseSceneManager;
+          } catch (error) {
+            if (this.root) throw error;
+            unknownRequests.push(request);
+            continue;
+          }
 
           switch (request.type) {
-            case "preload":
-              if (hasInstanceMethod(requestedScene, "setup"))
+            case "preload": {
+              if (
+                requestedIsManager ||
+                hasInstanceMethod(requestedScene, "setup")
+              )
                 requestedScene.setup(p5);
               break;
-            case "switch":
-              if (hasInstanceMethod(requestedScene, "setup"))
+            }
+            case "switch": {
+              if (
+                requestedIsManager ||
+                hasInstanceMethod(requestedScene, "setup")
+              )
                 requestedScene.setup(p5);
-              if (hasInstanceMethod(scene, "onExit"))
-                scene.onExit(p5, requestedScene);
-              if (hasInstanceMethod(requestedScene, "onEnter"))
-                requestedScene.onEnter(p5, scene);
+
+              if (currentIsManager || hasInstanceMethod(currentScene, "onExit"))
+                currentScene.onExit(p5, requestedScene);
+
+              if (
+                requestedIsManager ||
+                hasInstanceMethod(requestedScene, "onEnter")
+              )
+                requestedScene.onEnter(p5, currentScene);
               this.setCurrentScene(request.scene);
               break;
+            }
             default:
               break;
           }
         }
       }
+      if (unknownRequests.length) {
+        return unknownRequests;
+      }
     }
+  }
+
+  /**
+   * Callback to execute when transitioning to a Scene/SceneManager
+   * @param {import('p5')} p5
+   * @param {Scene|SceneManager|null} prevScene Exiting scene, if previously set
+   */
+  onEnter(p5, prevScene) {
+    return this._lifecycle("onEnter", p5, prevScene);
+  }
+
+  /**
+   * Callback to execute when exiting a Scene/sceneManager
+   * @param {import('p5')} p5
+   * @param {Scene|SceneManager|null} nextScene Exiting scene, if previously set
+   */
+  onExit(p5, nextScene) {
+    return this._lifecycle("onExit", p5, nextScene);
   }
 
   /**
    * @param {import('p5')} p5
    */
   setup(p5) {
-    this._lifecycle("setup", p5);
+    return this._lifecycle("setup", p5);
   }
 
   /**
@@ -315,7 +358,7 @@ export class SceneManager extends IP5Lifecycle {
    * @param {import('p5')} p5
    */
   draw(p5) {
-    this._lifecycle("draw", p5);
+    return this._lifecycle("draw", p5);
   }
 
   /**
@@ -323,7 +366,7 @@ export class SceneManager extends IP5Lifecycle {
    * @param {KeyboardEvent} event
    */
   keyPressed(p5, event) {
-    this._lifecycle("keyPressed", p5, event);
+    return this._lifecycle("keyPressed", p5, event);
   }
 
   /**
@@ -331,7 +374,7 @@ export class SceneManager extends IP5Lifecycle {
    * @param {KeyboardEvent} event
    */
   keyReleased(p5, event) {
-    this._lifecycle("keyReleased", p5, event);
+    return this._lifecycle("keyReleased", p5, event);
   }
 
   /**
@@ -339,7 +382,7 @@ export class SceneManager extends IP5Lifecycle {
    * @param {MouseEvent} event
    */
   mouseClicked(p5, event) {
-    this._lifecycle("mouseClicked", p5, event);
+    return this._lifecycle("mouseClicked", p5, event);
   }
 
   /**
@@ -347,7 +390,7 @@ export class SceneManager extends IP5Lifecycle {
    * @param {MouseEvent} event
    */
   mousePressed(p5, event) {
-    this._lifecycle("mousePressed", p5, event);
+    return this._lifecycle("mousePressed", p5, event);
   }
 
   /**
@@ -355,7 +398,7 @@ export class SceneManager extends IP5Lifecycle {
    * @param {MouseEvent} event
    */
   mouseReleased(p5, event) {
-    this._lifecycle("mouseReleased", p5, event);
+    return this._lifecycle("mouseReleased", p5, event);
   }
 }
 
