@@ -11,13 +11,11 @@ export default class P5Runtime extends BaseSceneManager {
     frameRate = 60,
     width = window.innerWidth,
     height = window.innerHeight,
-    setup = undefined,
   } = {}) {
     super();
     this._frameRate = frameRate ?? 60;
     this._initial_width = width ?? window.innerWidth;
     this._initial_height = height ?? window.innerHeight;
-    this._setup = typeof setup === "function" ? setup : () => {};
   }
 
   /**
@@ -27,7 +25,6 @@ export default class P5Runtime extends BaseSceneManager {
   setup(p5) {
     p5.createCanvas(this._initial_width, this._initial_height);
     p5.frameRate(this._frameRate);
-    this._setup(p5);
     super.setup(p5);
   }
 }

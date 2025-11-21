@@ -196,7 +196,7 @@ export class BaseSceneManager extends IP5Lifecycle {
    */
   unregisterScene(key) {
     if (this.scenes.has(key)) {
-      this.scenes.remove(key);
+      this.scenes.delete(key);
       return;
     }
   }

@@ -2,6 +2,7 @@ import { BaseScene, SceneRequest } from "./p5/scene.js";
 import { CoordinatesBox } from "./utils/coordinates.js";
 import { throttle } from "./utils/functions.js";
 import FontBook from "./utils/fonts.js";
+import * as theme from "./theme.js";
 
 /**
  * MenuScene
@@ -32,7 +33,6 @@ export default class MenuScene extends BaseScene {
    */
   constructor(games = {}) {
     super();
-    this.font = null;
     /** @type {Array<{key:string, label:string, bbox: CoordinatesBox|null}>} */
     this.items = Object.entries(games).map(([key, label]) => ({
       key,
@@ -75,34 +75,40 @@ export default class MenuScene extends BaseScene {
    * @param {Error|undefined} err
    */
   _computeGameSelectionBBoxes(p5, font, err) {
+    let typo = null;
+    // get the appropriate typo styling based on loaded font
+    if (!FontBook.isSentinel(font) && font !== null) {
+      typo = theme.typo["mayas-script"];
+    } else {
+      typo = theme.typo["default"];
+    }
+
     p5.push();
     {
-      const topY = 200;
-      const topX = 16;
-      const textSize = 32;
-      const lineHeight = 42;
+      const topY = 216;
+      const leftIndentX = 24;
 
       // only set to custom font if the font successfully loaded
       if (font !== undefined) p5.textFont(font);
 
       p5.textAlign(p5.LEFT, p5.TOP);
-      p5.textSize(textSize);
+      p5.textSize(typo.li.size);
       p5.noStroke();
       p5.fill("white");
 
       for (let i = 0; i < this.items.length; i += 1) {
         const label = `${i + 1}    ${this.items[i].label}`;
-        const textX = topX;
-        const textY = topY + i * lineHeight;
+        const liX = leftIndentX;
+        const liY = topY + i * typo.li.lineHeight;
         const textWidth = p5.textWidth(label);
 
         // Check if the mouse is hovering on current text
         // If so, automatically update this.cursorIndex to i
         const textBBox = new CoordinatesBox({
-          xMin: textX,
-          yMin: textY,
-          xMax: textX + textWidth,
-          yMax: textY + textSize,
+          xMin: liX,
+          yMin: liY,
+          xMax: liX + textWidth,
+          yMax: liY + typo.li.size,
         });
         this.items[i].bbox = textBBox;
       }
@@ -154,7 +160,7 @@ export default class MenuScene extends BaseScene {
   }
 
   _drawBackground(p5) {
-    p5.background("#f0f0ff");
+    p5.background(theme.colors.background);
     p5.push();
     {
       p5.noFill();
@@ -168,33 +174,53 @@ export default class MenuScene extends BaseScene {
    */
   _drawTitle(p5) {
     const font = FontBook.get("mayas-script");
-    const title = "A GAME OF TAG";
-    const textSize = 64;
-    const textX = p5.width / 2;
-    const textY = 48;
-    const lineHeight = 80;
-    const betweenLines = 16;
+    let typo = null;
+    // get the appropriate typo styling based on loaded font
+    if (!FontBook.isSentinel(font) && font !== null) {
+      typo = theme.typo["mayas-script"];
+    } else {
+      typo = theme.typo["default"];
+    }
+
     p5.push();
     {
       // only set to custom font if the font successfully loaded
-      if (font !== FontBook.ErrorSentinel) p5.textFont(font);
+      if (!FontBook.isSentinel(font) && font !== null) {
+        p5.textFont(font);
+      }
 
+      // Title
+      const titleX = p5.width / 2;
+      const titleY = 48;
+      p5.textSize(typo.h1.size);
+      p5.fill(theme.colors.textH1);
       p5.textAlign(p5.CENTER, p5.TOP);
-      p5.textSize(textSize);
-      p5.fill("#f00");
-      p5.text(title, textX, textY);
+      p5.text("A GAME OF   ", titleX, titleY);
+      p5.fill(theme.colors.tag);
+      // Technically this will render badly if the font is not loaded
+      // 152 is just an approx for Maya's Script font.
+      p5.text("TAG", titleX + 152, titleY);
 
+      // Separator line
+      const separatorY = titleY + typo.h1.lineHeight;
+      const separatorHeight = 6;
+      const separatorLineHeight = 14;
+      p5.fill(theme.colors.separatorH1);
       p5.rectMode(p5.LEFT);
       p5.noStroke();
-      p5.rect(16, textY + lineHeight, p5.width - 32, 6);
-
-      p5.fill("#00f");
-      p5.textSize(40);
-      p5.text(
-        "SELECT YOUR VARIANT",
-        p5.width / 2,
-        textY + lineHeight + 6 + betweenLines
+      p5.rect(
+        16,
+        titleY + typo.h1.lineHeight,
+        p5.width - 32,
+        separatorHeight,
+        6
       );
+
+      // Subtitle
+      const subtitleY = separatorY + separatorLineHeight;
+      p5.fill(theme.colors.textDefault);
+      p5.textSize(typo.h1Subtitle.size);
+      p5.text("SELECT YOUR VARIANT", p5.width / 2, subtitleY);
     }
     p5.pop();
   }
@@ -208,20 +234,30 @@ export default class MenuScene extends BaseScene {
    * @param {import('p5')} p5
    */
   _drawGameSelection(p5) {
+    const font = FontBook.get("mayas-script");
+    let typo = null;
+    // get the appropriate typo styling based on loaded font
+    if (!FontBook.isSentinel(font) && font !== null) {
+      typo = theme.typo["mayas-script"];
+    } else {
+      typo = theme.typo["default"];
+    }
+
     p5.push();
     {
-      const font = FontBook.get("mayas-script");
-      const textSize = 36;
       const cursorPos = { x: p5.mouseX, y: p5.mouseY };
 
+      // Set styles
       // only set to custom font if the font successfully loaded
-      if (font !== FontBook.ErrorSentinel) p5.textFont(font);
-
+      if (font !== FontBook.ErrorSentinel) {
+        p5.textFont(font);
+      }
       p5.textAlign(p5.LEFT, p5.TOP);
-      p5.textSize(textSize);
+      p5.textSize(typo.li.size);
       p5.noStroke();
-      p5.fill("#00f");
+      p5.fill(theme.colors.textDefault);
 
+      // Render line items
       for (let i = 0; i < this.items.length; i += 1) {
         const item = this.items[i];
 
@@ -234,18 +270,26 @@ export default class MenuScene extends BaseScene {
         }
 
         const label = `${i + 1}. ${item.label}`;
-        const [textX, textY] = [item.bbox.xMin, item.bbox.yMin];
+        const [liX, liY] = [item.bbox.xMin, item.bbox.yMin];
         // If cursor is currently on this item, add emphasis
         if (this._cursorIndex === i) {
           p5.push();
           p5.strokeWeight(0.75);
-          p5.stroke("#00f");
-          p5.text(label, textX, textY);
+          p5.stroke(theme.colors.textDefault);
+          const itemTextWidth = p5.textWidth(label);
+          p5.text(label, liX, liY);
+          p5.strokeWeight(3);
+          p5.line(
+            liX + typo.li.underlineOffset.x,
+            liY + typo.li.lineHeight + typo.li.underlineOffset.y,
+            liX + itemTextWidth - typo.li.underlineOffset.x,
+            liY + typo.li.lineHeight + typo.li.underlineOffset.y
+          );
           p5.pop();
         }
         // Else just display normally
         else {
-          p5.text(label, textX, textY);
+          p5.text(label, liX, liY);
         }
       }
     }

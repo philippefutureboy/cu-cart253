@@ -92,4 +92,8 @@ export default class FontBook {
   static getPromise(key) {
     return FontBook._fontPromises.get(key) ?? null;
   }
+
+  static isSentinel(obj) {
+    return obj === FontBook.LoadingSentinel || obj === FontBook.ErrorSentinel;
+  }
 }
