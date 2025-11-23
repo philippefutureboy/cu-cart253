@@ -1,6 +1,8 @@
 # IDEAS
 
-## Basic Tag
+- controls impact experience
+
+## Classic Tag
 
 Two dots, one the player, the other an NPC.
 One of the dots starts as "it", with "it" displayed above its position.
@@ -21,13 +23,13 @@ Games ends after time elapses or the tag freezes all of the moving dots.
 
 ## Ball Tag
 
-Basic tag with a twist: Tag other characters by throwing a ball at them.
+Classic Tag with a twist: Tag other characters by throwing a ball at them.
 If you miss you must go grab the ball again.
 Game ends after time elapses.
 
 ## Magnetic Tag
 
-Basic tag, but you are magnets with the same polarity, so you can never reach
+Classic Tag, but you are magnets with the same polarity, so you can never reach
 the other characters... unless you use their magnetism against them!
 
 ## Typing Tag
@@ -37,20 +39,26 @@ If you reach their position, you have now to type backwards.
 If you reach the start before they do, you win.
 If the time elapses whoever is it loses.
 
+linear vs circular
+
 ## Safe Zone Tag
 
 Reach the Safe Zone while avoiding other tags.
 If you do you win. If you get touched, you lose.
 
+## Tag Across the Game
+
+Tag, but your dot navigates across the scenes & the menu.
+
 ## Underwater Tag
 
 Super Mario water level physics.
-Basic tag rules apply.
+Classic Tag rules apply.
 
 ## Space Tag
 
 Floaty physics.
-Basic tag rules apply.
+Classic Tag rules apply.
 
 ## Aggregator Tag
 
@@ -91,4 +99,13 @@ Tag, but in a maze. Exit the maze without being touched to win.
 
 Tag, but you are PacMan and must eat all of the dots to win.
 Phantoms become faster and more intelligent the longer you spend player.
+
+## Metal Gear Solid
+
+You must avoid the guards with their cone of vision and get to the goal
+
+## Guard tag
+
+You must catch the intruder before they get to the goal!
+
 
