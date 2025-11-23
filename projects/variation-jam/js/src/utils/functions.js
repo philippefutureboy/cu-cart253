@@ -2,8 +2,7 @@
  * Creates a throttled version of a function that only runs once every `delay` milliseconds,
  * no matter how many times it’s called.
  *
- * Implemented by ChatGPT 5.0 Thinking since I don't want to have to bundle lodash to be able
- * to import it.
+ * @attribution Implemented by ChatGPT 5.0 Thinking to avoid bundling lodash
  *
  * @template {(...args: any[]) => any} F
  * @param {F} fn - The function to throttle
@@ -43,4 +42,15 @@ export function throttle(fn, delay, leading = true, trailing = true) {
       timeout = setTimeout(invoke, remaining);
     }
   };
+}
+
+/**
+ * between
+ *
+ * Checks whether value is between min and max. Syntactic sugar of sorts for improved readability.
+ *
+ * 100% manually implemented.
+ */
+export function between(value, min, max) {
+  return value >= min && value <= max;
 }

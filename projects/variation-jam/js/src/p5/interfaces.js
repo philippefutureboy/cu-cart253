@@ -1,3 +1,18 @@
+/**
+ * src/p5/interfaces.js
+ *
+ * A bunch of basic interfaces for classes to implement that each cover
+ * part (or the totality) of p5 lifecycle.
+ * Essentially these classes reproduce the p5 sketch interface.
+ * These are used as base for many of the subclasses, including
+ * - Scenes
+ * - SceneManagers
+ * - Inputs
+ *
+ * and many more, especially if we consider the IP5Drawable interface.
+ *
+ * 100% manually implemented.
+ */
 export class IP5Drawable {
   /**
    *
@@ -16,7 +31,7 @@ export class IP5Drawable {
   }
 }
 
-export class IP5EventHandler {
+export class IP5KeyboardEventHandler {
   /**
    * @param {import('p5')} p5
    * @param {KeyboardEvent} event
@@ -32,7 +47,9 @@ export class IP5EventHandler {
   keyReleased(p5, event) {
     throw new TypeError("Abstract method 'keyReleased' must be implemented");
   }
+}
 
+export class IP5MouseEventHandler {
   /**
    * @param {import('p5')} p5
    * @param {MouseEvent} event
@@ -57,6 +74,15 @@ export class IP5EventHandler {
     throw new TypeError("Abstract method 'mouseReleased' must be implemented");
   }
 }
+
+export class IP5EventHandler {}
+// Pseudo multiple-inheritance by assigning the methods to the prototype
+// of the class.
+Object.assign(
+  IP5EventHandler.prototype,
+  IP5KeyboardEventHandler,
+  IP5MouseEventHandler
+);
 
 export class IP5StatefulDrawable extends IP5Drawable {
   /**

@@ -1,3 +1,12 @@
+/**
+ * src/p5/scene.js
+ *
+ * A p5 scene manager implementation.
+ * Supports transitions & preloading via returning SceneRequest from p5 lifecycle
+ * methods implemented on scenes.
+ *
+ * Makes it really easy to implement multi-scene games with a main menu.
+ */
 import { IP5Lifecycle } from "./interfaces.js";
 
 /**

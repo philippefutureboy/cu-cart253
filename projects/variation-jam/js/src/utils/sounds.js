@@ -8,6 +8,8 @@
  * Copy of FontBook pattern.
  *
  * @see ./fonts.js
+ *
+ * 100% manually implemented.
  */
 export default class SoundBook {
   /**

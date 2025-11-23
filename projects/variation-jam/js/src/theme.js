@@ -9,7 +9,10 @@
 
 export const colors = {
   background: "#f0f0ff",
+
   tag: "#0f0",
+  pursuer: "#0f0",
+  evader: "#00f",
 
   textH1: "#f00",
   separatorH1: "#f00",

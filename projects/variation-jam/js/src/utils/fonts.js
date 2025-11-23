@@ -7,6 +7,8 @@
  * Since we use a bunch of fonts, and some will be reused across multiple
  * games, I figured it would be good to have a central store of all of our loaded fonts,
  * with the ability to fallback if the font fails to load.
+ *
+ * 100% manually implemented.
  */
 export default class FontBook {
   /**
