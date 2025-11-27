@@ -73,7 +73,10 @@ export default class IntroScene extends BaseScene {
       }
       p5.textAlign(p5.CENTER, p5.CENTER);
       p5.fill(theme.colors.textDefault);
-      p5.text("YOURE IT. CANT CATCH ME!", p5.width / 2, p5.height / 2);
+      p5.text("YOURE   . CANT CATCH ME!", p5.width / 2, p5.height / 2);
+      p5.fill(theme.colors.tag);
+      p5.text("IT", p5.width / 2 - 132, p5.height / 2);
+      p5.fill(theme.colors.textDefault);
       p5.textSize(typo.h1Subtitle.size);
       p5.text(
         "dont be it at the end",
