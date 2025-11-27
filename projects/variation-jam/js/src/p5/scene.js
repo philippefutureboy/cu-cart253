@@ -6,6 +6,8 @@
  * methods implemented on scenes.
  *
  * Makes it really easy to implement multi-scene games with a main menu.
+ *
+ * 100% manually implemented.
  */
 import { IP5Lifecycle } from "./interfaces.js";
 

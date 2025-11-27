@@ -8,12 +8,12 @@
  * @attribution GenAI usage: 100%.
  *              Full conversation available at src/engine/ATTRIBUTION/ChatGPT-engine-discussion.html
  */
-
 import { computeSteer } from "./steering.js";
 import { PlayerIntent } from "../player/intent.js";
 
 /**
  * @typedef {import("../player/controller/interfaces.js").IPlayerController} IPlayerController
+ * @typedef {import("../navigation/grid-graph.js").GridGraph} GridGraph
  */
 
 /**
@@ -44,12 +44,41 @@ export class MovementBehaviour {
    *
    * @param {import("p5")} p5
    * @param {GridGraph} grid
-   * @param {GridGraphDistanceField} distanceField
+   * @param {{[key:string]: any}} fields
    * @param {{pos:p5.Vector, vel:p5.Vector, maxSpeed:number, maxForce:number}} npcState
    * @param {p5.Vector | {x:number, y:number}} targetPos
    * @returns {p5.Vector} steering vector
    */
-  computeSteer(p5, grid, distanceField, npcState, targetPos) {
+  computeSteer(p5, grid, fields, npcState, targetPos) {
+    return p5.createVector(0, 0);
+  }
+}
+
+export class IdleMovementBehaviour extends MovementBehaviour {
+  constructor(effectivenessBase = 1.0) {
+    super(effectivenessBase);
+    this.type = "idle";
+  }
+
+  /**
+   * Idle: no steering, just let the agent drift/stop.
+   *
+   * @param {import("p5")} p5
+   * @param {GridGraph} grid
+   * @param {{[key:string]: any}} fields
+   * @param {{
+   *   pos: p5.Vector,
+   *   vel: p5.Vector,
+   *   maxSpeed: number,
+   *   maxForce: number
+   * }} agentState
+   * @param {p5.Vector | {x:number, y:number}} targetPos
+   * @returns {p5.Vector}
+   */
+  computeSteer(p5, grid, fields, agentState, targetPos) {
+    // Could also gradually brake here if you want:
+    // const brake = agentState.vel.copy().mult(-0.2);
+    // return brake;
     return p5.createVector(0, 0);
   }
 }
@@ -64,13 +93,13 @@ export class PursueMovementBehaviour extends MovementBehaviour {
     this.type = "pursue";
   }
 
-  computeSteer(p5, grid, distanceField, npcState, targetPos) {
+  computeSteer(p5, grid, fields, npcState, targetPos) {
     return computeMovementSteer(
       p5,
       "pursue",
       this.getEffective(),
       grid,
-      distanceField,
+      fields?.pathFromPlayer ?? fields?.evadeFromPlayer,
       npcState,
       targetPos
     );
@@ -79,24 +108,205 @@ export class PursueMovementBehaviour extends MovementBehaviour {
 
 /**
  * Movement behaviour that tries to maximize distance to target
- * using the distance field (evade / flee).
+ * using the distance field (evade / flee) while also avoiding being cornered/sticking to canvas bounds.
  */
+// ---------------------------------------------------------------------------
+// EvadeMovementBehaviour (Euclidean + corner-as-player penalty)
+// ---------------------------------------------------------------------------
+
 export class EvadeMovementBehaviour extends MovementBehaviour {
+  /**
+   * @param {number} [effectivenessBase=1.0]
+   */
   constructor(effectivenessBase = 1.0) {
     super(effectivenessBase);
     this.type = "evade";
   }
 
-  computeSteer(p5, grid, distanceField, npcState, targetPos) {
-    return computeMovementSteer(
-      p5,
-      "evade",
-      this.getEffective(),
-      grid,
-      distanceField,
-      npcState,
-      targetPos
-    );
+  /**
+   * Evade by maximizing distance from the *nearest* threat, where threats are:
+   *  - the real player (via Euclidean distance field)
+   *  - the four corners of the play area (treated as if a player was there)
+   *
+   * For each candidate node (current + neighbors), we compute:
+   *   dPlayer  = distanceField.getDistance(node)
+   *   dCorner  = min distance to any canvas corner
+   *   effectiveDist = min(dPlayer, cornerFactor * dCorner)
+   *
+   * and pick the node with the largest effectiveDist.
+   *
+   * If no appropriate distance field is provided, falls back to local
+   * flee + border avoidance.
+   *
+   * @param {import("p5")} p5
+   * @param {import("../navigation/grid-graph.js").GridGraph} grid
+   * @param {{[key:string]: any}} fields
+   * @param {{
+   *   pos: p5.Vector,
+   *   vel: p5.Vector,
+   *   maxSpeed: number,
+   *   maxForce: number
+   * }} agentState
+   * @param {p5.Vector | {x:number, y:number}} targetPos  // player position
+   * @returns {p5.Vector}
+   */
+  computeSteer(p5, grid, fields, agentState, targetPos) {
+    const { pos, vel, maxSpeed, maxForce } = agentState;
+
+    // Prefer Euclidean-type field for evasion
+    const distanceField =
+      fields?.evadeFromPlayer || fields?.pathFromPlayer || null;
+
+    if (!grid || !distanceField) {
+      // No usable field → fallback to simple flee+border
+      return this._computeLocalFlee(p5, agentState, targetPos);
+    }
+
+    // --- 1) Find current node ------------------------------------------------
+    const { gx, gy, valid } = grid.worldToGrid(pos);
+    if (!valid) {
+      return this._computeLocalFlee(p5, agentState, targetPos);
+    }
+
+    const currentNode = grid.getNode(gx, gy);
+    if (!currentNode) {
+      return this._computeLocalFlee(p5, agentState, targetPos);
+    }
+
+    const candidates = [currentNode, ...grid.getNeighbors(currentNode)];
+    if (!candidates.length) {
+      return this._computeLocalFlee(p5, agentState, targetPos);
+    }
+
+    // --- 2) Threat model: player + four corners -----------------------------
+    const cornerFactor = 1.0; // 1.0 = corners as dangerous as the player
+    const width = p5.width;
+    const height = p5.height;
+
+    let bestNode = currentNode;
+    let bestScore = -Infinity;
+
+    for (const node of candidates) {
+      if (node.walkable === false) continue;
+
+      // Distance from player (via Euclidean field)
+      const dPlayer = distanceField.getDistance(node);
+      if (!Number.isFinite(dPlayer)) continue;
+
+      // Node center in world space
+      const { gx: ngx, gy: ngy } = node.data;
+      const center = grid.gridToWorldCenter(ngx, ngy);
+      const cx = center.x;
+      const cy = center.y;
+
+      // Distance to each corner
+      const dTL = Math.hypot(cx - 0, cy - 0);
+      const dTR = Math.hypot(cx - width, cy - 0);
+      const dBL = Math.hypot(cx - 0, cy - height);
+      const dBR = Math.hypot(cx - width, cy - height);
+      const dCornerClosest = Math.min(dTL, dTR, dBL, dBR);
+
+      // Effective distance to nearest threat:
+      // (player OR closest corner, scaled)
+      const effectiveDist = Math.min(dPlayer, cornerFactor * dCornerClosest);
+
+      // We want to maximize effectiveDist
+      if (effectiveDist > bestScore + 1e-6) {
+        bestScore = effectiveDist;
+        bestNode = node;
+      } else if (
+        Math.abs(effectiveDist - bestScore) <= 1e-6 &&
+        Math.random() < 0.2
+      ) {
+        // small random tiebreak to avoid deterministic sticking
+        bestScore = effectiveDist;
+        bestNode = node;
+      }
+    }
+
+    // --- 3) Steer towards the best node's center ----------------------------
+    const { gx: bgx, gy: bgy } = bestNode.data;
+    const bestCenter = grid.gridToWorldCenter(bgx, bgy);
+    const target = p5.createVector(bestCenter.x, bestCenter.y);
+
+    const steer = computeSteer(p5, pos, vel, target, maxSpeed, maxForce);
+    if (steer.mag() > maxForce) {
+      steer.setMag(maxForce);
+    }
+
+    steer.mult(this.getEffective());
+    return steer;
+  }
+
+  /**
+   * Fallback: purely local flee + border avoidance (previous working version).
+   *
+   * @param {import("p5")} p5
+   * @param {{
+   *   pos: p5.Vector,
+   *   vel: p5.Vector,
+   *   maxSpeed: number,
+   *   maxForce: number
+   * }} agentState
+   * @param {p5.Vector | {x:number, y:number}} targetPos
+   * @returns {p5.Vector}
+   */
+  _computeLocalFlee(p5, agentState, targetPos) {
+    const { pos, vel, maxSpeed, maxForce } = agentState;
+
+    if (!targetPos) {
+      return p5.createVector(0, 0);
+    }
+
+    // 1) Flee vector
+    const flee = p5.createVector(pos.x - targetPos.x, pos.y - targetPos.y);
+    if (flee.magSq() < 1e-6) {
+      flee.set(p5.random(-1, 1), p5.random(-1, 1));
+    }
+    flee.normalize();
+
+    // 2) Border avoidance
+    const margin = 50;
+    const borderForce = p5.createVector(0, 0);
+
+    if (pos.x < margin) {
+      borderForce.x += (margin - pos.x) / margin;
+    }
+    if (pos.x > p5.width - margin) {
+      borderForce.x -= (pos.x - (p5.width - margin)) / margin;
+    }
+    if (pos.y < margin) {
+      borderForce.y += (margin - pos.y) / margin;
+    }
+    if (pos.y > p5.height - margin) {
+      borderForce.y -= (pos.y - (p5.height - margin)) / margin;
+    }
+
+    if (borderForce.magSq() > 1e-6) {
+      borderForce.normalize();
+    }
+
+    const fleeWeight = 1.0;
+    const borderWeight = 0.7;
+
+    const moveDir = p5.createVector(0, 0);
+    moveDir.add(flee.copy().mult(fleeWeight));
+    moveDir.add(borderForce.copy().mult(borderWeight));
+
+    if (moveDir.magSq() < 1e-6) {
+      moveDir.set(flee);
+    }
+    moveDir.normalize();
+
+    const desiredVel = moveDir.copy().mult(maxSpeed);
+    const steer = desiredVel.sub(vel);
+
+    if (steer.mag() > maxForce) {
+      steer.setMag(maxForce);
+    }
+
+    steer.mult(this.getEffective());
+    return steer;
   }
 }
 
@@ -123,7 +333,7 @@ export class PlayerMovementBehaviour extends MovementBehaviour {
    *
    * @param {import("p5")} p5
    * @param {GridGraph} grid
-   * @param {GridGraphDistanceField} distanceField
+   * @param {{[key:string]: any}} fields
    * @param {{
    *   pos: p5.Vector,
    *   vel: p5.Vector,
@@ -135,10 +345,9 @@ export class PlayerMovementBehaviour extends MovementBehaviour {
    *   but we keep it in the signature for compatibility.
    * @returns {p5.Vector} steering vector
    */
-  computeSteer(p5, grid, distanceField, agentState, targetPos) {
+  computeSteer(p5, grid, fields, agentState, targetPos) {
     const { pos, vel, maxSpeed, maxForce } = agentState;
 
-    /** @type {PlayerIntent} */
     const intent =
       this.controller && typeof this.controller.getIntent === "function"
         ? this.controller.getIntent()
@@ -154,7 +363,6 @@ export class PlayerMovementBehaviour extends MovementBehaviour {
       // If we still have velocity, gently brake by steering against it
       if (vel.mag() > 1e-3) {
         const brakeTarget = p5.createVector(pos.x - vel.x, pos.y - vel.y);
-
         const brakeSteer = computeSteer(
           p5,
           pos,
@@ -187,13 +395,11 @@ export class PlayerMovementBehaviour extends MovementBehaviour {
     );
 
     // Sprint: modify effective maxSpeed (leave agent's base maxSpeed intact)
-    const speedFactor = sprint ? 1.5 : 1.0;
+    const speedFactor = sprint ? 1.1 : 1.0;
     const effMaxSpeed = maxSpeed * speedFactor;
     const effMaxForce = maxForce; // could be adjusted during sprint if desired
 
     const steer = computeSteer(p5, pos, vel, target, effMaxSpeed, effMaxForce);
-
-    // Blend using the behaviour's effectiveness [0.5,1] (or however getEffective() is defined)
     steer.mult(this.getEffective());
     return steer;
   }
@@ -310,14 +516,12 @@ function computeMovementSteer(
 
   // Blend random vs smart by effectiveness
   // eff in [0.5,1]: biases strongly toward smart direction.
-  const blended = lerpVector(p5, randomSteer, smartSteer, eff);
-  return blended;
+  const t = eff; // at 0.5, 50/50; at 1.0, fully smart
+  return lerpVector(p5, randomSteer, smartSteer, t);
 }
 
 /**
- * Fallback steering when the distance field is not usable:
- * - pursue: straight seek to target
- * - evade: straight flee from target
+ * Fallback for when distance field is invalid or node is not on grid.
  */
 function fallbackMovementSteer(
   p5,
@@ -329,51 +533,49 @@ function fallbackMovementSteer(
   maxSpeed,
   maxForce
 ) {
-  const targetVec = targetPos.copy
-    ? targetPos.copy()
-    : p5.createVector(targetPos.x, targetPos.y);
-
-  if (mode === "pursue") {
-    const steer = computeSteer(p5, pos, vel, targetVec, maxSpeed, maxForce);
-    steer.mult(eff);
-    return steer;
+  if (!targetPos) {
+    return p5.createVector(0, 0);
   }
 
-  // Evade: steer away from target
-  const awayDir = p5.createVector(pos.x - targetVec.x, pos.y - targetVec.y);
-  if (awayDir.mag() === 0) {
-    // random direction if exactly overlapping
-    const rand = randomPointAround(p5, pos, 50);
-    awayDir.set(rand.x - pos.x, rand.y - pos.y);
+  const targetVec = p5.createVector(targetPos.x, targetPos.y);
+  let steer = computeSteer(p5, pos, vel, targetVec, maxSpeed, maxForce);
+
+  if (mode === "evade") {
+    steer.mult(-1);
   }
 
-  const evadeTarget = p5.createVector(pos.x + awayDir.x, pos.y + awayDir.y);
-
-  const steer = computeSteer(p5, pos, vel, evadeTarget, maxSpeed, maxForce);
   steer.mult(eff);
   return steer;
 }
 
-// ---------------------------------------------------------------------------
-// Small vector/maths helpers
-// ---------------------------------------------------------------------------
-
-function clamp01(v) {
-  return Math.min(1, Math.max(0, v));
+/**
+ * Clamp value v into [min, max].
+ */
+function clamp(v, min, max) {
+  if (v < min) return min;
+  if (v > max) return max;
+  return v;
 }
 
 /**
- * Create a random point around `center` at roughly given radius.
+ * Clamp value into [0,1].
+ */
+function clamp01(x) {
+  return clamp(x, 0, 1);
+}
+
+/**
+ * Random point around a center within a given radius.
  * @param {import("p5")} p5
  * @param {p5.Vector} center
  * @param {number} radius
  * @returns {p5.Vector}
  */
 function randomPointAround(p5, center, radius) {
-  const angle = p5.random(0, p5.TWO_PI);
-  const r = radius * 0.5 + p5.random(radius * 0.5); // slightly varied radius
-  const x = center.x + r * Math.cos(angle);
-  const y = center.y + r * Math.sin(angle);
+  const angle = p5.random() * Math.PI * 2;
+  const r = p5.random() * radius;
+  const x = center.x + Math.cos(angle) * r;
+  const y = center.y + Math.sin(angle) * r;
   return p5.createVector(x, y);
 }
 

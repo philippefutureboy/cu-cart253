@@ -14,6 +14,9 @@ export const colors = {
   pursuer: "#0f0",
   evader: "#00f",
 
+  player: "#fff",
+  npc: "#354a21",
+
   textH1: "#f00",
   separatorH1: "#f00",
   textDefault: "#00f",

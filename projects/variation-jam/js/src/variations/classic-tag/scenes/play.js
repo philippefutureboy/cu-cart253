@@ -1,9 +1,11 @@
 import { BaseScene, SceneRequest } from "../../../p5/scene.js";
 import { KeyboardInput, MouseInput } from "../../../engine/inputs.js";
 import { GridGraph } from "../../../engine/navigation/grid-graph.js";
-import { GridGraphDistanceField } from "../../../engine/navigation/distance-field.js";
+import { GridGraphBFSField } from "../../../engine/navigation/distance-fields/bfs-field.js";
+import { GridGraphEuclideanField } from "../../../engine/navigation/distance-fields/euclidean-field.js";
 import NPC from "../../../engine/npc.js";
 import { Player } from "../../../engine/player/player.js";
+import { areCirclesColliding } from "../../../engine/collision/circle.js";
 
 import FontBook from "../../../utils/fonts.js";
 import * as theme from "../../../theme.js";
@@ -24,7 +26,7 @@ export default class PlayScene extends BaseScene {
    * @param {Object} opts
    * @param {number} opts.duration How long this scenes stays up
    */
-  constructor({ duration = 5 } = {}) {
+  constructor({ duration = 150 } = {}) {
     super();
     this.font = null;
     this.sceneDuration = duration;
@@ -39,8 +41,14 @@ export default class PlayScene extends BaseScene {
 
     /** @type {GridGraph|null} */
     this.grid = null;
-    /** @type {GridGraphDistanceField|null} */
-    this.distanceFromPlayer = null;
+    /** @type {GridGraphBFSField|null} */
+    this.pathFieldFromPlayer = null;
+    /** @type {GridGraphEuclideanField|null} */
+    this.evadeFieldFromPlayer = null;
+    /** @type {number|null} */
+    this.npcIdleDurationMs = null;
+    /** @type {number|null} */
+    this.npcIdleStartMs = null;
 
     this.startAt = null;
   }
@@ -77,7 +85,8 @@ export default class PlayScene extends BaseScene {
     // --- Navigation (shared world state) ---
     const CELL_SIZE = 32;
     this.grid = new GridGraph(p5.width, p5.height, CELL_SIZE, "8");
-    this.distanceFromPlayer = new GridGraphDistanceField(this.grid);
+    this.pathFieldFromPlayer = new GridGraphBFSField(this.grid);
+    this.evadeFieldFromPlayer = new GridGraphEuclideanField(this.grid);
 
     // --- Player ---
     const playerX = p5.width / 2;
@@ -86,10 +95,13 @@ export default class PlayScene extends BaseScene {
     this.player = new Player(p5, {
       x: playerX,
       y: playerY,
+      mode: "pursuer",
       keyboard: this.inputs.keyboard,
       mouse: this.inputs.mouse, // not used by keyboard controller, but available for future
       radius: 20,
-      colorKey: "player", // ensure theme.colors.player exists, or change this key
+      colorKey: "pursuer",
+      maxSpeed: 2.5,
+      maxForce: 0.25,
     });
 
     // --- NPC initial position: random, not too close to player ---
@@ -111,7 +123,9 @@ export default class PlayScene extends BaseScene {
       x: nx,
       y: ny,
       radius: 20,
-      mode: "pursuer", // or "evader"
+      mode: "evader",
+      maxSpeed: 2.5,
+      maxForce: 0.25,
     });
 
     this.startAt = null;
@@ -130,7 +144,8 @@ export default class PlayScene extends BaseScene {
     this.npc = null;
 
     this.grid = null;
-    this.distanceFromPlayer = null;
+    this.pathFieldFromPlayer = null;
+    this.evadeFieldFromPlayer = null;
 
     this.startAt = null;
   }
@@ -147,12 +162,16 @@ export default class PlayScene extends BaseScene {
     const sceneDuration = this.sceneDuration;
     const secondsLeft = Math.max(sceneDuration - secondsElapsed, 0);
 
-    // --- Clear background ---
-    p5.background(theme.colors.background);
-
-    if (this.grid && this.distanceFromPlayer && this.player) {
+    // --- Update phase ---
+    if (
+      this.grid &&
+      this.pathFieldFromPlayer &&
+      this.evadeFieldFromPlayer &&
+      this.player
+    ) {
       // 1) Distance field from player
-      this.distanceFromPlayer.compute(this.player.agent.pos);
+      this.pathFieldFromPlayer.lazyCompute(this.player.agent.pos);
+      this.evadeFieldFromPlayer.lazyCompute(this.player.agent.pos);
 
       // 2) Update player (input → intent → movement)
       this.player.update(p5, this.grid, this.distanceFromPlayer);
@@ -161,19 +180,43 @@ export default class PlayScene extends BaseScene {
       if (this.npc) {
         this.npc.update(p5, {
           grid: this.grid,
-          distanceField: this.distanceFromPlayer,
+          fields: {
+            pathFromPlayer: this.pathFieldFromPlayer,
+            evadeFromPlayer: this.evadeFieldFromPlayer,
+          },
           playerAgent: this.player.agent,
         });
       }
+      handleTagCollision(this.player, this.npc);
     }
 
-    // --- Draw entities ---
+    // --- Render phase ---
+    p5.background(theme.colors.background);
+
     if (this.player) {
       this.player.draw(p5);
     }
     if (this.npc) {
       this.npc.draw(p5);
     }
+
+    // Render time counter
+    p5.push();
+    {
+      p5.textAlign(p5.LEFT, p5.TOP);
+      if (!FontBook.isSentinel(this.font) && this.font !== null) {
+        p5.textSize(theme.typo["mayas-script"].h1.size);
+        p5.textFont(this.font);
+      } else {
+        p5.textSize(theme.typo["default"].h1.size);
+      }
+      p5.fill(
+        secondsLeft > 10 ? theme.colors.textDefault : theme.colors.textBad
+      );
+      p5.textAlign(p5.LEFT, p5.BOTTOM);
+      p5.text(`TIME: ${secondsLeft}`, p5.width - 200, 0 + 80);
+    }
+    p5.pop();
 
     // --- Scene transition on timeout ---
     if (secondsLeft === 0) {
@@ -234,4 +277,25 @@ export default class PlayScene extends BaseScene {
       this.inputs.mouse.mouseReleased(p5, event);
     }
   }
+}
+
+/**
+ * Pairwise tag collision check for circle-represented characters
+ *
+ * @param {import('p5')} p5
+ * @param {Player|NPC} character
+ * @param {Player|NPC} otherCharacter
+ */
+function handleTagCollision(character, otherCharacter) {
+  // No action if either doesn't have an agent
+  if (!character.agent || !otherCharacter.agent) return;
+  // No action if no collision
+  if (!areCirclesColliding(character.agent, otherCharacter.agent)) return;
+  // No action if mode is the same (nothing to transmit from one to the other)
+  if (character.mode === otherCharacter.mode) return;
+  // No action if transition is already happening.
+  if (character.modeTransition || otherCharacter.modeTransition) return;
+
+  character.setMode(otherCharacter.mode, 1250);
+  otherCharacter.setMode(character.mode, 1250);
 }

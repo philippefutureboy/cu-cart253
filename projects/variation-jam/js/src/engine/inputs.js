@@ -50,7 +50,7 @@ export class KeyboardInput extends IP5KeyboardEventHandler {
   }
 
   /**
-   * Returns whether or not `key` is currently pressed on mouse
+   * Returns whether or not `key` is currently pressed on keyboard
    * @param {string} key
    * @returns {boolean}
    */
@@ -189,7 +189,7 @@ export class MouseInput extends IP5MouseEventHandler {
    * @param {MouseEvent} event
    */
   mousePressed(p5, event) {
-    this.mouse.set(event.button, true);
+    this.buttons.set(event.button, true);
     const data = {
       frame: p5.frameCount,
       ts: new Date(),
@@ -210,7 +210,7 @@ export class MouseInput extends IP5MouseEventHandler {
    * @param {MouseEvent} event
    */
   mouseReleased(p5, event) {
-    this.mouse.set(event.button, false);
+    this.buttons.set(event.button, false);
     const data = {
       frame: p5.frameCount,
       ts: new Date(),

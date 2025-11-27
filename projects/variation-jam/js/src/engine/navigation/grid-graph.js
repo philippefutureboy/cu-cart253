@@ -169,6 +169,10 @@ export class GridGraph {
     return result;
   }
 
+  nodes() {
+    return this.graph.nodes();
+  }
+
   /**
    * Get neighbors of a node, respecting neighborMode and walkable status,
    * and preventing diagonal corner-cutting dynamically.

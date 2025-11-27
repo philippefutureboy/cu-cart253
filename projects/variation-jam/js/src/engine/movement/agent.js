@@ -55,6 +55,7 @@ export class MovementAgent {
    * @param {MovementAgentOptions} [options={}]
    */
   constructor(p5, x, y, options = {}) {
+    this.p5 = p5;
     /** @type {p5.Vector} */
     this.pos = p5.createVector(x, y);
     /** @type {p5.Vector} */
@@ -74,6 +75,13 @@ export class MovementAgent {
 
     /** @type {string|undefined} */
     this.debugTag = options.debugTag;
+  }
+
+  reset() {
+    const p5 = this.p5;
+    this.vel = p5.createVector(0, 0);
+    this.acc = p5.createVector(0, 0);
+    this.movementBehaviour = null;
   }
 
   /**
@@ -159,6 +167,19 @@ export class MovementAgent {
     }
 
     this.pos.add(this.vel);
+
+    if (p5 && typeof p5.width === "number" && typeof p5.height === "number") {
+      this.pos.x = p5.constrain(
+        this.pos.x,
+        this.radius,
+        p5.width - this.radius
+      );
+      this.pos.y = p5.constrain(
+        this.pos.y,
+        this.radius,
+        p5.height - this.radius
+      );
+    }
 
     // Reset acceleration for next frame
     this.acc.set(0, 0);

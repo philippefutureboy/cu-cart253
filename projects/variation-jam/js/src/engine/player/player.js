@@ -26,14 +26,15 @@ export class Player {
   /**
    * @param {import("p5")} p5
    * @param {Object} opts
-   * @param {number} opts.x          - Initial x position
-   * @param {number} opts.y          - Initial y position
-   * @param {KeyboardInput} opts.keyboard
-   * @param {MouseInput} [opts.mouse]  // kept for future flexibility, not used by keyboard controller
+   * @param {number} opts.x Initial x position
+   * @param {number} opts.y Initial y position
+   * @param {string} opts.mode Tag mode.
+   * @param {KeyboardInput} opts.keyboard Keyboard input.
+   * @param {MouseInput} [opts.mouse] Mouse input. Unused, but available for future use.
    * @param {number} [opts.radius=20]
    * @param {number} [opts.maxSpeed=3.0]
    * @param {number} [opts.maxForce=0.3]
-   * @param {string} [opts.colorKey="player"] - theme.colors[colorKey] used in draw
+   * @param {string} [opts.fillColorKey="player"] Fill color for the player. defaults to "player"
    * @param {import("./player/controller/interfaces.js").IPlayerController} [opts.controller]
    *        Optional: custom controller; defaults to PlayerKeyboardController if not provided.
    */
@@ -42,12 +43,13 @@ export class Player {
     {
       x,
       y,
+      mode,
       keyboard,
       mouse,
       radius = 20,
       maxSpeed = 3.0,
       maxForce = 0.3,
-      colorKey = "player",
+      fillColorKey = "player",
       controller,
     } = {}
   ) {
@@ -75,10 +77,12 @@ export class Player {
     // Attach a PlayerMovementBehaviour that consumes controller intent
     const behaviour = new PlayerMovementBehaviour(this.controller);
     this.agent.setMovementBehaviour(behaviour);
+    this.mode = mode;
+    this.modeTransition = null;
 
     // Visual settings
     this.radius = radius;
-    this.colorKey = colorKey;
+    this.fillColorKey = fillColorKey;
   }
 
   /**
@@ -95,6 +99,16 @@ export class Player {
 
     const targetPos = this.agent.pos;
     this.agent.update(p5, grid, distanceField, targetPos);
+
+    // Check if a mode transition is due for being applied.
+    // If so apply and delete the transition
+    if (
+      this.modeTransition !== null &&
+      this.modeTransition.at > performance.now()
+    ) {
+      this.mode = this.modeTransition.mode;
+      this.modeTransition = null;
+    }
   }
 
   get x() {
@@ -105,15 +119,51 @@ export class Player {
     return this.agent.pos.y;
   }
 
+  /**
+   * Sets the player mode, with an optional delay.
+   *
+   * @param {"pursuer"|"evader"} mode Mode to switch to
+   * @param {number} delayMs Delay, in ms, before applying the mode.
+   */
+  setMode(mode, delayMs) {
+    console.log("player.setMode", {
+      mode,
+      delayMs,
+      prevMode: this.mode,
+      prevTransition: this.modeTransition,
+    });
+    // Same mode, nothing to do.
+    if (this.mode === mode) return;
+    // Do not override if there's already a transition in progress.
+    if (delayMs !== undefined) {
+      this.modeTransition = this.modeTransition ?? {
+        mode,
+        at: delayMs + performance.now(),
+      };
+    }
+    // No delay provided, we set the mode promptly.
+    else {
+      this.mode = mode;
+      this._applyModeBehaviour();
+    }
+  }
+
   draw(p5) {
     p5.push();
     {
-      p5.noStroke();
-
-      const fallbackColor = 255;
       const colorMap = theme.colors || {};
-      const fillColor = colorMap[this.colorKey] ?? fallbackColor;
 
+      const fallbackStrokeColor = 0;
+      // use the transition color if available to give user feedback
+      const strokeColorKey = this.modeTransition?.mode ?? this.mode;
+      const strokeColor = colorMap[strokeColorKey] ?? fallbackStrokeColor;
+
+      const fallbackFillColor = 255;
+      const fillColorKey = this.fillColorKey;
+      const fillColor = colorMap[fillColorKey] ?? fallbackFillColor;
+
+      p5.strokeWeight(4);
+      p5.stroke(strokeColor);
       p5.fill(fillColor);
       p5.circle(this.x, this.y, this.radius * 2);
     }

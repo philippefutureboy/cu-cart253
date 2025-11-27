@@ -45,9 +45,9 @@ export default class ClassicTag extends BaseSceneManager {
    * Unregisters the scenes to reset the state.
    */
   onExit() {
-    this.unregisterScene("clock-tag-game.intro");
-    this.unregisterScene("clock-tag-game.play");
-    this.unregisterScene("clock-tag-game.win");
-    this.unregisterScene("clock-tag-game.lose");
+    this.unregisterScene("classic-tag-game.intro");
+    this.unregisterScene("classic-tag-game.play");
+    this.unregisterScene("classic-tag-game.win");
+    this.unregisterScene("classic-tag-game.lose");
   }
 }
