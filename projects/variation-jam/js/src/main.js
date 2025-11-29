@@ -1,9 +1,6 @@
 import { BaseScene, SceneRequest } from "./p5/scene.js";
 import P5Runtime from "./p5/runtime.js";
 import MenuScene from "./menu.js";
-import RedScene from "./variations/red.js";
-import GreenScene from "./variations/green.js";
-import BlueScene from "./variations/blue.js";
 import BasicTagGame from "./variations/classic-tag/game.js";
 import ClockTagGame from "./variations/clock-tag/game.js";
 
@@ -111,17 +108,11 @@ const LOADING = new LoadingScene();
 // Games
 const BASIC = new BasicTagGame();
 const CLOCK = new ClockTagGame();
-const RED = new RedScene();
-const GREEN = new GreenScene();
-const BLUE = new BlueScene();
 
 // Menu
 const MENU = new MenuScene({
   [BASIC.key]: BASIC.label,
   [CLOCK.key]: CLOCK.label,
-  [RED.key]: RED.label,
-  [GREEN.key]: GREEN.label,
-  [BLUE.key]: BLUE.label,
 });
 
 /**
@@ -131,9 +122,6 @@ RUNTIME.registerScene(LOADING, { current: true });
 RUNTIME.registerScene(MENU);
 RUNTIME.registerScene(BASIC);
 RUNTIME.registerScene(CLOCK);
-RUNTIME.registerScene(RED);
-RUNTIME.registerScene(GREEN);
-RUNTIME.registerScene(BLUE);
 
 /**
  * Create a p5 sketch in instance mode, and register the P5Runtime (SceneManager)
