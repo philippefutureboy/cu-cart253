@@ -1,5 +1,6 @@
 import { BaseScene, SceneRequest } from "../../../p5/scene.js";
 import FontBook from "../../../utils/fonts.js";
+import SoundBook from "../../../utils/sounds.js";
 import * as theme from "../../../theme.js";
 
 /**
@@ -17,10 +18,12 @@ export default class WinScene extends BaseScene {
    * @param {Object} opts
    * @param {number} opts.duration How long this scenes stays up
    */
-  constructor({ duration = 5 } = {}) {
+  constructor({ duration = 4 } = {}) {
     super();
     this.font = null;
     this.sceneDuration = duration;
+    this.soundEffect = null;
+    this.soundEffectPlayed = false;
     this._setupped = false;
   }
 
@@ -34,19 +37,37 @@ export default class WinScene extends BaseScene {
       return;
     }
 
+    // Load font
     FontBook.getPromise("mayas-script").then((font) => {
       this.font = font;
+    });
+
+    // Load sound
+    SoundBook.load(
+      p5,
+      "sad-trombone",
+      "assets/sounds/Sad Trombone - Sound Effect (HD) Youtube-CQeezCdF4mk.mp3"
+    ).then((soundFile) => {
+      this.soundEffect = soundFile;
     });
     this._setupped = true;
   }
 
   /**
-   * Draws the rule text.
-   * Requests transition to play scene once duration has been elapsed.
+   * Draws a win response.
+   * Plays yaaay sound effect.
+   * Requests transition to menu scene once duration has elapsed.
    *
    * @param {import('p5')} p5
    */
   draw(p5) {
+    // Play yaaay sound effect
+    if (!SoundBook.isSentinel(this.soundEffect) && this.soundEffect !== null) {
+      if (!this.soundEffectPlayed) {
+        this.soundEffectPlayed = true;
+        this.soundEffect.play();
+      }
+    }
     let typo = null;
     // get the appropriate typo styling based on loaded font
     if (!FontBook.isSentinel(this.font) && this.font !== null) {
@@ -71,7 +92,7 @@ export default class WinScene extends BaseScene {
       p5.textSize(typo.h1.size);
       p5.textAlign(p5.CENTER, p5.CENTER);
       p5.fill(theme.colors.textDefault);
-      p5.text("WIN", p5.width / 2, p5.height / 2);
+      p5.text("YOU WON :D", p5.width / 2, p5.height / 2);
     }
     p5.pop();
 

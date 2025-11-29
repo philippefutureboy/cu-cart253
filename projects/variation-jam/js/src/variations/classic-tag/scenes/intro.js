@@ -37,7 +37,13 @@ export default class IntroScene extends BaseScene {
     FontBook.getPromise("mayas-script").then((font) => {
       this.font = font;
     });
+
     this._setupped = true;
+    // Preload the sound effects for the Lose/Win scenes
+    return [
+      new SceneRequest("classic-tag-game.lose", "preload"),
+      new SceneRequest("classic-tag-game.win", "preload"),
+    ];
   }
 
   /**

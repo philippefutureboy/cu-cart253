@@ -26,7 +26,7 @@ export default class PlayScene extends BaseScene {
    * @param {Object} opts
    * @param {number} opts.duration How long this scenes stays up
    */
-  constructor({ duration = 150 } = {}) {
+  constructor({ duration = 15 } = {}) {
     super();
     this.font = null;
     this.sceneDuration = duration;
@@ -220,7 +220,11 @@ export default class PlayScene extends BaseScene {
 
     // --- Scene transition on timeout ---
     if (secondsLeft === 0) {
-      return new SceneRequest("classic-tag-game.win");
+      const scene =
+        this.player.mode === "pursuer"
+          ? "classic-tag-game.lose"
+          : "classic-tag-game.win";
+      return new SceneRequest(scene);
     }
   }
 
