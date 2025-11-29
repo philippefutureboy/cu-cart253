@@ -12,6 +12,7 @@ export const colors = {
 
   tag: "#0f0",
   pursuer: "#0f0",
+  superPursuer: "#f00",
   evader: "#00f",
 
   player: "#fff",
@@ -21,6 +22,7 @@ export const colors = {
   separatorH1: "#f00",
   textDefault: "#00f",
   textBad: "#f00",
+  textWhite: "#fff",
 };
 
 /**
