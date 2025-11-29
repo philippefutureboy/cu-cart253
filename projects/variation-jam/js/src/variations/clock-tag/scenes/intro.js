@@ -18,7 +18,7 @@ export default class IntroScene extends BaseScene {
    * @param {Object} opts
    * @param {number} opts.duration How long this scenes stays up
    */
-  constructor({ duration = 1 } = {}) {
+  constructor({ duration = 3 } = {}) {
     super();
     this.font = null;
     this.sceneDuration = duration;
@@ -59,14 +59,22 @@ export default class IntroScene extends BaseScene {
     p5.background(theme.colors.background);
     p5.push();
     {
+      let typo = null;
       if (!FontBook.isSentinel(this.font) && this.font !== null) {
-        p5.textSize(theme.typo["mayas-script"].h1.size);
+        typo = theme.typo["mayas-script"];
         p5.textFont(this.font);
       } else {
-        p5.textSize(theme.typo["default"].h1.size);
+        typo = theme.typo["default"];
       }
+      p5.textSize(typo.h1.size);
+
       p5.textAlign(p5.CENTER, p5.CENTER);
       p5.fill(theme.colors.textDefault);
+      p5.text(
+        "YOU ARE THE SECONDS HAND -",
+        p5.width / 2,
+        p5.height / 2 - typo.h1.lineHeight
+      );
       p5.text("CATCH THE OTHER HANDS!", p5.width / 2, p5.height / 2);
     }
     p5.pop();

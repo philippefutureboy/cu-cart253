@@ -31,7 +31,7 @@ export default class LoseScene extends BaseScene {
     SoundBook.load(
       p5,
       "sonic-too-slow",
-      "assets/sounds/Sonic The Hedgehog - You're too slow.mp3"
+      "assets/sounds/Sonic The Hedgehog - You're too slow Youtube-8M0jm-cwZeo.mp3"
     ).then((soundFile) => {
       this.tauntSoundBite = soundFile;
     });
