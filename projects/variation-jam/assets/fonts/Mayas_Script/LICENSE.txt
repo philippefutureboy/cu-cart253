@@ -1,0 +1,4 @@
+Font: Maya's Script
+Designer: fontzrgr8 (mayardhillon@gmail.com)
+Source: https://www.dafont.com/maya-s-script.font
+License: Freeware (designer-permission may be required for commercial use)
