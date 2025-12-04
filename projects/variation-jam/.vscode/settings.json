@@ -17,5 +17,9 @@
     "editor.formatOnPaste": true,
     "update.showReleaseNotes": false,
     "javascript.suggest.enabled": false,
-    "typescript.suggest.enabled": false
+    "typescript.suggest.enabled": false,
+    "[javascript]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+    }
 }
