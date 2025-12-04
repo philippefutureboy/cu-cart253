@@ -3,10 +3,10 @@ import FontBook from "../../../utils/fonts.js";
 import * as theme from "../../../theme.js";
 
 /**
- * BasicTag.IntroScene
+ * ClassicTag.IntroScene
  *
  * Displays game rules for a short period of time.
- * Transitions to BasicTag.PlayScene.
+ * Transitions to ClassicTag.PlayScene.
  *
  */
 export default class IntroScene extends BaseScene {
@@ -95,9 +95,6 @@ export default class IntroScene extends BaseScene {
     if (secondsLeft === 0) {
       // transition to game once delay passed
       return new SceneRequest("classic-tag-game.play");
-    } else {
-      // preload the sound assets for the lose scene
-      return [new SceneRequest("classic-tag-game.lose", "preload")];
     }
   }
 

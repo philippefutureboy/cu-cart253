@@ -4,7 +4,7 @@ import SoundBook from "../../../utils/sounds.js";
 import * as theme from "../../../theme.js";
 
 /**
- * BasicTag.LoseScene
+ * ClassicTag.LoseScene
  *
  * Displays lose screen for {duration} seconds
  * Transitions to menu afterwards.
@@ -45,8 +45,8 @@ export default class LoseScene extends BaseScene {
     // Load sound
     SoundBook.load(
       p5,
-      "yay-kids",
-      "assets/sounds/YAY Kids (Celebration) Sound Effect Youtube-3a0pqvHnsGQ.mp3"
+      "sad-trombone",
+      "assets/sounds/Sad Trombone - Sound Effect (HD) Youtube-CQeezCdF4mk.mp3"
     ).then((soundFile) => {
       this.soundEffect = soundFile;
     });

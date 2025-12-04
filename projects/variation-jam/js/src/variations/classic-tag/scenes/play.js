@@ -11,7 +11,7 @@ import FontBook from "../../../utils/fonts.js";
 import * as theme from "../../../theme.js";
 
 /**
- * BasicTag.PlayScene
+ * ClassicTag.PlayScene
  *
  * Runs the Classic Tag game.
  * Leverages a whole game engine created using GenAI to manage NPC AI's and movement patterns.
@@ -45,10 +45,6 @@ export default class PlayScene extends BaseScene {
     this.pathFieldFromPlayer = null;
     /** @type {GridGraphEuclideanField|null} */
     this.evadeFieldFromPlayer = null;
-    /** @type {number|null} */
-    this.npcIdleDurationMs = null;
-    /** @type {number|null} */
-    this.npcIdleStartMs = null;
 
     this.startAt = null;
   }
@@ -126,6 +122,8 @@ export default class PlayScene extends BaseScene {
       mode: "evader",
       maxSpeed: 2.5,
       maxForce: 0.25,
+      effectivenessEvade: 0.9,
+      effectivenessPursue: 0.9,
     });
 
     this.startAt = null;

@@ -1,8 +1,10 @@
 import { BaseScene, SceneRequest } from "./p5/scene.js";
 import P5Runtime from "./p5/runtime.js";
 import MenuScene from "./menu.js";
-import BasicTagGame from "./variations/classic-tag/game.js";
+import ClassicTagGame from "./variations/classic-tag/game.js";
 import ClockTagGame from "./variations/clock-tag/game.js";
+import RealisticTagGame from "./variations/realistic-tag/game.js";
+import ZombieTagGame from "./variations/zombie-tag/game.js";
 
 import FontBook from "./utils/fonts.js";
 
@@ -106,13 +108,17 @@ class LoadingScene extends BaseScene {
 const LOADING = new LoadingScene();
 
 // Games
-const BASIC = new BasicTagGame();
+const BASIC = new ClassicTagGame();
 const CLOCK = new ClockTagGame();
+const REALISTIC = new RealisticTagGame();
+const ZOMBIE = new ZombieTagGame();
 
 // Menu
 const MENU = new MenuScene({
   [BASIC.key]: BASIC.label,
   [CLOCK.key]: CLOCK.label,
+  [REALISTIC.key]: REALISTIC.label,
+  [ZOMBIE.key]: ZOMBIE.label,
 });
 
 /**
@@ -122,6 +128,8 @@ RUNTIME.registerScene(LOADING, { current: true });
 RUNTIME.registerScene(MENU);
 RUNTIME.registerScene(BASIC);
 RUNTIME.registerScene(CLOCK);
+RUNTIME.registerScene(REALISTIC);
+RUNTIME.registerScene(ZOMBIE);
 
 /**
  * Create a p5 sketch in instance mode, and register the P5Runtime (SceneManager)

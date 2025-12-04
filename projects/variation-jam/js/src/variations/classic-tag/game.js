@@ -7,8 +7,8 @@ import WinScene from "./scenes/win.js";
 /**
  * Classic Tag
  *
- * Classic Tag game with a timer. You have 30s and at the end you must not
- * be it!
+ * Classic Tag game with a timer.
+ * You have 15s and at the end you must not be it!
  */
 export default class ClassicTag extends BaseSceneManager {
   key = "classic-tag-game";
