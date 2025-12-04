@@ -66,11 +66,13 @@ export default class NPC {
       maxSpeed = 2.5,
       maxForce = 0.25,
       fillColorKey = "npc",
+      strokeColorKey = null,
       mode = "pursuer",
       effectivenessPursue = 1.0,
       effectivenessEvade = 0.8,
     } = {}
   ) {
+    console.log("effectivenessPursue", effectivenessPursue);
     /** @type {MovementAgent} */
     this.agent = new MovementAgent(p5, x, y, {
       radius,
@@ -88,10 +90,18 @@ export default class NPC {
 
     /** @type {"pursuer"|"evader"|"idle"} */
     this.mode = mode;
+    // When a modifier is applied via applyModifier, the number of frames before restoring
+    // state is stored here.
+    /** @type {number|null} */
+    this._modifierFramesLeft = null;
+    // An object storing the modified properties to reapply them once the modifier is cleared.
+    /** @type {Object|null} */
+    this._unmodifier = null;
     /** @type {{mode: "pursuer"|"evader"|"idle", at: number}|null} */
     this.modeTransition = null;
 
     this.fillColorKey = fillColorKey;
+    this.strokeColorKey = strokeColorKey;
 
     // Set initial behaviour
     this._applyModeBehaviour();
@@ -179,12 +189,66 @@ export default class NPC {
   }
 
   /**
+   * Applies a modifier to the NPC.
+   * Modifies the properties of the NPC for {frameCount} frames.
+   * Allows to introduce variation in behaviours for a duration.
+   *
+   * @param {{ maxSpeed: number, maxForce: number, strokeColorKey: string, effectivenessBase: number }} modifier
+   * @param {number} frameCount Number of frames to apply the modifier for.
+   * @param {boolean} force Whether or not to force the replacement of an existing modifier
+   * @returns Returns whether or not the modifier has been applied.
+   */
+  applyModifier(modifier, frameCount = 60, force = false) {
+    if (!force && this._modifierFramesLeft !== null) {
+      return false;
+    }
+    this.clearModifier();
+    this._modifierFramesLeft = frameCount;
+    this._unmodifier = {
+      strokeColorKey: this.strokeColorKey,
+      fillColorKey: this.fillColorKey,
+      maxSpeed: this.agent.maxSpeed,
+      maxForce: this.agent.maxForce,
+      effectivenessBase: this.agent.movementBehaviour.effectivenessBase,
+    };
+    this.strokeColorKey = modifier.strokeColorKey ?? this.strokeColorKey;
+    this.fillColorKey = modifier.fillColorKey ?? this.fillColorKey;
+    this.agent.maxSpeed = modifier.maxSpeed ?? this.agent.maxSpeed;
+    this.agent.maxForce = modifier.maxForce ?? this.agent.maxForce;
+    this.agent.movementBehaviour.effectivenessBase =
+      modifier.effectivenessBase ??
+      this.agent.movementBehaviour.effectivenessBase;
+    return true;
+  }
+
+  clearModifier() {
+    if (this._unmodifier) {
+      this.strokeColorKey = this._unmodifier.strokeColorKey;
+      this.fillColorKey = this._unmodifier.fillColorKey;
+      this.agent.maxSpeed = this._unmodifier.maxSpeed;
+      this.agent.maxForce = this._unmodifier.maxForce;
+      this.agent.movementBehaviour.effectivenessBase =
+        this._unmodifier.effectivenessBase;
+      this._unmodifier = null;
+      this._modifierFramesLeft = null;
+    }
+  }
+
+  /**
    * Update NPC movement.
    *
    * @param {import("p5")} p5
    * @param {NPCUpdateContext} context
    */
   update(p5, context) {
+    // Check if there's a modifier to clear
+    if (this._modifierFramesLeft <= 0) {
+      this.clearModifier();
+    }
+    // Check if there's a modifier active, if so, remove a frame from framesLeft.
+    else if (this._modifierFramesLeft !== null) {
+      this._modifierFramesLeft -= 1;
+    }
     const { grid, fields, playerAgent } = context;
 
     // For pursue/evade behaviours, "fields" contains the pre-lazily-computed
@@ -221,8 +285,11 @@ export default class NPC {
 
       const fallbackStrokeColor = 0;
       // use the transition color if available to give user feedback
-      const strokeColorKey =
-        this.mode === "idle" ? this.modeTransition?.mode : this.mode;
+      let strokeColorKey = this.strokeColorKey;
+      if (!strokeColorKey) {
+        strokeColorKey =
+          this.mode === "idle" ? this.modeTransition?.mode : this.mode;
+      }
       const strokeColor = colorMap[strokeColorKey] ?? fallbackStrokeColor;
 
       const fallbackFillColor = 255;

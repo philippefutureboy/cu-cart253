@@ -157,7 +157,7 @@ export class MouseInput extends IP5MouseEventHandler {
       const queryButton = button ?? event.button;
       if (queryType === event.type && queryButton === event.button) {
         this.events = this.events.toSpliced(i, 1);
-        return click;
+        return event;
       }
     }
   }

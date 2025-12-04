@@ -29,14 +29,8 @@ export class MovementBehaviour {
     this.effectivenessBase = clamp01(effectivenessBase);
   }
 
-  /**
-   * Map user-facing [0,1] -> internal [0.5,1].
-   * 0   -> 0.5  (quite noisy / imperfect)
-   * 0.1 -> 0.55 (close to the "old 0.5")
-   * 1   -> 1.0  (fully sharp)
-   */
   getEffective() {
-    return 0.5 + 0.5 * this.effectivenessBase;
+    return this.effectivenessBase;
   }
 
   /**
