@@ -25,7 +25,7 @@ Each game plays fairly differently.
 
 **NOTE:**</br>
 This README was modified after the deadline for the project, on Fri Dec 5th, 2025.</br>
-This is the only file (alongside the screenshots) modified after the deadline.
+Additionally, removed unused font, added ChatGPT conversation under `js/src/engine/ATTRIBUTION`. 
 
 ## Variations
 
@@ -254,6 +254,10 @@ All images are my own.
 All sounds were downloaded from YouTube using `yt-dlp`.</br>
 Each sound file is suffixed with the YouTube video ID.</br>
 Some of these may be copyrighted - namely Sonic The Hedgehog, Skyrim Quest Complete, and Minecraft Zombie sound Effect.
+
+**Fonts**
+
+Each font is accompanied of their relative license.
 
 ### Distribution of GenAI Contributions Across Files
 
